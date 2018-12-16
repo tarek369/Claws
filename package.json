@@ -5,7 +5,7 @@
     "start": "pm2-runtime ecosystem.config.js",
     "pm2-docker-dev": "pm2-runtime ecosystem.config.js --env development",
     "pm2-local-prod": "pm2 start ./ecosystem.config.js",
-    "pm2-local-dev": "pm2 start ./ecosystem.config.js -env development",
+    "pm2-local-dev": "pm2 start ./ecosystem.config.js --env development",
     "stop": "pm2 stop ./ecosystem.config.js",
     "reload": "pm2 reload ./ecosystem.config.js",
     "status": "pm2 list",

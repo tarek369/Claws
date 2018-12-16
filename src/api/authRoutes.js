@@ -28,7 +28,7 @@ const rateLimiter = process.env.NODE_ENV === 'production' ?
 
 async function rateLimit(req, res, next) {
     try {
-        await rateLimiter.consume(req.client.remoteAddress);
+        await rateLimiter.consume(process.env.NODE_ENV === 'production' ? req.headers['x-real-ip'] : req.client.remoteAddress);
         next();
     } catch (RateLimiterRes) {
         res.status(429).json({auth: false, message: 'Too Many Requests'});
