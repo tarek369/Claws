@@ -66,7 +66,7 @@ async function AZMovies(req, sse) {
 
             let $ = cheerio.load(videoPageHtml);
 
-            $('#serverul li a').toArray().forEach(async (element) => {
+            $('#serverul li a').toArray().forEach((element) => {
                 const providerUrl = $(element).attr('href');
                 resolvePromises.push(resolve(sse, providerUrl, 'AZMovies', jar, headers));
             });

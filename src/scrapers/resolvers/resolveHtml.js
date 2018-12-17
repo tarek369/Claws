@@ -16,7 +16,9 @@ const resolvers = {
     // GorillaVid: require('./GorillaVid'),
     // DaClips: require('./DaClips'),
     // MovPod: require('./MovPod'),
-    Vidoza: require('./Vidoza').VidozaHtml
+    Vidoza: require('./Vidoza').VidozaHtml,
+    // StreamM4u: require('./StreamM4u'),
+    GoogleDrive: require('./GoogleDrive').GoogleDriveHtml
 };
 
 const createEvent = require('../../utils/createEvent');
@@ -51,6 +53,13 @@ async function resolveHtml(html, resolver, jar, headers) {
         const dataList = [];
         data.forEach(dataObject => {
             dataList.push(createEvent(dataObject.src, false, {}, dataObject.res, 'Vidoza'));
+        });
+        return dataList;
+
+    } else if (resolver === 'GoogleDrive') {
+        const dataList = [];
+        data.forEach(dataObject => {
+            dataList.push(createEvent(dataObject.link, false, {}, dataObject.quality, 'GoogleDrive'));
         });
         return dataList;
 

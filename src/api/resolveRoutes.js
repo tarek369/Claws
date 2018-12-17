@@ -12,11 +12,6 @@ const resolveHtml = require('../scrapers/resolvers/resolveHtml');
 const resolveRoutes = require('express').Router();
 
 /**
- * Sends the current time in milliseconds.
- */
-const sendInitialStatus = (sse) => sse.send({ data: [`${new Date().getTime()}`], event: 'status'}, 'result');
-
-/**
  * /api/v1/search/movies
  * ------
  * Allows you to search for movies.

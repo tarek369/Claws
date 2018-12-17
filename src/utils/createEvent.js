@@ -1,7 +1,7 @@
 const URL = require('url');
 
 function createEvent(data, ipLocked, pairing, quality, provider, source, headers) {
-	if (ipLocked && process.env.NODE_ENV === 'production') {
+	if (ipLocked) {
 		return {
 		    event: 'scrape',
 		    target: pairing.target,
