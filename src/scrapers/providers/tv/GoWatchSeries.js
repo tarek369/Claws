@@ -1,12 +1,11 @@
 const Promise = require('bluebird');
-const URL = require('url');
 const RequestPromise = require('request-promise');
 const cheerio = require('cheerio');
 const randomUseragent = require('random-useragent');
 const tough = require('tough-cookie');
-const vm = require('vm');
 
 const resolve = require('../../resolvers/resolve');
+const {debugLog, normalizeUrl} = require('../../../utils');
 
 async function GoWatchSeries(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
@@ -44,13 +43,18 @@ async function GoWatchSeries(req, sse) {
 
             let $ = cheerio.load(html);
 
-            const seasonLinks = []
             const seasonLink = $('.hover_watch').toArray().find((moviePoster) => {
                 const link = $(moviePoster.parent).attr('href');
                 const title = showTitle.replace(/ /g, '-');
                 return link.includes(`${title}-season-${season}`);
             });
-            const seasonPageLink = `${url}${$(seasonLink.parent).attr('href')}`
+            if (!seasonLink || !seasonLink.parent) {
+                // No season link.
+                debugLog('GoWatchSeries', `Could not find: ${showTitle} Season ${season}`);
+                return Promise.all(resolvePromises);
+            }
+
+            const seasonPageLink = `${url}${$(seasonLink.parent).attr('href')}`;
 
             const seasonPageHtml = await rp({
                 uri: `${seasonPageLink}`,
@@ -67,7 +71,7 @@ async function GoWatchSeries(req, sse) {
             const episodePageLink = $('.child_episode').toArray().find((e) => {
                 const link = $(e).find('a').attr('href');
                 return link.includes(`episode-${episode}`)
-            })
+            });
             const episodeLink = `${url}${$(episodePageLink).find('a').attr('href')}`;
 
             const episodePageHtml = await rp({
@@ -94,15 +98,15 @@ async function GoWatchSeries(req, sse) {
                         }
                     })
                 }
-            })
+            });
 
             let iframeSrc;
             videoDiv.children().toArray().forEach((child) => {
                 if (child.name === 'iframe') {
-                    iframeSrc = `https:${child.attribs.src}`
+                    iframeSrc = normalizeUrl(child.attribs.src, 'https');
                     iframeLinks.push(iframeSrc);
                 }
-            })
+            });
 
             iframeLinks.forEach(async (provider) => {
                 const headers = {

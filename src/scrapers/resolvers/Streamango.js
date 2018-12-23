@@ -2,6 +2,8 @@ const rp = require('request-promise');
 const cheerio = require('cheerio');
 const vm = require('vm');
 
+const normalizeUrl = require('../../utils').normalizeUrl;
+
 async function Streamango(uri, jar, headers) {
     let providerPageHtml = await rp({
         uri,
@@ -14,9 +16,7 @@ async function Streamango(uri, jar, headers) {
 }
 
 function StreamangoHtml(providerPageHtml) {
-    $ = cheerio.load(providerPageHtml);
-
-    let fileId = '';
+    let $ = cheerio.load(providerPageHtml);
 
     const jQuery = function(selector, anotherArg) {
         return {
@@ -40,7 +40,7 @@ function StreamangoHtml(providerPageHtml) {
     vm.createContext(sandbox); // Contextify the sandbox.
     vm.runInContext($('script:contains(srces)')[0].children[0].data.replace('src:d(', 'src:window.d('), sandbox);
 
-    return `https:${sandbox.srces[0].src}`;
+    return normalizeUrl(sandbox.srces[0].src, 'https');
 }
 
 module.exports = exports = {Streamango, StreamangoHtml};

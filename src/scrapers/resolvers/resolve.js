@@ -20,6 +20,7 @@ const StreamM4u = require('./StreamM4u');
 const {GoogleDrive, getGoogleDriveScrapeUrl} = require('./GoogleDrive');
 
 const createEvent = require('../../utils/createEvent');
+const {debugLog} = require('../../utils');
 
 async function resolve(sse, uri, source, jar, headers, quality = '') {
     if (sse.stopExecution) {
@@ -27,7 +28,7 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
         return;
     }
 
-    console.log(uri);
+    debugLog(`resolving: ${uri}`);
 
     try {
         if (uri.includes('openload.co') || uri.includes('oload.cloud')) {
@@ -192,7 +193,7 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
             if (link.includes('drive.google.com')) {
                 link = getGoogleDriveScrapeUrl(link);
                 provider = 'GoogleDrive';
-                if (process.env.NODE_ENV === 'production') {
+                if (process.env.CLAWS_ENV === 'server') {
                     ipLocked = true;
                 } else {
                     const dataObjects = await GoogleDrive(link, jar, headers);

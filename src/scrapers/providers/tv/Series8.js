@@ -4,11 +4,9 @@ const RequestPromise = require('request-promise');
 const cheerio = require('cheerio');
 const randomUseragent = require('random-useragent');
 const tough = require('tough-cookie');
-const vm = require('vm');
 
-const logger = require('../../../utils/logger')
-const { padTvNumber } = require('../../../utils');
 const resolve = require('../../resolvers/resolve');
+const {absoluteUrl, debugLog} = require('../../../utils');
 
 async function Series8(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
@@ -52,7 +50,13 @@ async function Series8(req, sse) {
                     return link.includes(`${title}-season-${season}`);
                 }
             });
-            const seasonPageLink = `${url}${$(seasonLink).attr('href')}`;
+
+            if (!seasonLink) {
+                debugLog('Series8', `Could not find: ${showTitle} Season ${season}`);
+                return Promise.all(resolvePromises);
+            }
+
+            const seasonPageLink = absoluteUrl(url, $(seasonLink).attr('href'));
 
             const episodeLink = `${seasonPageLink}/watching.html?ep=${episode}`;
 
@@ -70,7 +74,7 @@ async function Series8(req, sse) {
             $ = cheerio.load(episodePageHtml);
 
             const videoUrls = $('.btn-eps').toArray().reduce((providerUrls, iframeLinks) => {
-                if ($(iframeLinks).attr('title').toLowerCase().includes(`season ${season}`) && $(iframeLinks).attr('title').toLowerCase().includes(`episode ${padTvNumber(episode)}`)) {
+                if ($(iframeLinks).attr('episode-data') === `${episode}`) {
                     providerUrls.push($(iframeLinks).attr('player-data'));
                 }
                 return providerUrls;
@@ -95,7 +99,7 @@ async function Series8(req, sse) {
 
     urls.forEach((url) => {
         promises.push(scrape(url));
-    })
+    });
 
     return Promise.all(promises);
 
