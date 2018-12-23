@@ -2,9 +2,9 @@ const Promise = require('bluebird');
 const RequestPromise = require('request-promise');
 const cheerio = require('cheerio');
 const randomUseragent = require('random-useragent');
-const vm = require('vm');
 
 const resolve = require('../../resolvers/resolve');
+const {isSameSeriesName, debugLog} = require('../../../utils');
 
 async function SeriesFree(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
@@ -46,12 +46,12 @@ async function SeriesFree(req, sse) {
             let showUrl = '';
 
             $('.serie-title').toArray().some(element => {
-                if ($(element).text() === showTitle) {
+                if (isSameSeriesName(showTitle, $(element).text())) {
                     showUrl = `${url}${$(element).parent().attr('href')}`;
                     return true;
                 }
                 return false;
-            })
+            });
 
             const videoPageHtml = await rp({
                 uri: showUrl,
@@ -64,7 +64,7 @@ async function SeriesFree(req, sse) {
 
             $ = cheerio.load(videoPageHtml);
 
-            let episodeUrl = '';
+            let episodeUrl;
             $('.sinfo').toArray().some(element => {
                 if ($(element).text() === `${season}×${episode}`) {
                     episodeUrl = `${url}${$(element).parent().attr('href')}`;
@@ -72,6 +72,11 @@ async function SeriesFree(req, sse) {
                 }
                 return false;
             });
+
+            if (!episodeUrl) {
+                debugLog('SeriesFree', `Could not find: ${showTitle} ${season}×${episode}`);
+                return Promise.all(resolvePromises);
+            }
 
             const episodePageHtml = await rp({
                 uri: episodeUrl,
@@ -109,7 +114,12 @@ async function SeriesFree(req, sse) {
             })
         } catch (err) {
             if (!sse.stopExecution) {
-                console.error({source: 'SeriesFree', sourceUrl: url, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: err.message || err.toString()});
+              console.error({
+                source: 'SeriesFree',
+                sourceUrl: url,
+                query: {title: req.query.title, season: req.query.season, episode: req.query.episode},
+                error: err.message || err.toString()
+              });
             }
         }
 
