@@ -185,7 +185,8 @@
         <div id="results"></div>
         <script type="text/javascript" charset="utf-8" src="bcrypt.js"></script>
         <script type="text/javascript" charset="utf-8">
-            const SECRET_CLIENT_ID = 'thisisjustaclienttest';
+            // Provided by the .env file.
+            const SECRET_CLIENT_ID = '<%= secret_client_id %>';
             const bcrypt = dcodeIO.bcrypt;
             let es;
             async function authenticate() {
@@ -224,46 +225,46 @@
 
                 return token;
             }
+
+            const resultListener = function (e) {
+                let data = JSON.parse(e.data);
+                console.log('result', data.event, data);
+            };
+            const scrapeListener = function (e) {
+              console.log('scrape', JSON.parse(e.data));
+            };
+            const errorListener = function (e) {
+              console.error('error', JSON.parse(e.data));
+            };
+            const doneListener = function (e) {
+              console.log('done', JSON.parse(e.data));
+              console.log('There should be no more events after this one. Comment out the `close` line to see if there are any events leaking.');
+              es.close();
+            };
+
             async function searchMovies() {
                 let token = await authenticate();
-                var movieTitle = document.getElementById('movieTitle').value;
+                let movieTitle = document.getElementById('movieTitle').value;
+
+                stop(); // Stop existing eventsource.
                 es = new EventSource(`/api/v1/search/movies?title=${movieTitle}&token=${token}`);
-                es.addEventListener('result', function (e) {
-                    console.log(e.data);
-                });
-                es.addEventListener('scrape', function (e) {
-                    console.log(e.data);
-                });
-                es.addEventListener('error', function (e) {
-                    console.error(e.data);
-                });
-                es.addEventListener('done', function (e) {
-                    console.log(e.data);
-                    console.log('There should be no more events after this one. Comment out the `close` line to see if there are any events leaking.');
-                    es.close();
-                });
+                es.addEventListener('result', resultListener);
+                es.addEventListener('scrape', scrapeListener);
+                es.addEventListener('error', errorListener);
+                es.addEventListener('done', doneListener);
             }
             async function searchTV() {
                 let token = await authenticate();
-                var showTitle = document.getElementById('showTitle').value;
-                var season = document.getElementById('season').value;
-                var episode = document.getElementById('episode').value;
+                let showTitle = document.getElementById('showTitle').value;
+                let season = document.getElementById('season').value;
+                let episode = document.getElementById('episode').value;
 
+                stop(); // Stop existing eventsource.
                 es = new EventSource(`/api/v1/search/tv?title=${showTitle}&season=${season}&episode=${episode}&token=${token}`)
-                es.addEventListener('result', function (e) {
-                    console.log(e.data);
-                });
-                es.addEventListener('scrape', function (e) {
-                    console.log(e.data);
-                });
-                es.addEventListener('error', function (e) {
-                    console.error(e.data);
-                });
-                es.addEventListener('done', function (e) {
-                    console.log(e.data);
-                    console.log('There should be no more events after this one. Comment out the `close` line to see if there are any events leaking.');
-                    es.close();
-                });
+                es.addEventListener('result', resultListener);
+                es.addEventListener('scrape', scrapeListener);
+                es.addEventListener('error', errorListener);
+                es.addEventListener('done', doneListener);
             }
             function stop() {
                 es && es.close();
@@ -273,7 +274,7 @@
                     var code = p.charCodeAt(0).toString(16).toUpperCase();
                     if (code.length < 2) {
                       code = '0' + code;
-                  }
+                    }
                   return '%' + code;
               }));
             }

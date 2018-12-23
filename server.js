@@ -12,6 +12,11 @@ const pathToApp = __dirname;
 // Initialize express
 let app = express();
 
+// Add renderer.
+app.engine('html', require('ejs').__express);
+app.set('views', 'public'); // render from the public directory.
+app.set('view engine', 'html');
+
 // Load external ExpressJS middleware
 const compression = require('compression');
 
@@ -39,12 +44,12 @@ app.use(function (req, res, next) {
 
 /** RENDERED ROUTES **/
 app.get('/', function(req, res) {
-    if(process.env.NODE_ENV === 'production'){
+    if (process.env.NODE_ENV === 'production') {
         // When in production, redirect to the main site.
         res.redirect("https://apollotv.xyz/");
-    }else {
-        // Otherwise, send index file.
-        res.sendFile(`${pathToApp}/public/index.html`);
+    } else {
+        // Otherwise, render the index file with the secret client id set.
+        res.render('index', {secret_client_id: process.env.SECRET_CLIENT_ID});
     }
 });
 app.get('/bcrypt.js', (req, res) => res.sendFile(`${pathToApp}/public/bcrypt.js`));
