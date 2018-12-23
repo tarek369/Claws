@@ -6,7 +6,7 @@ const randomUseragent = require('random-useragent');
 const resolve = require('../../resolvers/resolve');
 
 async function Afdah(req, sse) {
-    const movieTitle = req.query.title;
+    const showTitle = req.query.title;
 
     // These are all the same host I think. https://xmovies8.org isn't loading.
     const urls = ["https://afdah.org", "https://genvideos.com", "https://genvideos.co", "https://watch32hd.co", "https://putlockerhd.co"/* , "https://xmovies8.org" */];
@@ -29,18 +29,18 @@ async function Afdah(req, sse) {
 
             try {
                 html = await rp({
-                    uri: `${url}/results?q=${movieTitle.toLowerCase().replace(/ /g, '%20').replace(/\:/g, '')}`,
+                    uri: `${url}/results?q=${showTitle.toLowerCase().replace(/ /g, '%20').replace(/\:/g, '')}`,
                     timeout: 5000
                 });
             } catch(err) {
                 try {
                     html = await rp({
-                        uri: `${url}/results?q=${movieTitle.toLowerCase().replace(/ /g, '+').replace(/\:/g, '')}`,
+                        uri: `${url}/results?q=${showTitle.toLowerCase().replace(/ /g, '+').replace(/\:/g, '')}`,
                         timeout: 5000
                     });
                 } catch(err) {
                     html = await rp({
-                        uri: `${url}/results?q=${movieTitle.toLowerCase().replace(/ /g, '%2B').replace(/\:/g, '')}`,
+                        uri: `${url}/results?q=${showTitle.toLowerCase().replace(/ /g, '%2B').replace(/\:/g, '')}`,
                         timeout: 5000
                     });
                 }
@@ -51,7 +51,7 @@ async function Afdah(req, sse) {
 
             $('.cell').toArray().some(element => {
                 const videoName = $(element).find('.video_title').text().trim();
-                if (videoName === movieTitle) {
+                if (videoName === showTitle) {
                     videoId = $(element).find('.video_title h3 a').attr('href').trim();
                     return true;
                 }

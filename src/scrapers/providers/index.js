@@ -3,8 +3,10 @@
 const providers =
 	{
 		movies: [
+            require('./movies/123movie'),
 			require('./movies/Afdah'),
-			require('./movies/AZMovies'),
+            require('./movies/AZMovies'),
+            require('./movies/bfmovies'),
 			require('./movies/StreamM4u'),
 		],
 		tv: [
@@ -14,8 +16,7 @@ const providers =
 			require('./tv/Series8'),
 			require('./tv/SwatchSeries'),
 		],
-		universal: [
-		]
-	}
+		universal: []
+	};
 
 module.exports = exports = providers;
