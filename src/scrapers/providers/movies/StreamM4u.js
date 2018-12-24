@@ -5,6 +5,7 @@ const tough = require('tough-cookie');
 const randomUseragent = require('random-useragent');
 
 const resolve = require('../../resolvers/resolve');
+const {isSameSeriesName} = require('../../../utils');
 
 async function StreamM4u(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
@@ -42,8 +43,7 @@ async function StreamM4u(req, sse) {
                 timeout: 5000,
             });
 
-            const includeYearInTitle = /.*\d\d\d\d$/.test(movieTitle);
-            let searchTitle = searchResults.find(result => !includeYearInTitle ? result.replace(/ \(\d\d\d\d\)| \d\d\d\d/, '') === movieTitle : result.replace(/ \(\d\d\d\d\)/, '') === movieTitle);
+            let searchTitle = searchResults.find(result => isSameSeriesName(movieTitle, result) === movieTitle);
 
             const searchPageHtml = await rp({
                 uri: `${url}/search/${searchTitle}`,
