@@ -95,7 +95,7 @@ async function SwatchSeries(req, sse) {
         return Promise.all(resolvePromises);
     }
 
-    // Asyncronously start all the scrapers for each url
+    // Asynchronously start all the scrapers for each url
     urls.forEach((url) => {
         promises.push(scrape(url));
     });

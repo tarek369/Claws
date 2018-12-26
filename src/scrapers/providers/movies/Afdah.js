@@ -66,7 +66,7 @@ async function Afdah(req, sse) {
 
             const regexMatches = /(?:var frame_url = ")(.*)(?:")/g.exec(videoPageHtml);
 
-            if (regexMatches.length === 2) {
+            if (regexMatches) {
                 let videoStreamUrl = `https:${regexMatches[1]}`;
 
                 const jar = rp.jar();
@@ -180,7 +180,7 @@ async function Afdah(req, sse) {
         return Promise.all(resolvePromises);
     }
 
-    // Asyncronously start all the scrapers for each url
+    // Asynchronously start all the scrapers for each url
     urls.forEach((url) => {
         promises.push(scrape(url));
     });

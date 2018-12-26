@@ -99,7 +99,7 @@ function getGoogleDriveScrapeUrl(uri) {
     if (googleLinkInfo.pathname === '/open') {
         fileId = googleLinkInfo.query.id;
     } else if (googleLinkInfo.pathname.startsWith('/file/d/')) {
-        fileId = googleLinkInfo.pathname.split('/')[2];
+        fileId = googleLinkInfo.pathname.split('/')[3];
     }
     return `https://drive.google.com/file/d/${fileId}/view`;
 }

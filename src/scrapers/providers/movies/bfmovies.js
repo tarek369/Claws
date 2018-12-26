@@ -19,50 +19,58 @@ async function bfmovies(req, sse){
         return RequestPromise(target);
     });
 
-    async function scrape(url){
-        // Fetch the HTML from the page
-        let html = await rp({
-            uri: `${url}/search?q=${movieTitle.replace(/ /g, '+')}`,
-            timeout: 5000
-        });
+    async function scrape(url) {
+        const resolvePromises = [];
 
-        let videoPage = '';
+        try {
+            const jar = rp.jar();
+            // Fetch the HTML from the page
+            let html = await rp({
+                uri: `${url}/search?q=${movieTitle.replace(/ /g, '+')}`,
+                timeout: 5000
+            });
 
-        // Find the link to the content
-        let $ = cheerio.load(html);
-        $(`li[itemtype="http://schema.org/Movie"]`).toArray().forEach(element => {
-            let linkElement = $(element).find("a");
+            let videoPage = '';
 
-            let contentTitle = $(element).find(`*[itemprop="name"]`).text();
-            let contentPage = linkElement.attr('href');
+            // Find the link to the content
+            let $ = cheerio.load(html);
+            $(`li[itemtype="http://schema.org/Movie"]`).toArray().forEach(element => {
+                let linkElement = $(element).find("a");
 
-            if(contentTitle.includes(movieTitle)) videoPage = contentPage;
-        });
+                let contentTitle = $(element).find(`*[itemprop="name"]`).text();
+                let contentPage = linkElement.attr('href');
 
-        let videoPageHTML = await rp({
-            uri: videoPage,
-            timeout: 5000
-        });
+                if(contentTitle.includes(movieTitle)) videoPage = contentPage;
+            });
 
-        $ = cheerio.load(videoPageHTML);
-        let openloadPage = $("iframe").attr('src');
+            let videoPageHTML = await rp({
+                uri: videoPage,
+                timeout: 5000
+            });
 
-        if(!openloadPage.includes("openload")){
-            console.log("BFMovies does not always use OpenLoad.");
-            return false;
+            $ = cheerio.load(videoPageHTML);
+            let openloadPage = $("iframe").attr('src');
+
+            if(!openloadPage.includes("openload")){
+                console.log("BFMovies does not always use OpenLoad.");
+                return false;
+            }
+
+            let openloadHTML = await rp({
+                uri: openloadPage,
+                timeout: 5000
+            });
+
+            // This is the provider URL
+            let openloadURL = cheerio.load(openloadHTML)('meta[name="og:url"]').attr('content');
+            resolvePromises.push(resolve(sse, openloadURL, 'BFMovies', jar, {}));
+        } catch (err) {
+            if (!sse.stopExecution) {
+                console.error({source: 'StreamM4u', sourceUrl: url, query: {title: req.query.title}, error: err.message || err.toString()});
+            }
         }
 
-        let openloadHTML = await rp({
-            uri: openloadPage,
-            timeout: 5000
-        });
-
-        // This is the provider URL
-        let openloadURL = cheerio.load(openloadHTML)('meta[name="og:url"]').attr('content');
-        console.log(openloadURL);
-
-        const jar = rp.jar();
-        return Promise.all([resolve(sse, openloadURL, 'BFMovies', jar, {})]);
+        return Promise.all(resolvePromises);
     }
 
     urls.forEach((url) => {

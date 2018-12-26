@@ -3,6 +3,7 @@ const RequestPromise = require('request-promise');
 const cheerio = require('cheerio');
 const tough = require('tough-cookie');
 const randomUseragent = require('random-useragent');
+const vm = require('vm');
 
 const resolve = require('../../resolvers/resolve');
 const {isSameSeriesName} = require('../../../utils');
@@ -22,6 +23,51 @@ async function StreamM4u(req, sse) {
 
         return RequestPromise(target);
     });
+
+    async function scrapeHarder(url, _token, videoId, headers, jar, title) {
+        const resolveSourcesPromises = [];
+
+        try {
+            const resolveHiddenLinkUrl = `${url}/anhjax`;
+            const iframePageHtml = await rp({
+                method: 'POST',
+                uri: resolveHiddenLinkUrl,
+                formData: {
+                    _token,
+                    m4u: videoId
+                },
+                headers,
+                jar,
+                timeout: 5000
+            });
+
+            let $ = cheerio.load(iframePageHtml);
+
+            const providerUrl = $('iframe').attr('src');
+
+            if (!providerUrl) {
+                // let setupObject = {};
+                // const sandbox = {$(){ return {scrollView(){}}; }, jwplayer(){ return {setup(value){ setupObject = value; }, on(){}}; }};
+                // vm.createContext(sandbox); // Contextify the sandbox.
+                // vm.runInContext($('script')[0].children[0].data, sandbox);
+                // setupObject.sources.forEach(source => {
+                //     resolveSourcesPromises.push(resolve(sse, source.file, 'StreamM4u', jar, headers, source.label));
+                // });
+                // return Promise.all(resolveSourcesPromises);
+
+                const providerUrlRegexResults = /(?:\<iframe\ssrc=")([^"]+)/.exec(iframePageHtml);
+                if (providerUrlRegexResults) {
+                    return resolve(sse, providerUrlRegexResults[1], 'StreamM4u', jar, headers);
+                }
+            } else {
+                return resolve(sse, providerUrl, 'StreamM4u', jar, headers);
+            }
+        } catch (err) {
+            if (!sse.stopExecution) {
+                console.error({source: 'StreamM4u', sourceUrl: url, query: {title: req.query.title}, error: err.message || err.toString()});
+            }
+        }
+    }
 
     // Go to each url and scrape for links, then send the link to the client
     async function scrape(url) {
@@ -43,7 +89,7 @@ async function StreamM4u(req, sse) {
                 timeout: 5000,
             });
 
-            let searchTitle = searchResults.find(result => isSameSeriesName(movieTitle, result) === movieTitle);
+            let searchTitle = searchResults.find(result => isSameSeriesName(movieTitle, result));
 
             const searchPageHtml = await rp({
                 uri: `${url}/search/${searchTitle}`,
@@ -66,11 +112,15 @@ async function StreamM4u(req, sse) {
             });
 
             $ = cheerio.load(streamPageHtml);
+            const _token = $('meta[name="csrf-token"]').attr('content');
 
+            const resolveHiddenLinkPromises = [];
             $('.le-server span').toArray().forEach((element) => {
-                const providerUrl = `${url}/view.php?v=${$(element).attr('data')}`;
-                resolvePromises.push(resolve(sse, providerUrl, 'StreamM4u', jar, headers));
+                const videoId = $(element).attr('data');
+                resolveHiddenLinkPromises.push(scrapeHarder(url, _token, videoId, headers, jar, req.query.title));
             });
+
+            resolvePromises.push(Promise.all(resolveHiddenLinkPromises));
         } catch (err) {
             if (!sse.stopExecution) {
                 console.error({source: 'StreamM4u', sourceUrl: url, query: {title: req.query.title}, error: err.message || err.toString()});
@@ -80,7 +130,7 @@ async function StreamM4u(req, sse) {
         return Promise.all(resolvePromises);
     }
 
-    // Asyncronously start all the scrapers for each url
+    // Asynchronously start all the scrapers for each url
     urls.forEach((url) => {
         promises.push(scrape(url));
     });

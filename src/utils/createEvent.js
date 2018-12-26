@@ -1,8 +1,7 @@
 const URL = require('url');
 
 function createEvent(data, ipLocked, pairing, quality, provider, source, headers) {
-	if (ipLocked && process.env.CLAWS_ENV === 'server') {
-		// The scrape event is only sent when running in server mode.
+	if (ipLocked) {
 		return {
 		    event: 'scrape',
 		    target: pairing.target,

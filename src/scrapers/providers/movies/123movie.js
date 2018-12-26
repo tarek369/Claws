@@ -19,59 +19,67 @@ async function _123movie(req, sse){
         return RequestPromise(target);
     });
 
-    async function scrape(url){
-        // Fetch the HTML from the page
-        let html = await rp({
-            uri: `${url}?s=${movieTitle.replace(/ /g, '+')}`,
-            timeout: 5000
-        });
+    async function scrape(url) {
+        const resolvePromises = [];
 
-        let videoPage = '';
+        try {
+            const jar = rp.jar();
+            // Fetch the HTML from the page
+            let html = await rp({
+                uri: `${url}?s=${movieTitle.replace(/ /g, '+')}`,
+                timeout: 5000
+            });
 
-        // Find the link to the content
-        let $ = cheerio.load(html);
-        $("article.item").toArray().forEach(element => {
-            let linkElement = $(element).find(".titlecover");
+            let videoPage = '';
 
-            let contentTitle = linkElement.text();
-            let contentPage = linkElement.attr('href');
+            // Find the link to the content
+            let $ = cheerio.load(html);
+            $("article.item").toArray().forEach(element => {
+                let linkElement = $(element).find(".titlecover");
 
-            if(contentTitle === movieTitle) videoPage = contentPage;
-        });
+                let contentTitle = linkElement.text();
+                let contentPage = linkElement.attr('href');
 
-        let videoPageHTML = await rp({
-            uri: videoPage,
-            timeout: 5000
-        });
+                if(contentTitle === movieTitle) videoPage = contentPage;
+            });
 
-        $ = cheerio.load(videoPageHTML);
-        let pageURL = $(`.liopv[onclick*="rapidvideo"]`).attr('onclick').split("'")[1];
+            let videoPageHTML = await rp({
+                uri: videoPage,
+                timeout: 5000
+            });
 
-        // targetPageHTML is the HTML for the player page.
-        let targetPageHTML = await rp({
-            uri: pageURL,
-            timeout: 5000,
-            headers: {
-                'Referer': videoPage
+            $ = cheerio.load(videoPageHTML);
+            let pageURL = $(`.liopv[onclick*="rapidvideo"]`).attr('onclick').split("'")[1];
+
+            // targetPageHTML is the HTML for the player page.
+            let targetPageHTML = await rp({
+                uri: pageURL,
+                timeout: 5000,
+                headers: {
+                    'Referer': videoPage
+                }
+            });
+
+            let outputPageURL = cheerio.load(targetPageHTML)('iframe').attr('src');
+
+            let outputPageHTML = await rp({
+                uri: outputPageURL,
+                timeout: 5000,
+                headers: {
+                    'Referer': videoPage
+                }
+            });
+
+            // This is the provider URL
+            let rapidVideoURL = cheerio.load(outputPageHTML)('link[rel="canonical"]').attr('href');
+            resolvePromises.push(resolve(sse, rapidVideoURL, '123Movie', jar, {}));
+        } catch (err) {
+            if (!sse.stopExecution) {
+                console.error({source: '123Movies', sourceUrl: url, query: {title: req.query.title}, error: err.message || err.toString()});
             }
-        });
+        }
 
-        let outputPageURL = cheerio.load(targetPageHTML)('iframe').attr('src');
-
-        let outputPageHTML = await rp({
-            uri: outputPageURL,
-            timeout: 5000,
-            headers: {
-                'Referer': videoPage
-            }
-        });
-
-        // This is the provider URL
-        let rapidVideoURL = cheerio.load(outputPageHTML)('link[rel="canonical"]').attr('href');
-        console.log(rapidVideoURL);
-
-        const jar = rp.jar();
-        return Promise.all([resolve(sse, rapidVideoURL, '123Movie', jar, {})]);
+        return Promise.all(resolvePromises);
     }
 
     urls.forEach((url) => {
