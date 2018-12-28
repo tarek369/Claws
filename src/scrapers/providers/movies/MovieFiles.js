@@ -1,0 +1,77 @@
+const Promise = require('bluebird');
+const RequestPromise = require('request-promise');
+const cheerio = require('cheerio');
+const tough = require('tough-cookie');
+const randomUseragent = require('random-useragent');
+
+const {escapeRegExp} = require('../../../utils');
+const resolve = require('../../resolvers/resolve');
+
+async function MovieFiles(req, sse) {
+    const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
+    const movieTitle = req.query.title;
+
+    // These are all the same host I think. https://xmovies8.org isn't loading.
+    const urls = ["https://moviefiles.org"];
+    const promises = [];
+
+    const rp = RequestPromise.defaults(target => {
+        if (sse.stopExecution) {
+            return null;
+        }
+
+        return RequestPromise(target);
+    });
+
+    // Go to each url and scrape for links, then send the link to the client
+    async function scrape(url) {
+        const resolvePromises = [];
+
+        try {
+            const jar = rp.jar();
+            const modifiedSearchTitle = movieTitle.replace(/[\(\)]/, '').replace(/[\s:]/g, '.');
+            const movieSearchUrl = `${url}/?search=${modifiedSearchTitle}`;
+            const userAgent = randomUseragent.getRandom();
+            const headers = {
+                'user-agent': userAgent,
+            };
+
+            const searchPageHtml = await rp({
+                uri: movieSearchUrl,
+                headers,
+                jar,
+                followAllRedirects: true,
+                timeout: 5000
+            });
+
+            let $ = cheerio.load(searchPageHtml);
+
+            $(`a:contains("${modifiedSearchTitle}")`).toArray().forEach(element => {
+                const isTitleExp = new RegExp(`${escapeRegExp(modifiedSearchTitle)}\\.\\d\\d\\d\\d`);
+                const foundTitle = $(element).text();
+                if (isTitleExp.test(foundTitle)) {
+                    const providerUrl = `${url}/${$(element).attr('href')}`;
+                    const qualityExp = new RegExp(`${escapeRegExp(modifiedSearchTitle)}\\.\\d\\d\\d\\d\\.[^\\d]*(\\d\\d\\d\\d?p)`);
+                    const qualityExec = qualityExp.exec(foundTitle);
+                    const quality = qualityExec ? qualityExec[1] : '';
+                    resolvePromises.push(resolve(sse, providerUrl, 'MovieFiles', jar, headers, quality));
+                }
+            });
+        } catch (err) {
+            if (!sse.stopExecution) {
+                console.error({source: 'MovieFiles', sourceUrl: url, query: {title: req.query.title}, error: err.message || err.toString()});
+            }
+        }
+
+        return Promise.all(resolvePromises);
+    }
+
+    // Asynchronously start all the scrapers for each url
+    urls.forEach((url) => {
+        promises.push(scrape(url));
+    });
+
+    return Promise.all(promises);
+}
+
+module.exports = exports = MovieFiles;

@@ -18,6 +18,7 @@ const MovPod = require('./MovPod');
 const {Vidoza} = require('./Vidoza');
 const StreamM4u = require('./StreamM4u');
 const {GoogleDrive, getGoogleDriveScrapeUrl} = require('./GoogleDrive');
+const MovieFiles = require('./MovieFiles');
 
 const createEvent = require('../../utils/createEvent');
 const {debugLog} = require('../../utils');
@@ -233,6 +234,11 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
             //     return;
             // }
             const event = createEvent(link, ipLocked, {target: link}, quality, provider, source);
+            sse.send(event, event.event);
+
+        } else if (uri.includes('moviefiles.org')) {
+            const data = await MovieFiles(uri, jar, headers);
+            const event = createEvent(data, false, {}, quality, 'MovieFiles', source);
             sse.send(event, event.event);
 
         } else {
