@@ -31,51 +31,59 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
 
     debugLog(`resolving: ${uri}`);
 
+    const ipLocked = process.env.CLAWS_ENV === 'server';
+
     try {
         if (uri.includes('openload.co') || uri.includes('oload.cloud')) {
-            const ipLocked = process.env.CLAWS_ENV === 'server'
             const path = uri.split('/');
             const videoId = path[4];
             if (!uri.includes('embed')) {
                 uri = `https://openload.co/embed/${videoId}`;
             }
-            const data = await Openload(uri, jar, headers);
-            const event = createEvent(data, ipLocked, {url: 'https://olpair.com', videoId, target: uri}, quality, 'Openload', source);
+            let data;
+            if (!ipLocked) {
+                data = await Openload(uri, jar, headers);
+            }
+            const event = createEvent(data, ipLocked, {url: 'https://olpair.com', videoId, target: uri}, {quality, provider: 'Openload', source});
             sse.send(event, event.event);
 
         } else if (uri.includes('streamango.com')) {
-            const ipLocked = process.env.CLAWS_ENV === 'server'
-            const data = await Streamango(uri, jar, headers);
-            const event = createEvent(data, ipLocked, {target: uri}, quality, 'Streamango', source);
+            let data;
+            if (!ipLocked) {
+                data = await Streamango(uri, jar, headers);
+            }
+            const event = createEvent(data, ipLocked, {target: uri}, {quality, provider: 'Streamango', source});
             sse.send(event, event.event);
 
         } else if (uri.includes('rapidvideo.com')) {
             const data = await RapidVideo(uri, jar);
-            const event = createEvent(data, false, {}, quality, 'RapidVideo', source);
+            const event = createEvent(data, false, undefined, {quality, provider: 'RapidVideo', source});
             sse.send(event, event.event);
 
         } else if (uri.includes('azmovies.co') || uri.includes('azmovies.ws')) {
             const file = await AZMovies(uri, jar, headers);
-            const event = createEvent(file, false, {}, quality, 'AZMovies', source);
+            const event = createEvent(file, false, undefined, {quality, provider: 'AZMovies', source});
             sse.send(event, event.event);
 
         } else if (uri.includes('vidlox.me') || uri.includes('vidlox.tv')) {
             const dataList = await Vidlox(uri, jar, headers);
             dataList.forEach(data => {
-                const event = createEvent(data, false, {}, quality, 'Vidlox', source);
+                const event = createEvent(data, false, undefined, {quality, provider: 'Vidlox', source});
                 sse.send(event, event.event);
             });
 
         } else if (uri.includes('vshare.eu')) {
-            const ipLocked = process.env.CLAWS_ENV === 'server'
             const path = uri.split('/');
             let videoId = path[path.length - 1].replace('.html', '');
             if (!uri.includes('embed')) {
                 videoId = path[path.length - 1].replace('.htm', '');
                 uri = `https://vshare.eu/embed-${videoId}.html`;
             }
-            const data = await VShare(uri, jar, headers);
-            const event = createEvent(data, ipLocked, {url: 'https://vshare.eu/pair', videoId, target: uri}, quality, 'VShare', source);
+            let data;
+            if (!ipLocked) {
+                data = await VShare(uri, jar, headers);
+            }
+            const event = createEvent(data, ipLocked, {url: 'https://vshare.eu/pair', videoId, target: uri}, {quality, provider: 'VShare', source});
             sse.send(event, event.event);
 
         } else if (uri.includes('speedvid.net')) {
@@ -86,7 +94,7 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
             }
             const dataList = await SpeedVid(uri, jar, headers);
             dataList.forEach(data => {
-                const event = createEvent(data, false, {}, quality, 'SpeedVid', source);
+                const event = createEvent(data, false, undefined, {quality, provider: 'SpeedVid', source});
                 sse.send(event, event.event);
             });
 
@@ -98,14 +106,14 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
             }
             const dataObjects = await VidCloud(uri, jar, headers);
             dataObjects.forEach(dataObject => {
-                const event = createEvent(!!dataObject.file ? dataObject.file : dataObject.link, false, {}, quality, 'VidCloud', source);
+                const event = createEvent(!!dataObject.file ? dataObject.file : dataObject.link, false, undefined, {quality, provider: 'VidCloud', source});
                 sse.send(event, event.event);
             });
 
         } else if (uri.includes('clipwatching.com')) {
             const dataObjects = await ClipWatching(uri, jar, headers);
             dataObjects.forEach(dataObject => {
-                const event = createEvent(dataObject.file, false, {}, dataObject.label || quality, 'ClipWatching', source);
+                const event = createEvent(dataObject.file, false, undefined, {quality: dataObject.label || quality, provider: 'ClipWatching', source});
                 sse.send(event, event.event);
             });
 
@@ -130,115 +138,111 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
         } else if (uri.includes('vidtodo.me') || uri.includes('vidtodo.com') || uri.includes('vidstodo.me')) {
             const dataObjects = await VidTodo(uri, jar, headers);
             dataObjects.forEach(dataObject => {
-                const event = createEvent(dataObject.file, false, {}, dataObject.label || quality, 'VidTodo', source, {referer: uri.replace('vidtodo.me', 'vidstodo.me')});
+                const event = createEvent(dataObject.file, false, undefined, {quality: dataObject.label || quality, provider: 'VidTodo', source}, {referer: uri.replace('vidtodo.me', 'vidstodo.me')});
                 sse.send(event, event.event);
             });
 
         } else if (uri.includes('powvideo.net')) {
-            const ipLocked = process.env.CLAWS_ENV === 'server'
             const path = uri.split('/');
             let videoId = path[path.length - 1].replace('iframe-', '').replace('-954x562.html', '');
             if (!uri.includes('iframe')) {
                 videoId = path[path.length - 1];
                 uri = `https://povwideo.cc/iframe-${videoId}-954x562.html`;
             }
-            const dataObjects = await PowVideo(uri, jar, headers, videoId);
-            dataObjects.forEach(dataObject => {
-                const event = createEvent(!!dataObject.file ? dataObject.file : dataObject.link, ipLocked, {target: uri, headers: {referer: `https://povwideo.cc/preview-${videoId}-954x562.html`}}, quality, 'PowVideo', source);
+            let dataObjects = [];
+            if (!ipLocked) {
+                dataObjects = await PowVideo(uri, jar, headers, videoId);
+                dataObjects.forEach(dataObject => {
+                    const event = createEvent(!!dataObject.file ? dataObject.file : dataObject.link, false, undefined, {quality, provider: 'PowVideo', source});
+                    sse.send(event, event.event);
+                });
+            } else {
+                const event = createEvent(undefined, true, {target: uri, headers: {referer: `https://povwideo.cc/preview-${videoId}-954x562.html`}}, {quality, provider: 'PowVideo', source});
                 sse.send(event, event.event);
-            });
+            }
 
         } else if (uri.includes('streamplay.to')) {
             // console.log('Skipping streamplay.to because captcha.');
 
         } else if (uri.includes('gamovideo.com')) {
-            const ipLocked = process.env.CLAWS_ENV === 'server'
-            const dataList = await GamoVideo(uri, jar, headers);
-            dataList.forEach(data => {
-                const event = createEvent(data, ipLocked, {target: uri}, quality, 'GamoVideo', source);
+            let dataList = [];
+            if (!ipLocked) {
+                dataList = await GamoVideo(uri, jar, headers);
+                dataList.forEach(data => {
+                    const event = createEvent(data, false, undefined, {quality, provider: 'GamoVideo', source});
+                    sse.send(event, event.event);
+                });
+            } else {
+                const event = createEvent(undefined, true, {target: uri}, {quality, provider: 'GamoVideo', source});
                 sse.send(event, event.event);
-            });
+            }
+
 
         } else if (uri.includes('gorillavid.com') || uri.includes('gorillavid.in')) {
             const dataObjects = await GorillaVid(uri, jar, headers);
             dataObjects.forEach(dataObject => {
-                const event = createEvent(dataObject.src, false, {}, quality, 'GorillaVid', source);
+                const event = createEvent(dataObject.src, false, undefined, {quality, provider: 'GorillaVid', source});
                 sse.send(event, event.event);
             });
 
         } else if (uri.includes('daclips.com') || uri.includes('daclips.in')) {
             const dataObjects = await DaClips(uri, jar, headers);
             dataObjects.forEach(dataObject => {
-                const event = createEvent(dataObject.src, false, {}, quality, 'DaClips', source);
+                const event = createEvent(dataObject.src, false, undefined, {quality, provider: 'DaClips', source});
                 sse.send(event, event.event);
             });
 
         } else if (uri.includes('movpod.com') || uri.includes('movpod.in')) {
             const dataObjects = await MovPod(uri, jar, headers);
             dataObjects.forEach(dataObject => {
-                const event = createEvent(dataObject.src, false, {}, quality, 'MovPod', source);
+                const event = createEvent(dataObject.src, false, undefined, {quality, provider: 'MovPod', source});
                 sse.send(event, event.event);
             });
 
         } else if (uri.includes('vidoza.net')) {
-            const ipLocked = process.env.CLAWS_ENV === 'server'
             if (!uri.includes('embed')) {
                 const path = uri.split('/');
                 const videoId = path[3].replace('.html', '');
                 uri = `https://vidoza.net/embed-${videoId}.html`;
             }
-            const dataObjects = await Vidoza(uri, jar, headers);
-            dataObjects.forEach(dataObject => {
-                const event = createEvent(dataObject.src, ipLocked, {target: uri}, dataObject.res || quality, 'Vidoza', source);
+            let dataObjects = [];
+            if (!ipLocked) {
+                dataObjects = await Vidoza(uri, jar, headers);
+                dataObjects.forEach(dataObject => {
+                    const event = createEvent(dataObject.src, false, undefined, {quality: dataObject.res || quality, provider: 'Vidoza', source});
+                    sse.send(event, event.event);
+                });
+            } else {
+                const event = createEvent(undefined, true, {target: uri}, {quality, provider: 'Vidoza', source});
                 sse.send(event, event.event);
-            });
+            }
 
         } else if (uri.includes('streamm4u.com')) {
             let link = await StreamM4u(uri, jar, headers);
-            let provider = 'StreamM4u';
-            let ipLocked = false;
-            if (link.includes('drive.google.com')) {
-                link = getGoogleDriveScrapeUrl(link);
-                provider = 'GoogleDrive';
-                // These links will always need to be a scrape event because it needs a cookie to work
-                // if (process.env.CLAWS_ENV === 'server') {
-                    ipLocked = true;
-                // } else {
-                //     const dataObjects = await GoogleDrive(link, jar, headers);
-                //     dataObjects.forEach(dataObject => {
-                //         const event = createEvent(dataObject.link, false, {}, dataObject.quality || quality, 'GoogleDrive', source);
-                //         sse.send(event, event.event);
-                //     });
-                //     return;
-                // }
-            } else if (link.includes('openload')) {
-                // TODO: I think StreamM4u doesn't resolve Openload correctly, so this one might not work yet
-                provider = 'Openload';
-            }
-            const event = createEvent(link, ipLocked, {target: link}, quality, provider, source);
-            sse.send(event, event.event);
+            resolve(sse, link, source, jar, headers, quality);
 
+        // TODO: Commenting this out until header/cookie support exists for the player.
         } else if (uri.includes('drive.google.com')) {
-            const link = getGoogleDriveScrapeUrl(uri);
-            const provider = 'GoogleDrive';
-            let ipLocked = false;
-            // These links will always need to be a scrape event because it needs a cookie to work
-            // if (process.env.CLAWS_ENV === 'server') {
-                ipLocked = true;
-            // } else {
-            //     const dataObjects = await GoogleDrive(link, jar, headers);
-            //     dataObjects.forEach(dataObject => {
-            //         const event = createEvent(dataObject.link, false, {}, dataObject.quality || quality, 'GoogleDrive', source);
-            //         sse.send(event, event.event);
-            //     });
-            //     return;
-            // }
-            const event = createEvent(link, ipLocked, {target: link}, quality, provider, source);
-            sse.send(event, event.event);
+            uri = getGoogleDriveScrapeUrl(uri);
+            let dataObjects = [];
+            if (!ipLocked) {
+                dataObjects = await GoogleDrive(uri, jar, headers);
+                const cookieObjects = jar.getCookies('https://drive.google.com');
+                const cookieObject = cookieObjects ? cookieObjects.find(c => c.key === 'DRIVE_STREAM') : {};
+                const cookieValue = cookieObject ? cookieObject.value : false;
+                const cookie = cookieValue ? `DRIVE_STREAM=${cookieValue}` : undefined;
+                dataObjects.forEach(dataObject => {
+                    const event = createEvent(dataObject.link, false, undefined, {quality: dataObject.quality || quality, provider: 'GoogleDrive', source, cookie});
+                    sse.send(event, event.event);
+                });
+            } else {
+                const event = createEvent(undefined, true, {target: uri}, {quality, provider: 'GoogleDrive', source, cookieRequired: 'DRIVE_STREAM'});
+                sse.send(event, event.event);
+            }
 
         } else if (uri.includes('moviefiles.org')) {
             const data = await MovieFiles(uri, jar, headers);
-            const event = createEvent(data, false, {}, quality, 'MovieFiles', source);
+            const event = createEvent(data, false, undefined, {quality, provider: 'MovieFiles', source, isDownload: true});
             sse.send(event, event.event);
 
         } else {

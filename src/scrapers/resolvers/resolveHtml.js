@@ -27,39 +27,39 @@ async function resolveHtml(html, resolver, jar, headers) {
     const data = await resolvers[resolver](html, jar, headers);
 
     if (resolver === 'Openload') {
-        return [createEvent(data, false, {}, '', 'Openload')];
+        return [createEvent(data, false, {}, {quality: '', provider: 'Openload'})];
 
     } else if (resolver === 'Streamango') {
-        return [createEvent(data, false, {}, '', 'Streamango')];
+        return [createEvent(data, false, {}, {quality: '', provider: 'Streamango'})];
 
     } else if (resolver === 'VShare') {
-        return [createEvent(data, false, {}, '', 'VShare')];
+        return [createEvent(data, false, {}, {quality: '', provider: 'VShare'})];
 
     } else if (resolver === 'PowVideo') {
         const dataList = [];
         data.forEach(dataObject => {
-            dataList.push(createEvent(!!dataObject.file ? dataObject.file : dataObject.link, false, {}, '', 'PowVideo'));
+            dataList.push(createEvent(!!dataObject.file ? dataObject.file : dataObject.link, false, {}, {quality: '', provider: 'PowVideo'}));
         });
         return dataList;
 
     } else if (resolver === 'GamoVideo') {
         const dataList = [];
         data.forEach(dataObject => {
-            dataList.push(createEvent(dataObject, false, {}, '', 'GamoVideo'));
+            dataList.push(createEvent(dataObject, false, {}, {quality: '', provider: 'GamoVideo'}));
         });
         return dataList;
 
     } else if (resolver === 'Vidoza') {
         const dataList = [];
         data.forEach(dataObject => {
-            dataList.push(createEvent(dataObject.src, false, {}, dataObject.res, 'Vidoza'));
+            dataList.push(createEvent(dataObject.src, false, {}, {quality: dataObject.res, provider: 'Vidoza'}));
         });
         return dataList;
 
     } else if (resolver === 'GoogleDrive') {
         const dataList = [];
         data.forEach(dataObject => {
-            dataList.push(createEvent(dataObject.link, false, {}, dataObject.quality, 'GoogleDrive'));
+            dataList.push(createEvent(dataObject.link, false, {}, {quality: dataObject.quality, provider: 'GoogleDrive'}));
         });
         return dataList;
 

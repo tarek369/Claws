@@ -1,12 +1,14 @@
 const URL = require('url');
 
-function createEvent(data, ipLocked, pairing, quality, provider, source, headers) {
+function createEvent(data, ipLocked, pairing, {quality, provider, source, isDownload = false, cookieRequired = '', cookie = ''}, headers) {
 	if (ipLocked) {
 		return {
 		    event: 'scrape',
 		    target: pairing.target,
 		    headers,
-		    resolver: `/api/v1/resolve/${provider}`
+		    source,
+		    resolver: `/api/v1/resolve/${provider}`,
+		    cookieRequired
 		}
 	}
 
@@ -16,11 +18,12 @@ function createEvent(data, ipLocked, pairing, quality, provider, source, headers
 	        data,
 	        kind: getDataKind(data),
 	    },
-	    pairing,
 	    metadata: {
 	        quality,
 	        provider,
-	        source
+	        source,
+	        isDownload,
+	        cookie
 	    },
 	    headers
 	};
