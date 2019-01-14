@@ -52,7 +52,7 @@ app.get('/', function(req, res) {
         res.render('index', {secret_client_id: process.env.SECRET_CLIENT_ID});
     }
 });
-app.get('/bcrypt.js', (req, res) => res.sendFile(`${pathToApp}/public/bcrypt.js`));
+app.get('/salsa20.min.js', (req, res) => res.sendFile(`${pathToApp}/public/salsa20.min.js`));
 /** ./RENDERED ROUTES **/
 
 

@@ -183,11 +183,10 @@
             <button type="button" onclick="stop()">Stop</button>
         </div>
         <div id="results"></div>
-        <script type="text/javascript" charset="utf-8" src="bcrypt.js"></script>
+        <script type="text/javascript" charset="utf-8" src="salsa20.min.js"></script>
         <script type="text/javascript" charset="utf-8">
             // Provided by the .env file.
             const SECRET_CLIENT_ID = '<%= secret_client_id %>';
-            const bcrypt = dcodeIO.bcrypt;
             let es;
             async function authenticate() {
                 let token = localStorage.getItem('token');
@@ -199,19 +198,25 @@
                     }
                 }
 
-                const hashedSecret = await (new Promise((resolve, reject) => {
-                    bcrypt.hash(`${Math.floor((new Date()).valueOf() / 1000)}|${SECRET_CLIENT_ID}`, 10, function(err, hash) {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(hash);
-                        }
-                    });
-                }));
+                const bytesToHex = (uint) => uint.reduce((memo, i) => memo + ('0' + i.toString(16)).slice(-2), '');
+
+                const encoder = new TextEncoder();
+                const decoder = new TextDecoder();
+
+                const keyBytes = encoder.encode(SECRET_CLIENT_ID.substring(0, 32));
+                const ivBytes = crypto.getRandomValues(new Uint8Array(8));
+
+                const messageBytes = encoder.encode(SECRET_CLIENT_ID);
+
+                const encrypter = new Salsa20(keyBytes, ivBytes);
+                const encryptedMessageBytes = encrypter.encrypt(messageBytes);
+
+                const ivString = bytesToHex(ivBytes);
+                const encryptedString = bytesToHex(encryptedMessageBytes);
 
                 const response = await fetch('/api/v1/login', {
                     method: 'POST',
-                    body: JSON.stringify({clientID: hashedSecret}),
+                    body: JSON.stringify({clientID: `${ivString}|${encryptedString}`}),
                     headers: {
                         'Content-Type': 'application/json'
                     },

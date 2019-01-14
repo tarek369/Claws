@@ -1,7 +1,8 @@
 'use strict';
 
 // Import dependencies
-const bcrypt = require('../../public/bcrypt');
+const Salsa20 = require('js-salsa20')
+const {TextEncoder, TextDecoder} = require('util');
 const jwt = require('jsonwebtoken');
 const {RateLimiterCluster, RateLimiterMemory} = require('rate-limiter-flexible');
 
@@ -45,32 +46,36 @@ async function rateLimit(req, res, next) {
  * If validated, it will generate a token that can be used by the client for one hour.
  */
 authRoutes.post('/login', rateLimit, async (req, res) => {
-    let clientIsValid = false;
-    let now;
+    try {
+        const [ivString, encryptedString] = req.body.clientID.split('|');
 
-    for (let time = now = Math.floor((new Date()).valueOf() / 1000); time >= now - authDelay && !clientIsValid; time--) {
-        clientIsValid = await (new Promise((resolve, reject) => {
-            bcrypt.compare(`${time}|${process.env.SECRET_CLIENT_ID}`, req.body.clientID, function(err, res) {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
-        }));
-    }
+        const hexToBytes = hex => new Uint8Array(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
 
-    if (!clientIsValid) {
+        const encoder = new TextEncoder();
+        const decoder = new TextDecoder();
+
+        const key = encoder.encode(process.env.SECRET_CLIENT_ID.substring(0, 32));
+        const iv = hexToBytes(ivString);
+        const encrypted = hexToBytes(encryptedString);
+
+        const encrypter = new Salsa20(key, iv);
+        const messageBytes = encrypter.decrypt(encrypted);
+        const message = decoder.decode(messageBytes);
+
+        if (message !== process.env.SECRET_CLIENT_ID) {
+            return res.status(401).json({auth: false, token: null});
+        }
+
+        // create a token
+        const token = jwt.sign({id: 'ApolloTV Official App', message: 'This better be from our app...', ip: req.client.remoteAddress}, process.env.SECRET_SERVER_ID, {
+            expiresIn: 3600 // expires in 1 hour
+        });
+
+        // return the information including token as JSON
+        res.json({auth: true, token});
+    } catch (err) {
         return res.status(401).json({auth: false, token: null});
     }
-
-    // create a token
-    const token = jwt.sign({id: 'ApolloTV Official App', message: 'This better be from our app...', ip: req.client.remoteAddress}, process.env.SECRET_SERVER_ID, {
-        expiresIn: 3600 // expires in 1 hour
-    });
-
-    // return the information including token as JSON
-    res.json({auth: true, token});
 });
 
 module.exports = authRoutes;
