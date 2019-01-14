@@ -57,6 +57,9 @@ app.get('/salsa20.min.js', (req, res) => res.sendFile(`${pathToApp}/public/salsa
 
 
 /** API ROUTES **/
+const generalRoutes = require('./src/api/generalRoutes');
+app.use('/api/v1', generalRoutes);
+
 const authRoutes = require('./src/api/authRoutes');
 app.use('/api/v1', authRoutes);
 
