@@ -12,11 +12,6 @@ const pathToApp = __dirname;
 // Initialize express
 let app = express();
 
-// Add renderer.
-app.engine('html', require('ejs').__express);
-app.set('views', 'public'); // render from the public directory.
-app.set('view engine', 'html');
-
 // Load external ExpressJS middleware
 const compression = require('compression');
 
@@ -48,11 +43,19 @@ app.get('/', function(req, res) {
         // When in production, redirect to the main site.
         res.redirect("https://apollotv.xyz/");
     } else {
-        // Otherwise, render the index file with the secret client id set.
-        res.render('index', {secret_client_id: process.env.SECRET_CLIENT_ID});
+        // Otherwise, send index file.
+        res.sendFile(`${pathToApp}/public/index.html`);
     }
 });
-app.get('/salsa20.min.js', (req, res) => res.sendFile(`${pathToApp}/public/salsa20.min.js`));
+app.get('/:file', (req, res) => {
+    const options = {};
+    if (req.params.file.endsWith('.wasm')) {
+        options.headers = {
+            'Content-Type': 'application/wasm'
+        }
+    }
+    res.sendFile(`${pathToApp}/public/${req.params.file}`, options);
+});
 /** ./RENDERED ROUTES **/
 
 

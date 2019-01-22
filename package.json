@@ -9,7 +9,8 @@
     "stop": "pm2 stop ./ecosystem.config.js",
     "reload": "pm2 reload ./ecosystem.config.js",
     "status": "pm2 list",
-    "build-dev-dependencies": "browserify ./public/salsa20.js -o ./public/salsa20.min.js",
+    "build-dev-dependencies": "browserify ./libs/salsa20.js -o ./public/salsa20.min.js",
+    "build": "node build.js",
     "dev": "npm run build-dev-dependencies && cross-env NODE_ENV=development nodemon --inspect server.js"
   },
   "dependencies": {

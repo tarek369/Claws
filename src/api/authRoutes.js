@@ -67,7 +67,7 @@ authRoutes.post('/login', rateLimit, async (req, res) => {
         }
 
         // create a token
-        const token = jwt.sign({id: 'ApolloTV Official App', message: 'This better be from our app...', ip: req.client.remoteAddress}, process.env.SECRET_SERVER_ID, {
+        const token = jwt.sign({id: 'ApolloTV Official App', message: 'This better be from our app...', ip: req.client.remoteAddress}, process.env.SECRET_CLIENT_ID, {
             expiresIn: 3600 // expires in 1 hour
         });
 
