@@ -60,12 +60,35 @@ func MakeRequest(url string, data string) (body map[string]interface{}, err erro
 	return
 }
 
-func add(i []js.Value) {
-	i[2].Invoke(js.ValueOf(i[0].Int()+i[1].Int()))
-}
+func verifyToken(tokenString string) (error) {
+	// Parse takes the token string and a function for looking up the key. The latter is especially
+	// useful if you use multiple keys for your application.  The standard is to use 'kid' in the
+	// head of the token to identify which key to use, but the parsed token (head and claims) is provided
+	// to the callback, providing flexibility.
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	    // Don't forget to validate the alg is what you expect:
+	    if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+	        return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+	    }
 
-func subtract(i []js.Value) {
-	i[2].Invoke(js.ValueOf(i[0].Int()-i[1].Int()))
+	    // hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
+	    return []byte(SECRET_CLIENT_ID), nil
+	})
+
+	if token.Valid {
+	    return nil
+	} else if ve, ok := err.(*jwt.ValidationError); ok {
+	    if ve.Errors&jwt.ValidationErrorMalformed != 0 {
+	        return fmt.Errorf("That's not even a token")
+	    } else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
+	        // Token is either expired or not active yet
+	        return fmt.Errorf("Token is either expired or not active yet")
+	    } else {
+	        return fmt.Errorf("Couldn't handle this token: %v", err)
+	    }
+	} else {
+	    return fmt.Errorf("Couldn't handle this token: %v", err)
+	}
 }
 
 func authenticate(i []js.Value) {
@@ -116,43 +139,7 @@ func authenticate(i []js.Value) {
 }
 
 func registerCallbacks() {
-	js.Global().Set("add", js.NewCallback(add))
-	js.Global().Set("subtract", js.NewCallback(subtract))
 	js.Global().Set("authenticate", js.NewCallback(authenticate))
-}
-
-func verifyToken(tokenString string) (error) {
-	// Parse takes the token string and a function for looking up the key. The latter is especially
-	// useful if you use multiple keys for your application.  The standard is to use 'kid' in the
-	// head of the token to identify which key to use, but the parsed token (head and claims) is provided
-	// to the callback, providing flexibility.
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-	    // Don't forget to validate the alg is what you expect:
-	    if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-	        return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-	    }
-
-	    // hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
-	    return []byte(SECRET_CLIENT_ID), nil
-	})
-
-	// claims, okClaims := token.Claims.(jwt.MapClaims)
-
-	if token.Valid {
-	    // return int64 (claims["exp"].(float64)), nil
-	    return nil
-	} else if ve, ok := err.(*jwt.ValidationError); ok {
-	    if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-	        return fmt.Errorf("That's not even a token")
-	    } else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
-	        // Token is either expired or not active yet
-	        return fmt.Errorf("Token is either expired or not active yet")
-	    } else {
-	        return fmt.Errorf("Couldn't handle this token: %v", err)
-	    }
-	} else {
-	    return fmt.Errorf("Couldn't handle this token: %v", err)
-	}
 }
 
 var SECRET_CLIENT_ID string
