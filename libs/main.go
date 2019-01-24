@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"crypto/rand"
 	"strings"
+	"time"
 )
 
 var SECRET_CLIENT_ID string
@@ -119,8 +120,9 @@ func authenticate(i []js.Value) {
 	        }
 		}
 
-		out := []byte(SECRET_CLIENT_ID)
-		in := []byte(SECRET_CLIENT_ID)
+		secondsSinceEpoch := time.Now().Unix()
+		out := []byte(fmt.Sprintf("%d|%s", secondsSinceEpoch, SECRET_CLIENT_ID))
+		in := []byte(fmt.Sprintf("%d|%s", secondsSinceEpoch, SECRET_CLIENT_ID))
 
 		length := 8
 		nonce := make([]byte, length)
