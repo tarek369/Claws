@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const {RateLimiterCluster, RateLimiterMemory} = require('rate-limiter-flexible');
 
 // Define constants
-const authDelay = 5;
+const authDelay = 10;
 
 // Declare new router and start defining routes:
 const authRoutes = require('express').Router();
@@ -62,7 +62,14 @@ authRoutes.post('/login', rateLimit, async (req, res) => {
         const messageBytes = encrypter.decrypt(encrypted);
         const message = decoder.decode(messageBytes);
 
-        if (message !== process.env.SECRET_CLIENT_ID) {
+        let clientIsValid = false;
+        const now = Math.floor((new Date()).valueOf() / 1000);
+
+        for (let time = now; time >= now - authDelay && !clientIsValid; time--) {
+            clientIsValid = message === `${time}|${process.env.SECRET_CLIENT_ID}`
+        }
+
+        if (!clientIsValid) {
             return res.status(401).json({auth: false, token: null});
         }
 
