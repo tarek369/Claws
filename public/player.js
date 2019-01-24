@@ -26,6 +26,7 @@ function Player(state) {
     }
 
     const update = () => {
+        console.log('Rendered Player')
         if (link.value) {
             video.src = link.value
             video.type = 'video/*'

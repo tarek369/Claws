@@ -1,90 +1,60 @@
-const {h} = stage0
-let es;
+import SearchResult from './searchResult.js'
+
+const {h, keyed} = stage0
 
 // Create view template.
 // Mark dynamic references with a #-syntax where needed.
 
 const view = h /* syntax: html */ `
     <section>
-        <div class="searchBox">
-            <input id="movieTitle" type="text" placeholder="Enter a movie..." />
-            <br><br><br>
-            <button #searchmovies type="button" class="material-button-raised primary">Search</button>
-            <button #stopsearch type="button" class="material-button-raised red">Stop</button>
+        <div class="mdl-textfield mdl-js-textfield theme--dark">
+            <input #title class="mdl-textfield__input" type="text" id="search">
+            <label class="mdl-textfield__label" for="search">Search</label>
         </div>
-        <div>
-            <input id="showTitle" type="text" placeholder="show" />
-            <input id="season" type="text" placeholder="season" />
-            <input id="episode" type="text" placeholder="episode" />
-
-            <button #searchtv type="button">Search</button>
-        </div>
+        <div #list class="flex"></div>
     </section>
 `
-function Search(state) {
+function Search(state, context) {
     const root = view
 
     // Collect references to dynamic parts
-    const {searchmovies, searchtv, stopsearch} = view.collect(root)
+    const {title, list} = view.collect(root)
 
-    // TODO: Go 1.12 will eliminate the need for this Promise callback. Check Go's latest version in Febuary 2019
-    searchmovies.onclick = async () => {
-        const token = await new Promise((resolve) => authenticate(resolve))
-        const movieTitle = document.getElementById('movieTitle').value
-        stop() // Stop existing eventsource.
-
-        es = new EventSource(`/api/v1/search/movies?title=${movieTitle}&token=${token}`)
-        es.addEventListener('result', resultListener)
-        es.addEventListener('scrape', scrapeListener)
-        es.addEventListener('error', errorListener)
-        es.addEventListener('done', doneListener)
-
-        update()
+    title.onkeyup = () => {
+        state.title = title.value
     }
 
     // TODO: Go 1.12 will eliminate the need for this Promise callback. Check Go's latest version in Febuary 2019
-    searchtv.onclick = async () => {
-        const token = await new Promise((resolve) => authenticate(resolve))
-        const showTitle = document.getElementById('showTitle').value
-        const season = document.getElementById('season').value
-        const episode = document.getElementById('episode').value
-
-        stop() // Stop existing eventsource.
-        es = new EventSource(`/api/v1/search/tv?title=${showTitle}&season=${season}&episode=${episode}&token=${token}`)
-        es.addEventListener('result', resultListener)
-        es.addEventListener('scrape', scrapeListener)
-        es.addEventListener('error', errorListener)
-        es.addEventListener('done', doneListener)
-
-        update()
+    title.onkeydown = async (e) => {
+        if (e.which == 13 || e.keyCode == 13) {
+            state.page = 1
+            const response = await new Promise((resolve) => fetchSearchResults(resolve, title.value, state.page))
+            state.results = response.results
+            update()
+        }
     }
 
-    stopsearch.onclick = stop
+    let lastResults = []
 
-    function resultListener(e) {
-        let data = JSON.parse(e.data);
-        console.log(data.event, data);
+    const update = () => {
+        console.log('Rendered Search')
+
+        // Stupid hack for focus to work
+        setTimeout(() => title.focus(), 0)
+
+        if (state.results) {
+            keyed(
+                'id',
+                list,
+                lastResults,
+                state.results,
+                result => SearchResult(result, context),
+                (Component, result) => Component.update()
+            )
+
+            lastResults = state.results.slice()
+        }
     }
-
-    function scrapeListener(e) {
-      console.log('scrape', JSON.parse(e.data))
-    }
-
-    function errorListener(e) {
-      console.error('error', JSON.parse(e.data))
-    }
-
-    function doneListener(e) {
-      console.log('done', JSON.parse(e.data))
-      console.log('There should be no more events after this one. Comment out the `close` line to see if there are any events leaking.')
-      es.close()
-    }
-
-    function stop() {
-        es && es.close()
-    }
-
-    const update = () => {}
     update()
 
     return root

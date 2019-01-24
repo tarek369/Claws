@@ -13,6 +13,9 @@ import (
 	"strings"
 )
 
+var SECRET_CLIENT_ID string
+var TMDB_API_KEY string
+
 func toJSON(m interface{}) string {
 	js, err := json.Marshal(m)
 	if err != nil {
@@ -21,23 +24,7 @@ func toJSON(m interface{}) string {
 	return strings.Replace(string(js), ",", ", ", -1)
 }
 
-func MakeRequest(url string, data string) (body map[string]interface{}, err error) {
-	var resp *http.Response
-	if data != "" {
-		var jsonData interface{}
-		err = json.Unmarshal([]byte(data), &jsonData)
-		if err != nil {
-			return
-		}
-		json := toJSON(jsonData)
-		resp, err = http.Post(url, "application/json", strings.NewReader(json))
-	} else {
-		resp, err = http.Get(url)
-	}
-	if err != nil {
-		println(fmt.Sprintf("response error: %v", err))
-		return
-	}
+func parseResponseJSON(resp *http.Response) (body map[string]interface{}, err error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
@@ -57,6 +44,34 @@ func MakeRequest(url string, data string) (body map[string]interface{}, err erro
 		return
 	}
 	body = mapTemp.(map[string]interface{})
+	return
+}
+
+func get(url string) (body map[string]interface{}, err error) {
+	var resp *http.Response
+	resp, err = http.Get(url)
+	if err != nil {
+		err = fmt.Errorf("response error: %v", err)
+		return
+	}
+	body, err = parseResponseJSON(resp)
+	return
+}
+
+func post(url string, data string) (body map[string]interface{}, err error) {
+	var resp *http.Response
+	var jsonData interface{}
+	err = json.Unmarshal([]byte(data), &jsonData)
+	if err != nil {
+		return
+	}
+	json := toJSON(jsonData)
+	resp, err = http.Post(url, "application/json", strings.NewReader(json))
+	if err != nil {
+		err = fmt.Errorf("response error: %v", err)
+		return
+	}
+	body, err = parseResponseJSON(resp)
 	return
 }
 
@@ -123,7 +138,7 @@ func authenticate(i []js.Value) {
 
 		encryptedString := hex.EncodeToString(out)
 
-		body, err := MakeRequest("/api/v1/login", fmt.Sprintf(`{"clientID": "%s"}`, nonceString + "|" + encryptedString))
+		body, err := post("/api/v1/login", fmt.Sprintf(`{"clientID": "%s"}`, nonceString + "|" + encryptedString))
 		if err != nil {
 			println(fmt.Sprintf("Login request error: %v", err))
 			return
@@ -138,11 +153,25 @@ func authenticate(i []js.Value) {
 	}()
 }
 
-func registerCallbacks() {
-	js.Global().Set("authenticate", js.NewCallback(authenticate))
+func fetchSearchResults(i []js.Value) {
+	go func() {
+		title := i[1].String()
+		pageNumber := i[2].Int()
+		url := fmt.Sprintf("https://api.themoviedb.org/3/search/multi?api_key=%s&language=en-US&query=%s&page=%d&include_adult=false", TMDB_API_KEY, title, pageNumber)
+		body, err := get(url)
+		if err != nil {
+			println(fmt.Sprintf("TMDB request error: %v", err))
+			return
+		}
+
+        i[0].Invoke(js.ValueOf(body))
+	}()
 }
 
-var SECRET_CLIENT_ID string
+func registerCallbacks() {
+	js.Global().Set("authenticate", js.NewCallback(authenticate))
+	js.Global().Set("fetchSearchResults", js.NewCallback(fetchSearchResults))
+}
 
 func main() {
 	c := make(chan struct{}, 0)
