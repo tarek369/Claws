@@ -26,10 +26,9 @@ function SearchResult(result, context) {
         console.log('TODO: Navigate to title page', result)
     }
 
-    const update = () => {
+    root.update = () => {
         console.log('Rendered SearchResult')
     }
-    update()
 
     return root
 }
