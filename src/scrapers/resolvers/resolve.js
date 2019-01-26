@@ -19,6 +19,7 @@ const {Vidoza} = require('./Vidoza');
 const StreamM4u = require('./StreamM4u');
 const {GoogleDrive, getGoogleDriveScrapeUrl} = require('./GoogleDrive');
 const MovieFiles = require('./MovieFiles');
+const EnterVideo = require('./EnterVideo');
 
 const createEvent = require('../../utils/createEvent');
 const {debugLog} = require('../../utils');
@@ -245,6 +246,10 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
             const event = createEvent(data, false, undefined, {quality, provider: 'MovieFiles', source, isDownload: true});
             sse.send(event, event.event);
 
+       /* } else if (uri.includes('entervideo.net')) {
+            const data = await EnterVideo(uri, jar, headers);
+            const event = createEvent(data, false, undefined, {quality, provider: 'EnterVideo', source});
+            sse.send(event, event.event);*/
         } else {
             console.warn({source, providerUrl: uri, warning: 'Missing resolver'});
         }

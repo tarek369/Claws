@@ -31,6 +31,8 @@ const resolveLinks = (type) => {
 
         const promises = [];
 
+        req.query.type = type;
+
         // Get available providers.
         [...providers[type], ...providers.universal].forEach(provider => promises.push(provider(req, sse)));
 

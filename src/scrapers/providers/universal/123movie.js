@@ -6,9 +6,11 @@ const resolve = require('../../resolvers/resolve');
 
 async function _123movie(req, sse){
 
-    const movieTitle = req.query.title;
+    let queryTitle = req.query.title;
+    let season = req.query.season;
+    let episode = req.query.episode;
 
-    const urls = ["https://www.123movie.cc"];
+    const urls = ["https://123movie.gl"];
     const promises = [];
 
     const rp = RequestPromise.defaults(target => {
@@ -26,11 +28,14 @@ async function _123movie(req, sse){
             const jar = rp.jar();
             // Fetch the HTML from the page
             let html = await rp({
-                uri: `${url}?s=${movieTitle.replace(/ /g, '+')}`,
+                uri: `${url}?s=${queryTitle.replace(/ /g, '+')}`,
                 timeout: 5000
             });
 
             let videoPage = '';
+
+            // If it's a TV show, we need to append ": Season n"
+            if(req.query.type === 'tv') queryTitle += `: Season ${season}`;
 
             // Find the link to the content
             let $ = cheerio.load(html);
@@ -40,7 +45,7 @@ async function _123movie(req, sse){
                 let contentTitle = linkElement.text();
                 let contentPage = linkElement.attr('href');
 
-                if(contentTitle === movieTitle) videoPage = contentPage;
+                if(contentTitle === queryTitle) videoPage = contentPage;
             });
 
             let videoPageHTML = await rp({
@@ -49,7 +54,20 @@ async function _123movie(req, sse){
             });
 
             $ = cheerio.load(videoPageHTML);
-            let pageURL = $(`.liopv[onclick*="rapidvideo"]`).attr('onclick').split("'")[1];
+
+            let pageURL = '';
+
+            // If it's a TV show, we have to click the episode number
+            if(req.query.type === 'tv'){
+                $(`.paginated-openload .episodios .mark .liopv`).each((index, element) => {
+                    if($(element).text() === episode) {
+                        pageURL = $(element).attr('onclick').split("'")[1];
+                        return false;
+                    }
+                });
+            }else{
+                pageURL = $(`.liopv[onclick*="openload"]`).attr('onclick').split("'")[1];
+            }
 
             // targetPageHTML is the HTML for the player page.
             let targetPageHTML = await rp({
@@ -71,8 +89,9 @@ async function _123movie(req, sse){
             });
 
             // This is the provider URL
-            let rapidVideoURL = cheerio.load(outputPageHTML)('link[rel="canonical"]').attr('href');
-            resolvePromises.push(resolve(sse, rapidVideoURL, '123Movie', jar, {}));
+            //let rapidVideoURL = cheerio.load(outputPageHTML)('link[rel="canonical"]').attr('href');
+            let openloadVideoURL = cheerio.load(outputPageHTML)('meta[name="og:url"]').attr('content');
+            resolvePromises.push(resolve(sse, openloadVideoURL, '123Movie', jar, {}));
         } catch (err) {
             if (!sse.stopExecution) {
                 console.error({source: '123Movies', sourceUrl: url, query: {title: req.query.title}, error: err.message || err.toString()});
