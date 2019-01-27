@@ -1,3 +1,6 @@
+import TvTitlePage from './tvTitlePage.js'
+import MovieTitlePage from './movieTitlePage.js'
+
 const {h} = stage0
 
 // Create view template.
@@ -11,22 +14,29 @@ const view = h /* syntax: html */ `
         </div>
     </div>
 `
-function SearchResult(result, context) {
+function SearchResult(result, state, context) {
     const root = view.cloneNode(true)
 
     // Collect references to dynamic parts
     const {card, title} = view.collect(root)
 
     title.nodeValue = `${result.title || result.name}${result.release_date ? ` (${(new Date(result.release_date)).getFullYear()})` : ''}`
+
     if (result.poster_path) {
         card.style.background = `url('https://image.tmdb.org/t/p/w500${result.poster_path}') center / cover`
     }
 
     card.onclick = () => {
-        console.log('TODO: Navigate to title page', result)
+        state.selectedTitle = result
+        // history.pushState({}, '', `/${result.id}`)
+        if (result.media_type === 'tv') {
+            context.navigate(TvTitlePage)
+        } else {
+            context.navigate(MovieTitlePage)
+        }
     }
 
-    root.update = () => {
+    root.update = function() {
         console.log('Rendered SearchResult')
     }
 

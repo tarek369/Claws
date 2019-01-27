@@ -20,6 +20,7 @@ function Home(state, context) {
 
     search.onclick = async () => {
         context.navigate(Search)
+        // history.pushState({}, '', '/search')
 
         update()
     }

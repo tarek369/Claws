@@ -21,23 +21,6 @@ function Search(state, context, action) {
     // Collect references to dynamic parts
     const {title, list} = view.collect(root)
 
-    title.onkeyup = () => {
-        state.title = title.value
-    }
-
-    // TODO: Go 1.12 will eliminate the need for this Promise callback. Check Go's latest version in Febuary 2019
-    title.onkeydown = async (e) => {
-        if (e.which == 13 || e.keyCode == 13) {
-            const response = await new Promise((resolve) => fetchSearchResults(resolve, title.value, 1))
-            state.results = response.results
-            state.pageNumber = response.page
-            state.totalPages = response.total_pages
-            update()
-        }
-    }
-
-    // Make sure to not load content a bunch of times
-
     // TODO: Go 1.12 will eliminate the need for this Promise callback. Check Go's latest version in Febuary 2019
     const infiniteScrollOptions = {
         action,
@@ -57,29 +40,43 @@ function Search(state, context, action) {
         }
     }
 
-    // setup infinite scroll
-    infiniteScroll(infiniteScrollOptions);
+    title.oninput = () => {
+        state.title = title.value
+    }
 
-    let lastResults = []
+    // TODO: Go 1.12 will eliminate the need for this Promise callback. Check Go's latest version in Febuary 2019
+    title.onkeydown = async (e) => {
+        if (e.which == 13 || e.keyCode == 13) {
+            const response = await new Promise((resolve) => fetchSearchResults(resolve, title.value, 1))
+            state.results = response.results
+            state.pageNumber = response.page
+            state.totalPages = response.total_pages
+            // setup infinite scroll
+            infiniteScroll(infiniteScrollOptions);
+            update()
+        }
+    }
 
-    const update = () => {
-        console.log('Rendered Search')
+    if (!state.lastResults) {
+        state.lastResults = []
+    }
+
+    function update() {
+        console.log('Rendered Search', action)
 
         // Stupid hack for focus to work
         setTimeout(() => title.focus(), 0)
 
-        if (state.results) {
-            keyed(
-                'id',
-                list,
-                lastResults,
-                state.results,
-                result => SearchResult(result, context),
-                (Component, result) => Component.update()
-            )
+        keyed(
+            'id',
+            list,
+            state.lastResults,
+            (state.results || []).slice(),
+            result => SearchResult(result, state, context),
+            (Component, result) => Component.update()
+        )
 
-            lastResults = state.results.slice()
-        }
+        state.lastResults = (state.results || []).slice()
     }
     update()
 

@@ -1,6 +1,9 @@
 /* Generic */
 
 html, body {
+    margin: 0;
+    padding: 0;
+    height: auto;
     background-color: #26282C;
     color: #bcbcbc;
 }
@@ -10,6 +13,20 @@ html, body {
 }
 .flex.wrap {
 	flex-wrap: wrap;
+}
+
+.capitalize {
+    text-transform: capitalize;
+}
+
+/* Specific */
+
+.genres-container {
+    margin-bottom: 10px;
+}
+
+.genre {
+    margin-right: 10px;
 }
 
 /* Material UI */
@@ -29,12 +46,16 @@ html, body {
     width: 162px;
     height: 245px;
 }
-.search-result-card-image > .mdl-card__actions {
+.similar-result-card-image.mdl-card {
+    width: 122px;
+    height: 184px;
+}
+.similar-result-card-image > .mdl-card__actions, .search-result-card-image > .mdl-card__actions {
     height: 52px;
     padding: 16px;
     background: rgba(0, 0, 0, 0.7);
 }
-.search-result-card-image__filename {
+.search-result-card-image__filename, .similar-result-card-image__filename {
     color: #fff;
     font-size: 14px;
     font-weight: 500;

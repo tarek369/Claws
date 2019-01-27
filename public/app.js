@@ -58,6 +58,7 @@ function Router(state) {
             if (!lastComponent) {
                 page.appendChild(Component(state, context, 'attach'))
             } else {
+                console.log(lastComponent, Component)
                 page.replaceChild(Component(state, context, 'attach'), lastComponent(state, context, 'remove'))
             }
             lastComponent = Component

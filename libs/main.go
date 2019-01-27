@@ -170,9 +170,25 @@ func fetchSearchResults(i []js.Value) {
 	}()
 }
 
+func fetchSimilarResults(i []js.Value) {
+	go func() {
+		titleId := i[1].Int()
+		pageNumber := i[2].Int()
+		url := fmt.Sprintf("https://api.themoviedb.org/3/movie/%d/similar?api_key=%s&language=en-US&page=%d&include_adult=false", titleId, TMDB_API_KEY, pageNumber)
+		body, err := get(url)
+		if err != nil {
+			println(fmt.Sprintf("TMDB request error: %v", err))
+			return
+		}
+
+        i[0].Invoke(js.ValueOf(body))
+	}()
+}
+
 func registerCallbacks() {
 	js.Global().Set("authenticate", js.NewCallback(authenticate))
 	js.Global().Set("fetchSearchResults", js.NewCallback(fetchSearchResults))
+	js.Global().Set("fetchSimilarResults", js.NewCallback(fetchSimilarResults))
 }
 
 func main() {
