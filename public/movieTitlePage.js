@@ -1,7 +1,7 @@
 import Genre from './genre.js'
 import SearchResult from './searchResult.js'
 
-const {h, keyed, reconcile} = stage0
+const {h, keyed, reuseNodes} = stage0
 
 // Create view template.
 // Mark dynamic references with a #-syntax where needed.
@@ -25,8 +25,6 @@ function MovieTitlePage(state, context, action) {
     async function update() {
         console.log('Rendered MovieTitlePage', action)
 
-        // console.log(state.lastSelectedTitle, state.selectedTitle)
-
         // TODO: Go 1.12 will eliminate the need for this Promise callback. Check Go's latest version in Febuary 2019
         if (state.selectedTitle.id && !state.selectedTitle.similarResults.length) {
             console.log('Fetching similar titles!')
@@ -38,12 +36,14 @@ function MovieTitlePage(state, context, action) {
         subheader.nodeValue = `${state.selectedTitle.vote_average || 0} (${state.selectedTitle.vote_count})${state.selectedTitle.release_date ? ` | ${(new Date(state.selectedTitle.release_date)).getFullYear()}` : ''}`
         description.nodeValue = state.selectedTitle.overview
 
-        reconcile(
+        reuseNodes(
             genrelist,
             state.lastSelectedTitle.genre_ids,
             state.selectedTitle.genre_ids.slice(),
             genreId => Genre(genreId, context),
-            (Component, genreId) => Component.update(genreId)
+            (Component, genreId) => {
+                return Component.update(genreId)
+            }
         )
 
         keyed(
@@ -53,7 +53,9 @@ function MovieTitlePage(state, context, action) {
             state.selectedTitle.similarResults.slice(),
             // This assumes similar results are of the same media type (movie, tv)
             result => SearchResult(result, state, {navigate: update}),
-            (Component, result) => Component.update()
+            (Component, result) => {
+                return Component.update()
+            }
         )
 
         state.lastSelectedTitle = state.selectedTitle

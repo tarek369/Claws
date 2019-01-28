@@ -52,8 +52,10 @@ function Genre(genreId, context) {
     root.update = function(newGenreId) {
         console.log('Rendered Genre')
 
-        genre.nodeValue = MOVIE_GENRES[newGenreId]
+        genre.nodeValue = MOVIE_GENRES[newGenreId] || 'Unknown'
     }
+
+    componentHandler.upgradeElement(root)
 
     return root
 }
