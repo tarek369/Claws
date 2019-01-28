@@ -40,6 +40,10 @@ function Search(state, context, action) {
         }
     }
 
+    if (state.results.length) {
+        infiniteScroll(infiniteScrollOptions);
+    }
+
     title.oninput = () => {
         state.title = title.value
     }
@@ -57,12 +61,8 @@ function Search(state, context, action) {
         }
     }
 
-    if (!state.lastResults) {
-        state.lastResults = []
-    }
-
     function update() {
-        console.log('Rendered Search', action)
+        console.log('Rendered Search')
 
         // Stupid hack for focus to work
         setTimeout(() => title.focus(), 0)
@@ -71,14 +71,18 @@ function Search(state, context, action) {
             'id',
             list,
             state.lastResults,
-            (state.results || []).slice(),
+            state.results.slice(),
             result => SearchResult(result, state, context),
             (Component, result) => Component.update()
         )
 
-        state.lastResults = (state.results || []).slice()
+        state.lastResults = state.results.slice()
     }
     update()
+
+    root.cleanup = function() {
+        infiniteScroll({action: 'remove'})
+    }
 
     return root
 }

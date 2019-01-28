@@ -5,7 +5,12 @@ import ManualPlay from './manualPlay.js'
 
 const {h, reconcile} = stage0
 
-const initialState = {};
+const initialState = {
+    results: [],
+    lastResults: [],
+    selectedTitle: {genre_ids: [], similarResults: []},
+    lastSelectedTitle: {genre_ids: [], similarResults: []}
+};
 
 const routerView = h /* syntax: html */ `
     <section>
@@ -50,18 +55,19 @@ function Router(state) {
         update(Player)
     }
 
-    let lastComponent;
+    let lastNode;
 
     function update(Component) {
         console.log('Rendered Router')
         if (Component) {
-            if (!lastComponent) {
-                page.appendChild(Component(state, context, 'attach'))
+            let currentNode = Component(state, context, 'attach')
+            if (!lastNode) {
+                page.appendChild(currentNode)
             } else {
-                console.log(lastComponent, Component)
-                page.replaceChild(Component(state, context, 'attach'), lastComponent(state, context, 'remove'))
+                lastNode.cleanup && lastNode.cleanup()
+                page.replaceChild(currentNode, lastNode)
             }
-            lastComponent = Component
+            lastNode = currentNode
 
             // From MDL: https://getmdl.io/started/index.html#dynamic
             componentHandler.upgradeAllRegistered()

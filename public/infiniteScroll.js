@@ -32,15 +32,16 @@ function infiniteScroll(options) {
 
   scroller.options = options;
 
-  if (options.action === 'attach') {
-    window.addEventListener("scroll", handleScrollEvent)
-    // For touch devices, try to detect scrolling by touching
-    document.addEventListener("touchmove", handleScrollEvent)
-  } else {
+  if (options.action === 'remove') {
     console.log('remove')
     window.removeEventListener("scroll", handleScrollEvent)
     // For touch devices, try to detect scrolling by touching
     document.removeEventListener("touchmove", handleScrollEvent)
+  } else {
+    console.log('attach')
+    window.addEventListener("scroll", handleScrollEvent)
+    // For touch devices, try to detect scrolling by touching
+    document.addEventListener("touchmove", handleScrollEvent)
   }
 }
 

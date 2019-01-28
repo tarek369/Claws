@@ -28,6 +28,7 @@ function SearchResult(result, state, context) {
 
     card.onclick = () => {
         state.selectedTitle = result
+        state.selectedTitle.similarResults = []
         // history.pushState({}, '', `/${result.id}`)
         if (result.media_type === 'tv') {
             context.navigate(TvTitlePage)

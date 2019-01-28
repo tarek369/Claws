@@ -30,7 +30,7 @@ const view = h /* syntax: html */ `
         <span class="mdl-chip__text capitalize">#genre</span>
     </button>
 `
-function Genre(genreObject, context) {
+function Genre(genreId, context) {
     const root = view.cloneNode(true)
 
     // Collect references to dynamic parts
@@ -47,13 +47,12 @@ function Genre(genreObject, context) {
         // }
     }
 
-    console.log(genreObject)
-    genre.nodeValue = MOVIE_GENRES[genreObject.id]
+    genre.nodeValue = MOVIE_GENRES[genreId]
 
-    root.update = function(newGenreObject) {
+    root.update = function(newGenreId) {
         console.log('Rendered Genre')
 
-        genre.nodeValue = MOVIE_GENRES[newGenreObject.id]
+        genre.nodeValue = MOVIE_GENRES[newGenreId]
     }
 
     return root
