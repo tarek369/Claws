@@ -23,7 +23,7 @@ function SearchResult(result, state, context) {
     title.nodeValue = `${result.title || result.name}${result.release_date ? ` (${(new Date(result.release_date)).getFullYear()})` : ''}`
 
     if (result.poster_path) {
-        card.style.background = `url('https://image.tmdb.org/t/p/w500${result.poster_path}') center / cover`
+        card.style.background = `url('https://image.tmdb.org/t/p/w200${result.poster_path}') center / cover`
     }
 
     card.onclick = () => {

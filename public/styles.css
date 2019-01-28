@@ -21,12 +21,46 @@ html, body {
 
 /* Specific */
 
+/* Genre Chips */
+
 .genres-container {
     margin-bottom: 10px;
 }
-
 .genre {
     margin-right: 10px;
+}
+
+/* Movie */
+
+.movie-layout {
+    /*height: 100%;*/
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+        "moviePosterContainer"
+        "movieMetadata"
+        "movieSimilarList"
+}
+@media (min-width: 1170px) {
+    .movie-layout {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+          "movieMetadata moviePosterContainer"
+          "movieSimilarList movieSimilarList";
+    }
+}
+.movie-metadata {
+    grid-area: movieMetadata;
+}
+.movie-poster-container {
+    grid-area: moviePosterContainer;
+}
+.movie-poster-container {
+    display: flex;
+    justify-content: center;
+}
+.movie-similar-list {
+    grid-area: movieSimilarList;
 }
 
 /* Material UI */
@@ -43,19 +77,20 @@ html, body {
 }
 
 .search-result-card-image.mdl-card {
-    width: 162px;
-    height: 245px;
+    width: 150px;
+    height: 225px;
 }
-.similar-result-card-image.mdl-card {
-    width: 122px;
-    height: 184px;
+.movie-similar-list .search-result-card-image.mdl-card {
+    width: 100px;
+    height: 150px;
+    min-height: unset;
 }
-.similar-result-card-image > .mdl-card__actions, .search-result-card-image > .mdl-card__actions {
+.search-result-card-image > .mdl-card__actions {
     height: 52px;
     padding: 16px;
     background: rgba(0, 0, 0, 0.7);
 }
-.search-result-card-image__filename, .similar-result-card-image__filename {
+.search-result-card-image__filename {
     color: #fff;
     font-size: 14px;
     font-weight: 500;

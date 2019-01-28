@@ -7,20 +7,27 @@ const {h, keyed, reuseNodes} = stage0
 // Mark dynamic references with a #-syntax where needed.
 
 const view = h /* syntax: html */ `
-    <div>
-        <h1>#title</h1>
-        <h4><i class="material-icons">star</i>#subheader</h4>
-        <div #genrelist class="genres-container"></div>
-        <p>#description</p>
-        <h4>Similar Movies</h4>
-        <div #similarlist class="flex wrap"></div>
+    <div class="movie-layout">
+        <div class="movie-metadata">
+            <h1>#title</h1>
+            <h4><i class="material-icons">star</i>#subheader</h4>
+            <div #genrelist class="genres-container"></div>
+            <p>#description</p>
+        </div>
+        <div class="movie-poster-container">
+            <img #poster />
+        </div>
+        <div class="movie-similar-list">
+            <h4>Similar Movies</h4>
+            <div #similarlist class="flex wrap"></div>
+        </div>
     </div>
 `
 function MovieTitlePage(state, context, action) {
     const root = view
 
     // Collect references to dynamic parts
-    const {title, subheader, genrelist, description, similarlist} = view.collect(root)
+    const {title, subheader, genrelist, description, poster, similarlist} = view.collect(root)
 
     async function update() {
         console.log('Rendered MovieTitlePage', action)
@@ -35,6 +42,7 @@ function MovieTitlePage(state, context, action) {
         title.nodeValue = state.selectedTitle.title || state.selectedTitle.name
         subheader.nodeValue = `${state.selectedTitle.vote_average || 0} (${state.selectedTitle.vote_count})${state.selectedTitle.release_date ? ` | ${(new Date(state.selectedTitle.release_date)).getFullYear()}` : ''}`
         description.nodeValue = state.selectedTitle.overview
+        poster.src = `https://image.tmdb.org/t/p/w300${state.selectedTitle.poster_path}`
 
         reuseNodes(
             genrelist,
