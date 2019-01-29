@@ -7,7 +7,7 @@ const {h, keyed, reuseNodes} = stage0
 // Mark dynamic references with a #-syntax where needed.
 
 const view = h /* syntax: html */ `
-    <div class="movie-layout">
+    <div #layout class="movie-layout">
         <div class="movie-metadata">
             <h1>#title</h1>
             <h4><i class="material-icons">star</i>#subheader</h4>
@@ -27,7 +27,7 @@ function MovieTitlePage(state, context, action) {
     const root = view
 
     // Collect references to dynamic parts
-    const {title, subheader, genrelist, description, poster, similarlist} = view.collect(root)
+    const {layout, title, subheader, genrelist, description, poster, similarlist} = view.collect(root)
 
     async function update() {
         console.log('Rendered MovieTitlePage', action)
@@ -43,6 +43,7 @@ function MovieTitlePage(state, context, action) {
         subheader.nodeValue = `${state.selectedTitle.vote_average || 0} (${state.selectedTitle.vote_count})${state.selectedTitle.release_date ? ` | ${(new Date(state.selectedTitle.release_date)).getFullYear()}` : ''}`
         description.nodeValue = state.selectedTitle.overview
         poster.src = `https://image.tmdb.org/t/p/w300${state.selectedTitle.poster_path}`
+        layout.style.background = `url('https://image.tmdb.org/t/p/w500${state.selectedTitle.backdrop_path}') center / cover`
 
         reuseNodes(
             genrelist,
