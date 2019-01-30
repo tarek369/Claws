@@ -63,29 +63,69 @@ app.use('/api/v1', generalRoutes);
 const authRoutes = require('./src/api/authRoutes');
 app.use('/api/v1', authRoutes);
 
-const searchRoutes = require('./src/api/searchRoutes');
-app.use('/api/v1/search', searchRoutes);
-
 const resolveRoutes = require('./src/api/resolveRoutes');
 app.use('/api/v1/resolve', resolveRoutes);
 /** ./API ROUTES **/
 
-// Start listening...
-app.listen(process.env.PORT, () => {
-    // Always binds to localhost.
-    console.log(`${pkg.name} v${pkg.version} server listening on: http://127.0.0.1:${process.env.PORT}`);
+const http = require('http');
+const WebSocket = require('ws');
+const URL = require('url');
+const {verifyToken} = require('./src/utils');
+const resolveLinks = require('./src/api/resolveLinks');
+
+//initialize a simple http server
+const server = http.createServer(app);
+
+//initialize the WebSocket server instance
+const wss = new WebSocket.Server({server});
+
+wss.on('connection', async (ws, req) => {
+    const token = URL.parse(req.url, true).query.token;
+    const {auth, message} = await verifyToken(token);
+
+    if (!auth) {
+        ws.send(message, undefined, () => ws.terminate());
+    }
+
+    ws.isAlive = true;
+
+    ws.on('pong', () => {
+        ws.isAlive = true;
+    });
+
+    //connection is up, let's add a simple simple event
+    ws.on('message', (message) => {
+        let data;
+        try {
+            data = JSON.parse(message);
+            console.log(data)
+        } catch (err) {
+            console.error(err);
+            ws.send(`{"message": "That was not a JSON object..."}`);
+        }
+
+        resolveLinks(data, ws, req);
+    });
 });
 
-// Test a resolver with the below code
+setInterval(() => {
+    wss.clients.forEach((ws) => {
 
-// const Vidoza = require('./src/scrapers/resolvers/Vidoza');
-// (async function() {
-//  const videoSourceUrl = await Vidoza('http://vidoza.net/embed-9srjo96k713x.html', require('request-promise').jar(), {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:63.0) Gecko/20100101 Firefox/63.0'});
-//  console.log(videoSourceUrl);
-// })()
+        if (!ws.isAlive) {
+            return ws.terminate();
+        }
 
-// const rp = require('request-promise');
-// (async function() {
-//     const [html1, html2] = await Promise.all([rp({uri: 'http://vidoza.net/embed-9srjo96k713x.html', timeout: 5000}), rp({uri: 'http://vidoza.net/embed-9srjo96k713x.html', timeout: 5000})]);
-//     console.log(html1, html2);
-// })()
+        ws.isAlive = false;
+        try {
+            ws.ping(null, false, true);
+        } catch (err) {
+            console.log("WS client disconnected, can't ping");
+            ws.terminate();
+        }
+    });
+}, 10000);
+
+// Start listening...
+server.listen(process.env.PORT, () => {
+    console.log(`${pkg.name} v${pkg.version} server listening on: http://127.0.0.1:${process.env.PORT}`);
+});

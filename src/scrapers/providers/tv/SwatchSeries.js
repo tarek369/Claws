@@ -2,7 +2,6 @@ const Promise = require('bluebird');
 const RequestPromise = require('request-promise');
 const cheerio = require('cheerio');
 const randomUseragent = require('random-useragent');
-const vm = require('vm');
 const URL = require('url');
 
 const resolve = require('../../resolvers/resolve');

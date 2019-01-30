@@ -1,7 +1,6 @@
 'use strict';
 
 // Import dependencies
-const SSE = require('express-sse');
 const rp = require('request-promise');
 const {verifyToken} = require('../utils');
 

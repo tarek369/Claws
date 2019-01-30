@@ -111,7 +111,7 @@ async function SeriesFree(req, sse) {
                     'x-forwarded-for': clientIp
                 };
                 resolvePromises.push(resolve(sse, providerUrl, 'SeriesFree', jar, headers));
-            })
+            });
         } catch (err) {
             if (!sse.stopExecution) {
               console.error({

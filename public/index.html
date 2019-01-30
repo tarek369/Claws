@@ -187,7 +187,7 @@
         <script type="text/javascript" charset="utf-8">
             // Provided by the .env file.
             const SECRET_CLIENT_ID = '<%= secret_client_id %>';
-            let es;
+            let ws;
             async function authenticate() {
                 let token = localStorage.getItem('token');
                 if (token) {
@@ -231,32 +231,34 @@
                 return token;
             }
 
-            const resultListener = function (e) {
-                let data = JSON.parse(e.data);
-                console.log('result', data.event, data);
-            };
-            const scrapeListener = function (e) {
-              console.log('scrape', JSON.parse(e.data));
-            };
-            const errorListener = function (e) {
-              console.error('error', JSON.parse(e.data));
-            };
-            const doneListener = function (e) {
-              console.log('done', JSON.parse(e.data));
-              console.log('There should be no more events after this one. Comment out the `close` line to see if there are any events leaking.');
-              es.close();
-            };
-
             async function searchMovies() {
                 let token = await authenticate();
                 let movieTitle = document.getElementById('movieTitle').value;
 
                 stop(); // Stop existing eventsource.
-                es = new EventSource(`/api/v1/search/movies?title=${movieTitle}&token=${token}`);
-                es.addEventListener('result', resultListener);
-                es.addEventListener('scrape', scrapeListener);
-                es.addEventListener('error', errorListener);
-                es.addEventListener('done', doneListener);
+                ws = new WebSocket(`ws://localhost:3000/?token=${token}`);
+                ws.onopen = function() {
+                    // Web Socket is connected, send data using send()
+                    ws.send(`{"type": "movies", "title": "${movieTitle}"}`);
+                };
+
+                ws.onmessage = function (e) {
+                    try {
+                        const data = JSON.parse(e.data)
+                        console.log(data);
+                        if (data.event === 'done') {
+                            console.log('There should be no more events after this one. Comment out the `close` line to see if there are any events leaking.');
+                            ws.close()
+                        }
+                    } catch (err) {
+                        console.error(e.data);
+                    }
+                };
+
+                ws.onclose = function() {
+                    // websocket is closed.
+                    alert("Connection is closed...");
+                };
             }
             async function searchTV() {
                 let token = await authenticate();
@@ -265,14 +267,32 @@
                 let episode = document.getElementById('episode').value;
 
                 stop(); // Stop existing eventsource.
-                es = new EventSource(`/api/v1/search/tv?title=${showTitle}&season=${season}&episode=${episode}&token=${token}`)
-                es.addEventListener('result', resultListener);
-                es.addEventListener('scrape', scrapeListener);
-                es.addEventListener('error', errorListener);
-                es.addEventListener('done', doneListener);
+                ws = new WebSocket(`ws://localhost:3000/?token=${token}`);
+                ws.onopen = function() {
+                    // Web Socket is connected, send data using send()
+                    ws.send(`{"type": "tv", "title": "${showTitle}", "season": "${season}", "episode": "${episode}"}`);
+                };
+
+                ws.onmessage = function (e) {
+                    try {
+                        const data = JSON.parse(e.data)
+                        console.log(data);
+                        if (data.event === 'done') {
+                            console.log('There should be no more events after this one. Comment out the `close` line to see if there are any events leaking.');
+                            // ws.close()
+                        }
+                    } catch (err) {
+                        console.error(e.data);
+                    }
+                };
+
+                ws.onclose = function() {
+                    // websocket is closed.
+                    alert("Connection is closed...");
+                };
             }
             function stop() {
-                es && es.close();
+                ws && ws.close();
             }
             function b64DecodeUnicode(str) {
                 return decodeURIComponent(atob(str).replace(/(.)/g, function (m, p) {
