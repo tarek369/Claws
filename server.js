@@ -63,8 +63,6 @@ app.use('/api/v1', generalRoutes);
 const authRoutes = require('./src/api/authRoutes');
 app.use('/api/v1', authRoutes);
 
-const resolveRoutes = require('./src/api/resolveRoutes');
-app.use('/api/v1/resolve', resolveRoutes);
 /** ./API ROUTES **/
 
 const http = require('http');
@@ -72,21 +70,21 @@ const WebSocket = require('ws');
 const URL = require('url');
 const {verifyToken} = require('./src/utils');
 const resolveLinks = require('./src/api/resolveLinks');
+const resolveHtml = require('./src/scrapers/resolvers/resolveHtml');
 
 //initialize a simple http server
 const server = http.createServer(app);
 
+async function verifyClient({req}) {
+    const token = URL.parse(req.url, true).query.token;
+    const {auth} = await verifyToken(token);
+    return auth;
+}
+
 //initialize the WebSocket server instance
-const wss = new WebSocket.Server({server});
+const wss = new WebSocket.Server({server, verifyClient});
 
 wss.on('connection', async (ws, req) => {
-    const token = URL.parse(req.url, true).query.token;
-    const {auth, message} = await verifyToken(token);
-
-    if (!auth) {
-        ws.send(message, undefined, () => ws.terminate());
-    }
-
     ws.isAlive = true;
 
     ws.on('pong', () => {
@@ -94,7 +92,7 @@ wss.on('connection', async (ws, req) => {
     });
 
     //connection is up, let's add a simple simple event
-    ws.on('message', (message) => {
+    ws.on('message', async (message) => {
         let data;
         try {
             data = JSON.parse(message);
@@ -104,7 +102,17 @@ wss.on('connection', async (ws, req) => {
             ws.send(`{"message": "That was not a JSON object..."}`);
         }
 
-        resolveLinks(data, ws, req);
+        if (data.type == 'resolveHtml') {
+            try {
+                const results = await resolveHtml(Buffer.from(data.html, 'base64').toString(), data.resolver, data.headers, data.cookie);
+                ws.send(JSON.stringify({event: 'scrapeResults', results}));
+            } catch(err) {
+                ws.send(`{"event": "scrapeResults", "error": "${err.message || err.toString()}"}`);
+                console.error(err);
+            }
+        } else {
+            resolveLinks(data, ws, req);
+        }
     });
 });
 
