@@ -33,34 +33,70 @@ html, body {
 /* Movie */
 
 .movie-layout {
-    /*height: 100%;*/
+    margin: 5px;
     display: grid;
     grid-template-columns: 1fr;
     grid-template-areas:
+        "movieBackdrop"
         "moviePosterContainer"
         "movieMetadata"
         "movieSimilarList"
 }
-@media (min-width: 1170px) {
-    .movie-layout {
-        grid-template-columns: 1fr 1fr;
-        grid-template-areas:
-          "movieMetadata moviePosterContainer"
-          "movieSimilarList movieSimilarList";
-    }
+.movie-backdrop {
+    grid-area: movieBackdrop;
+    position: absolute;
+    width: 100%;
+    height: 450px;
+    z-index: 0;
+}
+.movie-backdrop-shade {
+    grid-area: movieBackdrop;
+    position: absolute;
+    width: 100%;
+    height: 450px;
+    z-index: 0;
 }
 .movie-metadata {
     grid-area: movieMetadata;
+    z-index: 1;
+    height: 450px;
 }
 .movie-poster-container {
     grid-area: moviePosterContainer;
-}
-.movie-poster-container {
     display: flex;
     justify-content: center;
+    align-items: center;
+    z-index: 1;
+    height: 450px;
+}
+.movie-poster-container > img {
+    display: none;
+}
+.movie-poster {
+    padding: 15px
 }
 .movie-similar-list {
     grid-area: movieSimilarList;
+    z-index: 1;
+}
+@media (min-width: 800px) {
+    .movie-layout {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "movieBackdrop movieBackdrop"
+            "movieMetadata moviePosterContainer"
+            "movieSimilarList movieSimilarList";
+    }
+    .movie-poster-container {
+        justify-content: flex-end;
+        align-items: flex-start;
+    }
+    .movie-poster-container > img {
+        display: unset;
+    }
+    .movie-backdrop-shade {
+        background: linear-gradient(to right, #26282C 40%, transparent 100%);
+    }
 }
 
 /* Material UI */

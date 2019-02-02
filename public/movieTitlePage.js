@@ -7,7 +7,9 @@ const {h, keyed, reuseNodes} = stage0
 // Mark dynamic references with a #-syntax where needed.
 
 const view = h /* syntax: html */ `
-    <div #layout class="movie-layout">
+    <div class="movie-layout">
+        <div #backdrop class="movie-backdrop"></div>
+        <div class="movie-backdrop-shade"></div>
         <div class="movie-metadata">
             <h1>#title</h1>
             <h4><i class="material-icons">star</i>#subheader</h4>
@@ -15,7 +17,7 @@ const view = h /* syntax: html */ `
             <p>#description</p>
         </div>
         <div class="movie-poster-container">
-            <img #poster />
+            <img #poster class="movie-poster" width="250px" />
         </div>
         <div class="movie-similar-list">
             <h4>Similar Movies</h4>
@@ -27,7 +29,7 @@ function MovieTitlePage(state, context, action) {
     const root = view
 
     // Collect references to dynamic parts
-    const {layout, title, subheader, genrelist, description, poster, similarlist} = view.collect(root)
+    const {backdrop, title, subheader, genrelist, description, poster, similarlist} = view.collect(root)
 
     async function update() {
         console.log('Rendered MovieTitlePage', action)
@@ -43,7 +45,7 @@ function MovieTitlePage(state, context, action) {
         subheader.nodeValue = `${state.selectedTitle.vote_average || 0} (${state.selectedTitle.vote_count})${state.selectedTitle.release_date ? ` | ${(new Date(state.selectedTitle.release_date)).getFullYear()}` : ''}`
         description.nodeValue = state.selectedTitle.overview
         poster.src = `https://image.tmdb.org/t/p/w300${state.selectedTitle.poster_path}`
-        layout.style.background = `url('https://image.tmdb.org/t/p/w500${state.selectedTitle.backdrop_path}') center / cover`
+        backdrop.style.background = `url('https://image.tmdb.org/t/p/w500${state.selectedTitle.backdrop_path}') no-repeat scroll right center / contain`
 
         reuseNodes(
             genrelist,
