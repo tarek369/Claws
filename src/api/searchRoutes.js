@@ -7,6 +7,7 @@ const EventEmitter = require('events');
 
 // Load providers
 const providers = require('../scrapers/providers');
+const BaseProvider = require('../scrapers/providers/BaseProvider');
 
 // Declare new router and start defining routes:
 const searchRoutes = require('express').Router();
@@ -34,7 +35,15 @@ const resolveLinks = (type) => {
         req.query.type = type;
 
         // Get available providers.
-        [...providers[type], ...providers.universal].forEach(provider => promises.push(provider(req, sse)));
+        [...providers[type], ...providers.universal].forEach((provider) => {
+            if(provider instanceof BaseProvider) {
+                // Use object orientated provider.
+                return promises.push(provider.resolveRequests(req, sse));
+            } else {
+                // Use declarative provider.
+                return promises.push(provider(req, sse));
+            }
+        });
 
         req.on('close', function() {
             console.log('disconnected');
@@ -42,7 +51,9 @@ const resolveLinks = (type) => {
         });
 
         sse.emitter.on('disconnected', () => {
+			// Stop sending events to the client.
             sse.stopExecution = true;
+		    res.end();
         });
 
         await Promise.all(promises);
