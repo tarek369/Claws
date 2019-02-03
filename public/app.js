@@ -14,13 +14,32 @@ const initialState = {
 
 const routerView = h /* syntax: html */ `
     <section>
-        <ul>
-            <li><a href="" #home>Home</a></li>
-            <li><a href="" #search>Search</a></li>
-            <li><a href="" #player>Player</a></li>
-            <li><a href="" #manualplay>Manual Play</a></li>
-        </ul>
-        <section #page></section>
+        <div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
+            <header class="mdl-layout__header">
+                <div class="mdl-layout__header-row">
+                    <div class="mdl-layout-spacer"></div>
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable mdl-textfield--floating-label mdl-textfield--align-right">
+                        <label class="mdl-button mdl-js-button mdl-button--icon" for="fixed-header-drawer-exp">
+                            <i class="material-icons">search</i>
+                        </label>
+                        <div class="mdl-textfield__expandable-holder">
+                            <input class="mdl-textfield__input" type="text" name="sample" id="fixed-header-drawer-exp">
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <div class="mdl-layout__drawer theme--dark">
+                <span class="mdl-layout-title">ApolloTV</span>
+                <nav class="mdl-navigation">
+                    <a #home class="mdl-navigation__link" href="">Home</a>
+                    <a #search class="mdl-navigation__link" href="">Search</a>
+                    <a #player class="mdl-navigation__link" href="">Player</a>
+                    <a #manualplay class="mdl-navigation__link" href="">Manual Play</a>
+                </nav>
+            </div>
+            <main #page class="mdl-layout__content">
+            </main>
+        </div>
     </section>
 `
 function Router(state) {
@@ -28,6 +47,8 @@ function Router(state) {
     const refs = routerView.collect(root)
 
     let {page, player, search, home, manualplay} = refs
+
+    state.infiniteScrollElement = page;
 
     const context = {navigate: update}
 
@@ -63,21 +84,21 @@ function Router(state) {
             let currentNode = Component(state, context, 'attach')
             if (!lastNode) {
                 page.appendChild(currentNode)
-            } else {
-                lastNode.cleanup && lastNode.cleanup()
-                page.replaceChild(currentNode, lastNode)
-            }
-            lastNode = currentNode
+                } else {
+                    lastNode.cleanup && lastNode.cleanup()
+                    page.replaceChild(currentNode, lastNode)
+                }
+                lastNode = currentNode
 
             // From MDL: https://getmdl.io/started/index.html#dynamic
-            componentHandler.upgradeAllRegistered()
+                componentHandler.upgradeAllRegistered()
+            }
         }
+
+        update(Home)
+
+        return root
     }
 
-    update(Home)
-
-    return root
-}
-
-const app = Router(initialState)
-document.body.appendChild(app)
+    const app = Router(initialState)
+    document.body.appendChild(app)

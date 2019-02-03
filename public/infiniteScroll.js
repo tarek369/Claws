@@ -7,6 +7,7 @@
  * claws-dev: I made some changes to the original implementation.
  * - Added async/await behavior
  * - Added better event adding/removing
+ * - Added ability to choose which element to reference when scrolling
  */
 
 var isIE = /msie/gi.test(navigator.userAgent); // http://pipwerks.com/2011/05/18/sniffing-internet-explorer-via-javascript/
@@ -32,26 +33,29 @@ function infiniteScroll(options) {
 
   scroller.options = options;
 
+  var scrollElement = options.element || window;
+  var touchMoveElement = options.element || window;
+
   if (options.action === 'remove') {
     console.log('remove')
-    window.removeEventListener("scroll", handleScrollEvent)
+    scrollElement.removeEventListener("scroll", handleScrollEvent)
     // For touch devices, try to detect scrolling by touching
-    document.removeEventListener("touchmove", handleScrollEvent)
+    touchMoveElement.removeEventListener("touchmove", handleScrollEvent)
   } else {
     console.log('attach')
-    window.addEventListener("scroll", handleScrollEvent)
+    scrollElement.addEventListener("scroll", handleScrollEvent)
     // For touch devices, try to detect scrolling by touching
-    document.addEventListener("touchmove", handleScrollEvent)
+    touchMoveElement.addEventListener("touchmove", handleScrollEvent)
   }
 }
 
-function getScrollPos() {
+function getScrollPos(element) {
   // Handle scroll position in case of IE differently
-  if (isIE) {
-    return document.documentElement.scrollTop;
-  } else {
-    return window.pageYOffset;
-  }
+  // if (isIE) {
+  //   return (element || document.documentElement).scrollTop;
+  // } else {
+    return element ? element.scrollTop : window.pageYOffset;
+  // }
 }
 
 var prevScrollPos = getScrollPos();
@@ -59,16 +63,18 @@ var prevScrollPos = getScrollPos();
 // Respond to scroll events
 async function handleScroll(scroller, event) {
   if (scroller.updateInitiated) {
+    console.log('updateInitiated')
     return;
   }
-  var scrollPos = getScrollPos();
+  var scrollPos = getScrollPos(scroller.options.element);
   if (scrollPos == prevScrollPos) {
+    console.log('Same spot...?')
     return; // nothing to do
   }
 
   // Find the pageHeight and clientHeight(the no. of pixels to scroll to make the scrollbar reach max pos)
-  var pageHeight = document.documentElement.scrollHeight;
-  var clientHeight = document.documentElement.clientHeight;
+  var pageHeight = scroller.options.element ? scroller.options.element.scrollHeight : document.documentElement.scrollHeight;
+  var clientHeight = scroller.options.element ? scroller.options.element.clientHeight : document.documentElement.clientHeight;
 
   // Check if scroll bar position is just 50px above the max, if yes, initiate an update
   if (pageHeight - (scrollPos + clientHeight) < scroller.options.distance) {

@@ -14,7 +14,7 @@ const view = h /* syntax: html */ `
             <img #poster class="movie-poster" width="250px" />
         </div>
         <div class="movie-metadata">
-            <h1>#title</h1>
+            <h2>#title</h2>
             <h4><i class="material-icons">star</i>#subheader</h4>
             <div #genrelist class="genres-container"></div>
             <p>#description</p>
@@ -31,11 +31,11 @@ function MovieTitlePage(state, context, action) {
     // Collect references to dynamic parts
     const {backdropimg, title, subheader, genrelist, description, poster, similarlist} = view.collect(root)
 
-    async function update() {
-        console.log('Rendered MovieTitlePage', action)
+    async function update(action) {
+        console.log('Rendered MovieTitlePage', action, state)
 
         // TODO: Go 1.12 will eliminate the need for this Promise callback. Check Go's latest version in Febuary 2019
-        if (state.selectedTitle.id && !state.selectedTitle.similarResults.length) {
+        if (action !== 'remove' && state.selectedTitle.id && !state.selectedTitle.similarResults.length) {
             console.log('Fetching similar titles!')
             const response = await new Promise((resolve) => fetchSimilarResults(resolve, state.selectedTitle.id, 1))
             state.selectedTitle.similarResults = response.results
@@ -44,8 +44,16 @@ function MovieTitlePage(state, context, action) {
         title.nodeValue = state.selectedTitle.title || state.selectedTitle.name
         subheader.nodeValue = `${state.selectedTitle.vote_average || 0} (${state.selectedTitle.vote_count})${state.selectedTitle.release_date ? ` | ${(new Date(state.selectedTitle.release_date)).getFullYear()}` : ''}`
         description.nodeValue = state.selectedTitle.overview
+        if (description.parentNode.clientHeight > 96 && title.parentNode.clientHeight > 76) {
+            var words = description.nodeValue.split(/\s+/);
+            words.push('...');
+
+            do {
+                words.splice(-2, 1);
+                description.nodeValue = words.join(' ');
+            } while(description.parentNode.clientHeight > 96);
+        }
         poster.src = `https://image.tmdb.org/t/p/w300${state.selectedTitle.poster_path}`
-        // backdrop.style.background = `url('https://image.tmdb.org/t/p/w500${state.selectedTitle.backdrop_path}') no-repeat scroll right center / contain`
         backdropimg.src = `https://image.tmdb.org/t/p/w500${state.selectedTitle.backdrop_path}`
 
         reuseNodes(
@@ -75,8 +83,8 @@ function MovieTitlePage(state, context, action) {
     update()
 
     root.cleanup = function() {
-        state.selectedTitle = {genre_ids: [], similarResults: []}
-        update()
+        state.selectedTitle = {...state.selectedTitle, genre_ids: [], similarResults: []}
+        update('remove')
     }
 
     return root

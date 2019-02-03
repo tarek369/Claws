@@ -25,6 +25,7 @@ function Search(state, context, action) {
     const infiniteScrollOptions = {
         action,
         distance: 245,
+        element: state.infiniteScrollElement,
         callback: async function(done) {
             // 1. fetch data from the server
             // 2. insert it into the document
@@ -81,7 +82,7 @@ function Search(state, context, action) {
     update()
 
     root.cleanup = function() {
-        infiniteScroll({action: 'remove'})
+        infiniteScroll({action: 'remove', element: state.infiniteScrollElement})
     }
 
     return root
