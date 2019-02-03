@@ -239,7 +239,7 @@
               console.log('scrape', JSON.parse(e.data));
             };
             const errorListener = function (e) {
-              console.error('error', JSON.parse(e.data));
+              console.error('error', typeof e === 'string' ? JSON.parse(e.data) : e);
             };
             const doneListener = function (e) {
               console.log('done', JSON.parse(e.data));
