@@ -17,6 +17,13 @@ function _implementMe(functionName) {
  */
 
 /**
+ * Representation of a claws link.
+ * @typedef {Object} ClawsLink
+ * @property {String|null} data The link
+ * @property {ClawsMetadata} meta The links metadata.
+ */
+
+/**
  * The base resolver class that every other resolver should extend from.
  * Functions to implement:
  * - supportsUri(uri)
@@ -122,7 +129,7 @@ const BaseResolver = class BaseResolver {
      * @see resolveHtml
      *
      * @param {ClawsMetadata} metaData
-     * @param {Array} links
+     * @param {ClawsLink[]} links
      * @return {Array}
      */
     processHtmlResults(metaData, links) {
@@ -134,8 +141,8 @@ const BaseResolver = class BaseResolver {
 
             // Emitting resources directly from the server.
             links.forEach(link => {
-                const event = this.createEvent(link, false, undefined, {
-                    quality: metaData.quality,
+                const event = this.createEvent(link.data, false, undefined, {
+                    quality: link.meta.quality || metaData.quality,
                     source: metaData.source
                 });
                 metaData.sse.send(event, event.event);
@@ -145,7 +152,7 @@ const BaseResolver = class BaseResolver {
             // Returning links directly from HTMl.
             const dataList = [];
             links.forEach(dataObject => {
-                dataList.push(this.createEvent(dataObject, false, {}, {quality: metaData.quality}));
+                dataList.push(this.createEvent(dataObject.data, false, {}, {quality: dataObject.meta.quality || metaData.quality}));
             });
             return dataList;
         }
@@ -226,7 +233,7 @@ const BaseResolver = class BaseResolver {
         let jwplayer = function () {
             return jwplayer;
         };
-        jwplayer.on = jwplayer.addButton = jwplayer;
+        jwplayer.on = jwplayer.addButton = jwplayer.onTime = jwplayer.onComplete = jwplayer;
 
         jwplayer.setup = setupCallback;
 
@@ -284,6 +291,12 @@ const BaseResolver = class BaseResolver {
             sin: Math.sin,
             navigator: {
                 userAgent: ''
+            },
+            atob: function (encodedData) {
+                return Buffer.from(encodedData, 'base64').toString();
+            },
+            btoa: function (stringToEncode) {
+                return Buffer.from(stringToEncode).toString('base64');
             },
             ...clapper,
         };
@@ -356,6 +369,35 @@ const BaseResolver = class BaseResolver {
         };
 
         return shim;
+    }
+
+    /**
+     * Resolve jwplayer links.
+     * @param {Object} setupConfig
+     * @param {Object} meta
+     * @return {ClawsLink[]}
+     */
+    _resolveJwPlayerLinks(setupConfig, meta) {
+        let links = [];
+        if (setupConfig && setupConfig.file) {
+            links.push({
+                data: setupConfig.file,
+                meta,
+            });
+        }
+        if (setupConfig.sources) {
+            setupConfig.sources.forEach(function (source) {
+                links.push({
+                    data: source.file,
+                    meta: {
+                        ...meta,
+                        quality: source.label,
+                    },
+                });
+            });
+        }
+
+        return links;
     }
 };
 

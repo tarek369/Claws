@@ -51,9 +51,9 @@ const resolveLinks = (type) => {
         });
 
         sse.emitter.on('disconnected', () => {
-			// Stop sending events to the client.
+            // Stop sending events to the client.
             sse.stopExecution = true;
-		    res.end();
+            res.end();
         });
 
         await Promise.all(promises);
@@ -77,5 +77,12 @@ searchRoutes.get('/movies', verifyToken, resolveLinks('movies'));
  * Allows you to search for TV shows.
  */
 searchRoutes.get('/tv', verifyToken, resolveLinks('tv'));
+
+/**
+ * /api/v1/search/anime
+ * ------
+ * Allows you to search for animes.
+ */
+searchRoutes.get('/anime', verifyToken, resolveLinks('anime'));
 
 module.exports = searchRoutes;

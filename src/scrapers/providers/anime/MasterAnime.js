@@ -69,8 +69,8 @@ module.exports = class MasterAnime extends BaseProvider {
                     // Full url.
                     source = mirror['embed_id'];
                 } else {
-                    let embedPrefix = mirror['host']['embed_prefix'] == null ? "" : mirror['host']['embed_prefix'];
-                    let embedSuffix = mirror['host']['embed_suffix'] == null ? "" : mirror['host']['embed_suffix'];
+                    let embedPrefix = mirror['host']['embed_prefix'] || '';
+                    let embedSuffix = mirror['host']['embed_suffix'] || '';
                     source = embedPrefix + mirror['embed_id'] + embedSuffix;
                 }
 

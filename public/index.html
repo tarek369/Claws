@@ -122,6 +122,10 @@
                 opacity: 0;
             }
 
+            .searchFilter {
+                color: white;
+            }
+
             .searchBox {
                 text-align: center;
                 width: 100%;
@@ -174,12 +178,12 @@
             <button type="button" class="material-button-raised primary" onclick="searchMovies()">Search</button>
             <button type="button" class="material-button-raised red" onclick="stop()">Stop</button>
         </div>
-        <div>
+        <div class="searchFilter">
             <input id="showTitle" type="text" placeholder="show" />
             <input id="season" type="text" placeholder="season" />
             <input id="episode" type="text" placeholder="episode" />
-
-            <button type="button" onclick="searchTV()">Search</button>
+            <label for="isAnime">Is Anime<input id="isAnime" type="checkbox"></label>
+            <button type="button" onclick="searchSeries()">Search</button>
             <button type="button" onclick="stop()">Stop</button>
         </div>
         <div id="results"></div>
@@ -258,14 +262,18 @@
                 es.addEventListener('error', errorListener);
                 es.addEventListener('done', doneListener);
             }
-            async function searchTV() {
+            async function searchSeries() {
                 let token = await authenticate();
                 let showTitle = document.getElementById('showTitle').value;
                 let season = document.getElementById('season').value;
                 let episode = document.getElementById('episode').value;
 
                 stop(); // Stop existing eventsource.
-                es = new EventSource(`/api/v1/search/tv?title=${showTitle}&season=${season}&episode=${episode}&token=${token}`)
+
+                let isAnime = document.getElementById('isAnime').value;
+                let type = isAnime ? 'anime' : 'tv';
+
+                es = new EventSource(`/api/v1/search/${type}?title=${showTitle}&season=${season}&episode=${episode}&token=${token}`)
                 es.addEventListener('result', resultListener);
                 es.addEventListener('scrape', scrapeListener);
                 es.addEventListener('error', errorListener);

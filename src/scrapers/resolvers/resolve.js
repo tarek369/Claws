@@ -22,6 +22,8 @@ const MovieFiles = require('./MovieFiles');
 const EnterVideo = require('./EnterVideo');
 
 const Mp4Upload = require('./Mp4Upload');
+const StreamLewd = require('./StreamLewd');
+const TikiWiki = require('./TikiWiki');
 
 const createEvent = require('../../utils/createEvent');
 const {debugLog} = require('../../utils');
@@ -29,6 +31,8 @@ const {debugLog} = require('../../utils');
 /** @type {BaseResolver[]} */
 const resolvers = [
     new Mp4Upload(),
+    new StreamLewd(),
+    new TikiWiki(),
 ];
 
 async function resolve(sse, uri, source, jar, headers, quality = '') {
