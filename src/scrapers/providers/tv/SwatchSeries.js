@@ -50,7 +50,12 @@ async function SwatchSeries(req, sse) {
                     return true;
                 }
                 return false;
-            })
+            });
+
+            if (!showUrl) {
+                // Don't attempt to make requests on empty URLs.
+                return Promise.all(resolvePromises);
+            }
 
             const videoPageHtml = await rp({
                 uri: showUrl,
