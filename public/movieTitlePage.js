@@ -8,20 +8,20 @@ const {h, keyed, reuseNodes} = stage0
 
 const view = h /* syntax: html */ `
     <div class="movie-layout">
-        <div #backdrop class="movie-backdrop"></div>
-        <div class="movie-backdrop-shade"></div>
+        <div class="movie-backdrop">
+            <img #backdropimg class="movie-backdrop-img" />
+            <div class="movie-backdrop-shade"></div>
+            <img #poster class="movie-poster" width="250px" />
+        </div>
         <div class="movie-metadata">
             <h1>#title</h1>
             <h4><i class="material-icons">star</i>#subheader</h4>
             <div #genrelist class="genres-container"></div>
             <p>#description</p>
         </div>
-        <div class="movie-poster-container">
-            <img #poster class="movie-poster" width="250px" />
-        </div>
-        <div class="movie-similar-list">
+        <div class="movie-similar-list-container">
             <h4>Similar Movies</h4>
-            <div #similarlist class="flex wrap"></div>
+            <div #similarlist class="movie-similar-list"></div>
         </div>
     </div>
 `
@@ -29,7 +29,7 @@ function MovieTitlePage(state, context, action) {
     const root = view
 
     // Collect references to dynamic parts
-    const {backdrop, title, subheader, genrelist, description, poster, similarlist} = view.collect(root)
+    const {backdropimg, title, subheader, genrelist, description, poster, similarlist} = view.collect(root)
 
     async function update() {
         console.log('Rendered MovieTitlePage', action)
@@ -45,7 +45,8 @@ function MovieTitlePage(state, context, action) {
         subheader.nodeValue = `${state.selectedTitle.vote_average || 0} (${state.selectedTitle.vote_count})${state.selectedTitle.release_date ? ` | ${(new Date(state.selectedTitle.release_date)).getFullYear()}` : ''}`
         description.nodeValue = state.selectedTitle.overview
         poster.src = `https://image.tmdb.org/t/p/w300${state.selectedTitle.poster_path}`
-        backdrop.style.background = `url('https://image.tmdb.org/t/p/w500${state.selectedTitle.backdrop_path}') no-repeat scroll right center / contain`
+        // backdrop.style.background = `url('https://image.tmdb.org/t/p/w500${state.selectedTitle.backdrop_path}') no-repeat scroll right center / contain`
+        backdropimg.src = `https://image.tmdb.org/t/p/w500${state.selectedTitle.backdrop_path}`
 
         reuseNodes(
             genrelist,

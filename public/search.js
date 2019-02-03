@@ -12,7 +12,7 @@ const view = h /* syntax: html */ `
             <input #title class="mdl-textfield__input" type="text" id="search">
             <label class="mdl-textfield__label" for="search">Search</label>
         </div>
-        <div #list class="flex wrap"></div>
+        <div #list class="search-results-list"></div>
     </section>
 `
 function Search(state, context, action) {
