@@ -4,7 +4,8 @@ const cheerio = require('cheerio');
 const randomUseragent = require('random-useragent');
 
 const resolve = require('../../resolvers/resolve');
-const {isSameSeriesName, debugLog} = require('../../../utils');
+const {isSameSeriesName} = require('../../../utils');
+const logger = require('../../../utils/logger');
 
 async function SeriesFree(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
@@ -74,7 +75,7 @@ async function SeriesFree(req, sse) {
             });
 
             if (!episodeUrl) {
-                debugLog('SeriesFree', `Could not find: ${showTitle} ${season}×${episode}`);
+                logger.debug('SeriesFree', `Could not find: ${showTitle} ${season}×${episode}`);
                 return Promise.all(resolvePromises);
             }
 
@@ -114,7 +115,7 @@ async function SeriesFree(req, sse) {
             });
         } catch (err) {
             if (!sse.stopExecution) {
-              console.error({
+              logger.error({
                 source: 'SeriesFree',
                 sourceUrl: url,
                 query: {title: req.query.title, season: req.query.season, episode: req.query.episode},

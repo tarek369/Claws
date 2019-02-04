@@ -5,7 +5,8 @@ const randomUseragent = require('random-useragent');
 const tough = require('tough-cookie');
 
 const resolve = require('../../resolvers/resolve');
-const {debugLog, normalizeUrl} = require('../../../utils');
+const { normalizeUrl } = require('../../../utils');
+const logger = require('../../../utils/logger');
 
 async function GoWatchSeries(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
@@ -50,7 +51,7 @@ async function GoWatchSeries(req, sse) {
             });
             if (!seasonLink || !seasonLink.parent) {
                 // No season link.
-                debugLog('GoWatchSeries', `Could not find: ${showTitle} Season ${season}`);
+                logger.debug('GoWatchSeries', `Could not find: ${showTitle} Season ${season}`);
                 return Promise.all(resolvePromises);
             }
 
@@ -118,7 +119,7 @@ async function GoWatchSeries(req, sse) {
             });
         } catch (err) {
             if (!sse.stopExecution) {
-                console.error({source: 'GoWatchSeries', sourceUrl: url, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: err.message || err.toString()});
+                logger.error({source: 'GoWatchSeries', sourceUrl: url, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: err.message || err.toString()});
             }
         }
 

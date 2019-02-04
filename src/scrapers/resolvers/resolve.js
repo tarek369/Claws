@@ -20,17 +20,17 @@ const StreamM4u = require('./StreamM4u');
 const {GoogleDrive, getGoogleDriveScrapeUrl} = require('./GoogleDrive');
 const MovieFiles = require('./MovieFiles');
 const EnterVideo = require('./EnterVideo');
+const logger = require('../../utils/logger');
 
 const createEvent = require('../../utils/createEvent');
-const {debugLog} = require('../../utils');
 
 async function resolve(sse, uri, source, jar, headers, quality = '') {
     if (sse.stopExecution) {
-        console.log('Skip resolve due to disconnect');
+        logger.debug('Skip resolve due to disconnect');
         return;
     }
 
-    debugLog(`resolving: ${uri}`);
+    logger.debug(`resolving: ${uri}`);
 
     const ipLocked = process.env.CLAWS_ENV === 'server';
 
@@ -251,10 +251,10 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
             const event = createEvent(data, false, undefined, {quality, provider: 'EnterVideo', source});
             sse.send(event, event.event);*/
         } else {
-            console.warn({source, providerUrl: uri, warning: 'Missing resolver'});
+            logger.warn({source, providerUrl: uri, warning: 'Missing resolver'});
         }
     } catch(err) {
-        console.error({source, providerUrl: uri, error: err.message || err.toString()});
+        logger.error({source, providerUrl: uri, error: err.message || err.toString()});
     }
 }
 
