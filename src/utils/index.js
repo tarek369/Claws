@@ -9,12 +9,6 @@ let escapeRegExp = (string) => {
 };
 
 module.exports = {
-    debugLog: function () {
-        if (process.env.VERBOSE_LOGGING === 'true') {
-            console.log.apply(null, arguments);
-        }
-    },
-
     /**
      * Used to pad the series and episode numbers.
      * e.g. converts '1' to '01'.

@@ -4,9 +4,10 @@ const RequestPromise = require('request-promise');
 const cheerio = require('cheerio');
 const randomUseragent = require('random-useragent');
 const tough = require('tough-cookie');
+const logger = require('../../../utils/logger');
 
 const resolve = require('../../resolvers/resolve');
-const {absoluteUrl, debugLog} = require('../../../utils');
+const {absoluteUrl} = require('../../../utils');
 
 async function Series8(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
@@ -52,7 +53,7 @@ async function Series8(req, sse) {
             });
 
             if (!seasonLink) {
-                debugLog('Series8', `Could not find: ${showTitle} Season ${season}`);
+                logger.debug('Series8', `Could not find: ${showTitle} Season ${season}`);
                 return Promise.all(resolvePromises);
             }
 
@@ -90,7 +91,7 @@ async function Series8(req, sse) {
             });
         } catch (err) {
             if (!sse.stopExecution) {
-                console.error({source: 'Series8', sourceUrl: url, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: err.message || err.toString()});
+                logger.error({source: 'Series8', sourceUrl: url, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: err.message || err.toString()});
             }
         }
 

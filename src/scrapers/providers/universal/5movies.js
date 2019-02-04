@@ -1,11 +1,12 @@
 const Promise = require('bluebird');
 const RequestPromise = require('request-promise');
 const cheerio = require('cheerio');
+const logger = require('../../../utils/logger')
 
 const resolve = require('../../resolvers/resolve');
 
 async function _5movies(req, sse){
-    console.log("5movies NOTICE: This primitively removes the year from the end of the title. If this source breaks, did you change the title parameter?");
+    logger.debug("5movies NOTICE: This primitively removes the year from the end of the title. If this source breaks, did you change the title parameter?");
     let showTitle = req.query.title;
     showTitle = showTitle.substr(0, showTitle.length - 7);
 
@@ -30,7 +31,7 @@ async function _5movies(req, sse){
             timeout: 5000
         });
 
-        console.log(`${url}/search-movies/${showTitle.replace(/ /g, '+')}.html`);
+        logger.debug(`${url}/search-movies/${showTitle.replace(/ /g, '+')}.html`);
 
         let videoPage = '';
 
@@ -39,7 +40,6 @@ async function _5movies(req, sse){
 
         $(".movies-list.movies-list-full").each((index, element) => {
             let linkElement = $(element).find(".ml-item a");
-            console.log("---> debug");
 
             let contentTitle = linkElement.find('.mli-info h2').text();
             let contentPage = linkElement.attr('href');
@@ -47,7 +47,7 @@ async function _5movies(req, sse){
             if(contentTitle === `${showTitle}: Season ${season}`) videoPage = contentPage;
         });
 
-        console.log("debug: " + videoPage);
+        logger.debug("debug: " + videoPage);
 
 
         let videoPageHTML = await rp({
@@ -57,7 +57,7 @@ async function _5movies(req, sse){
 
         $ = cheerio.load(videoPageHTML);
         let scriptCode = $(`#media-player script`).html();
-        console.log(scriptCode.split(`document.write(Base64.decode("`));
+        logger.debug(scriptCode.split(`document.write(Base64.decode("`));
         let enterVideoURL = Buffer.from(scriptCode
             .split(`document.write(Base64.decode("`)[1]
             .split(`"));`)[0], 'base64').toString('utf8');
