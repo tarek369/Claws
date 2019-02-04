@@ -5,6 +5,7 @@ const RequestPromise = require('request-promise');
 const cheerio = require('cheerio');
 const tough = require('tough-cookie');
 const randomUseragent = require('random-useragent');
+const logger = require('../../../utils/logger')
 
 const {timeout} = require('../../../utils');
 const resolve = require('../../resolvers/resolve');
@@ -119,9 +120,9 @@ async function GoStream(req, sse) {
                 timeout: 5000
             });
 
-            response.servers.forEach(server => server.sources.forEach(source => console.log(source.src)));
+            response.servers.forEach(server => server.sources.forEach(source => logger.debug(source.src)));
         } catch (err) {
-            console.log(err);
+            logger.error(err);
         }
     }
 
