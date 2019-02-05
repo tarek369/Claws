@@ -3,7 +3,7 @@ const winston = require('winston');
 
 let winstonTransports = [
     new winston.transports.Console({
-        level: 'debug',
+        level: process.env.LOG_LEVEL,
         handleExceptions: true,
         json: false,
         colorize: true,
