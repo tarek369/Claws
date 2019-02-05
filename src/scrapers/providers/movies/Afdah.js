@@ -174,7 +174,7 @@ async function Afdah(req, sse) {
             }
         } catch (err) {
             if (!sse.stopExecution) {
-                logger.error({source: 'Afdah', sourceUrl: url, query: {title: req.query.title}, error: err.message || err.toString()});
+                logger.error({source: 'Afdah', sourceUrl: url, query: {title: req.query.title}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
 

@@ -96,10 +96,10 @@ wss.on('connection', async (ws, req) => {
         let data;
         try {
             data = JSON.parse(message);
-            console.log(data)
         } catch (err) {
-            console.error(err);
+            logger.warn(err);
             ws.send(`{"message": "That was not a JSON object..."}`);
+            return;
         }
 
         if (data.type == 'resolveHtml') {
@@ -107,8 +107,8 @@ wss.on('connection', async (ws, req) => {
                 const results = await resolveHtml(Buffer.from(data.html, 'base64').toString(), data.resolver, data.headers, data.cookie);
                 ws.send(JSON.stringify({event: 'scrapeResults', results}));
             } catch(err) {
-                ws.send(`{"event": "scrapeResults", "error": "${err.message || err.toString()}"}`);
-                console.error(err);
+                ws.send(`{"event": "scrapeResults", "error": "${(err.message || err.toString()).substring(0, 100) + '...'}"}`);
+                logger.error(err);
             }
         } else {
             resolveLinks(data, ws, req);
@@ -135,5 +135,5 @@ setInterval(() => {
 
 // Start listening...
 server.listen(process.env.PORT, () => {
-    console.log(`${pkg.name} v${pkg.version} server listening on: http://127.0.0.1:${process.env.PORT}`);
+    logger.info(`${pkg.name} v${pkg.version} server listening on: http://127.0.0.1:${process.env.PORT}`);
 });

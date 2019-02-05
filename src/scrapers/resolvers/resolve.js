@@ -254,7 +254,7 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
             logger.warn({source, providerUrl: uri, warning: 'Missing resolver'});
         }
     } catch(err) {
-        logger.error({source, providerUrl: uri, error: err.message || err.toString()});
+        logger.error({source, providerUrl: uri, error: (err.message || err.toString()).substring(0, 100) + '...'});
     }
 }
 

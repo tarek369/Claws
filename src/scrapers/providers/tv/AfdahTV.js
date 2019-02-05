@@ -154,7 +154,7 @@ async function AfdahTV(req, sse) {
             }
         } catch (err) {
             if (!sse.stopExecution) {
-                logger.error({source: 'AfdahTV', sourceUrl: url, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: err.message || err.toString()});
+                logger.error({source: 'AfdahTV', sourceUrl: url, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
 

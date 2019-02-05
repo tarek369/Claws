@@ -119,7 +119,7 @@ async function SeriesFree(req, sse) {
                 source: 'SeriesFree',
                 sourceUrl: url,
                 query: {title: req.query.title, season: req.query.season, episode: req.query.episode},
-                error: err.message || err.toString()
+                error: (err.message || err.toString()).substring(0, 100) + '...'
               });
             }
         }
