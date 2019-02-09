@@ -1,6 +1,9 @@
 const URL = require('url');
+//const inspector = require('url-inspector');
+const ffprobe = require('ffprobe');
+const ffprobeStatic = require('ffprobe-static');
 
-function createEvent(data, ipLocked, pairing, {quality, provider, source, isDownload = false, cookieRequired = '', cookie = ''}, headers) {
+async function createEvent(data, ipLocked, pairing, {quality, provider, source, isDownload = false, cookieRequired = '', cookie = ''}, headers) {
 	if (ipLocked) {
 		return {
 		    event: 'scrape',
@@ -12,21 +15,34 @@ function createEvent(data, ipLocked, pairing, {quality, provider, source, isDown
 		}
 	}
 
-	return {
-	    event: 'result',
-	    file: {
-	        data,
-	        kind: getDataKind(data),
-	    },
-	    metadata: {
-	        quality,
-	        provider,
-	        source,
-	        isDownload,
-	        cookie
-	    },
-	    headers
-	};
+	let extended = {};
+    try {
+        extended = await ffprobe(data, { path: ffprobeStatic.path });
+        extended.status = true;
+    }catch(ex){
+        let errorMessage = ex.toString();
+        extended = {};
+        extended.status = false;
+        extended.statusText = errorMessage;
+    }
+
+
+    return {
+        event: 'result',
+        file: {
+            data,
+            kind: getDataKind(data),
+        },
+        metadata: {
+            quality,
+            provider,
+            source,
+            isDownload,
+            cookie,
+            extended
+        },
+        headers
+    };
 }
 
 function getDataKind(link) {

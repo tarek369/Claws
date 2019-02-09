@@ -137,7 +137,7 @@ async function Afdah(req, sse) {
                     vm.runInContext(cleanedObfuscatedSources, sandbox);
 
                     const link = sandbox.window.srcs[0].url;
-                    const event = createEvent(link, false, {}, {quality: '', provider: 'Vidlink', source: 'Afdah'});
+                    const event = await createEvent(link, false, {}, {quality: '', provider: 'Vidlink', source: 'Afdah'});
                     sse.send(event, event.event);
                 } catch(err) {
                     const openloadData = await rp({

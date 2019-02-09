@@ -23,6 +23,9 @@
     "ejs": "^2.6.1",
     "express": "^4.16.3",
     "express-sse": "^0.5.0",
+    "ffprobe": "^1.1.0",
+    "ffprobe-static": "^3.0.0",
+    "get-video-dimensions": "^1.0.0",
     "js-salsa20": "^1.0.0",
     "jsonwebtoken": "^8.3.0",
     "m3u8-stream-list": "^1.1.0",
@@ -34,6 +37,7 @@
     "rate-limiter-flexible": "^0.19.4",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
+    "url-inspector": "^2.3.3",
     "winston": "^3.1.0"
   },
   "devDependencies": {
