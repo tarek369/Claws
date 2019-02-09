@@ -4,6 +4,7 @@
 const SSE = require('express-sse');
 const rp = require('request-promise');
 const {verifyToken} = require('../utils');
+const logger = require('../utils/logger')
 
 // Load providers
 const resolveHtml = require('../scrapers/resolvers/resolveHtml');
@@ -24,7 +25,7 @@ resolveRoutes.post('/:resolver', async (req, res) => {
         res.json(data);
     } catch(err) {
         res.status(500).send();
-        console.error(err.message);
+        logger.error(err.message);
     }
 });
 

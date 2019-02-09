@@ -4,6 +4,7 @@
 const SSE = require('express-sse');
 const {verifyToken} = require('../utils');
 const EventEmitter = require('events');
+const logger = require('../utils/logger');
 
 // Load providers
 const providers = require('../scrapers/providers');
@@ -37,7 +38,7 @@ const resolveLinks = (type) => {
         [...providers[type], ...providers.universal].forEach(provider => promises.push(provider(req, sse)));
 
         req.on('close', function() {
-            console.log('disconnected');
+            logger.debug('disconnected');
             sse.emitter.emit('disconnected');
         });
 

@@ -4,6 +4,7 @@ const cheerio = require('cheerio');
 const tough = require('tough-cookie');
 const randomUseragent = require('random-useragent');
 const vm = require('vm');
+const logger = require('../../../utils/logger');
 
 const resolve = require('../../resolvers/resolve');
 const {isSameSeriesName} = require('../../../utils');
@@ -64,7 +65,7 @@ async function StreamM4u(req, sse) {
             }
         } catch (err) {
             if (!sse.stopExecution) {
-                console.error({source: 'StreamM4u', sourceUrl: url, query: {title: req.query.title}, error: err.message || err.toString()});
+                logger.error({source: 'StreamM4u', sourceUrl: url, query: {title: req.query.title}, error: err.message || err.toString()});
             }
         }
     }
@@ -123,7 +124,7 @@ async function StreamM4u(req, sse) {
             resolvePromises.push(Promise.all(resolveHiddenLinkPromises));
         } catch (err) {
             if (!sse.stopExecution) {
-                console.error({source: 'StreamM4u', sourceUrl: url, query: {title: req.query.title}, error: err.message || err.toString()});
+                logger.error({source: 'StreamM4u', sourceUrl: url, query: {title: req.query.title}, error: err.message || err.toString()});
             }
         }
 

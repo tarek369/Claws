@@ -32,7 +32,7 @@ app.use(compression({filter: (req, res) => {
 }}));
 
 // Middleware: Initialise logging.
-app.use(require('morgan')('combined', {stream: logger.stream}));
+app.use(require('morgan')('tiny', {stream: logger.stream}));
 
 // Middlware: Add headers to API.
 app.use(function (req, res, next) {

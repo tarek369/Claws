@@ -1,11 +1,13 @@
+require('dotenv').config();
 const winston = require('winston');
 
-const winstonTransports = [
+let winstonTransports = [
     new winston.transports.Console({
-        level: 'debug',
+        level: process.env.LOG_LEVEL,
         handleExceptions: true,
         json: false,
         colorize: true,
+        silent: process.env.SILENCE_LOGS === "true"
     }),
 ];
 
@@ -14,7 +16,7 @@ if (process.env.CLAWS_ENV === 'server') {
     const appRoot = require('app-root-path');
     winstonTransports.push(
         new winston.transports.File({
-            level: 'info',
+            level: 'error',
             filename: `${appRoot}/logs/app.log`,
             handleExceptions: true,
             json: true,
@@ -34,7 +36,7 @@ const logger = winston.createLogger({
 logger.stream = {
     write: function (message, encoding) {
         // use the 'info' log level so the output will be picked up by all the available transports (file and console)
-        logger.info(message);
+        logger.error(message);
     },
 };
 

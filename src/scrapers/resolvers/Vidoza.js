@@ -2,20 +2,21 @@ const rp = require('request-promise');
 const cheerio = require('cheerio');
 const vm = require('vm');
 const {timeout} = require('../../utils');
+const logger = require('../../utils/logger');
 
 async function Vidoza(uri, jar, {'user-agent': userAgent}) {
     let videoPageHtml = '';
     let attempt = 0;
     while(attempt < 5 && !videoPageHtml) {
         try {
-            console.log(attempt, uri);
+            logger.debug(attempt, uri);
             videoPageHtml = await rp({
                 uri,
                 timeout: 5000
             });
-            console.log('success', uri);
+            logger.debug('success', uri);
         } catch (err) {
-            console.log('fail', uri);
+            logger.error('fail', uri);
             await timeout(3000);
             attempt++;
         }
