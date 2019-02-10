@@ -3,14 +3,14 @@ const URL = require('url');
 const ffprobe = require('ffprobe');
 const ffprobeStatic = require('ffprobe-static');
 
-async function createEvent(data, ipLocked, pairing, {quality, provider, source, isDownload = false, cookieRequired = '', cookie = ''}, headers) {
+async function createEvent(data, ipLocked, pairing, {quality, provider, source, isDownload = false, isResultOfScrape = false, cookieRequired = '', cookie = ''}, headers) {
 	if (ipLocked) {
 		return {
 		    event: 'scrape',
 		    target: pairing.target,
 		    headers,
 		    source,
-		    resolver: `/api/v1/resolve/${provider}`,
+		    resolver: provider,
 		    cookieRequired
 		}
 	}
@@ -33,6 +33,7 @@ async function createEvent(data, ipLocked, pairing, {quality, provider, source, 
             data,
             kind: getDataKind(data),
         },
+        isResultOfScrape,
         metadata: {
             quality,
             provider,

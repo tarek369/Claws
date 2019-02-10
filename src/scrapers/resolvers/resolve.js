@@ -8,7 +8,7 @@ const SpeedVid = require('./SpeedVid');
 const VidCloud = require('./VidCloud');
 const ClipWatching = require('./ClipWatching');
 const EStream = require('./EStream');
-const Vidzi = require('./Vidzi');
+// const Vidzi = require('./Vidzi');
 const VidTodo = require('./VidTodo');
 const {PowVideo} = require('./PowVideo');
 const {GamoVideo} = require('./GamoVideo');
@@ -69,7 +69,7 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
         } else if (uri.includes('vidlox.me') || uri.includes('vidlox.tv')) {
             const dataList = await Vidlox(uri, jar, headers);
             for (const data of dataList) {
-                const event = await createEvent(data, false, undefined, {quality, provider: 'Vidlox', source});
+                const event = await createEvent(data, false, undefined, {quality, provider: 'Vidlox', source}, {referer: uri});
                 sse.send(event, event.event);
             }
 
@@ -254,7 +254,7 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
             logger.warn({source, providerUrl: uri, warning: 'Missing resolver'});
         }
     } catch(err) {
-        logger.error({source, providerUrl: uri, error: err.message || err.toString()});
+        logger.error({source, providerUrl: uri, error: (err.message || err.toString()).substring(0, 100) + '...'});
     }
 }
 

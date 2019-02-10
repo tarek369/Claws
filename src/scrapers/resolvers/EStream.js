@@ -1,6 +1,5 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
-const vm = require('vm');
 
 async function EStream(uri, jar, clientIp, userAgent) {
     const videoPageHtml = await rp({

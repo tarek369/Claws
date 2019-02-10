@@ -131,16 +131,16 @@ async function Afdah(req, sse) {
 
                 const cleanedObfuscatedSources = obfuscatedSources.replace('return(c35?String', `return(c<a?'':e(parseInt(c/a)))+((c=c%a)>35?String`);
 
-                try {
-                    const vm = require('vm');
-                    const sandbox = {window: {checkSrc: function(){}}}; // starting variables
-                    vm.createContext(sandbox); // Contextify the sandbox.
-                    vm.runInContext(cleanedObfuscatedSources, sandbox);
+                // try {
+                    // const vm = require('vm');
+                    // const sandbox = {window: {checkSrc: function(){}}}; // starting variables
+                    // vm.createContext(sandbox); // Contextify the sandbox.
+                    // vm.runInContext(cleanedObfuscatedSources, sandbox);
 
-                    const link = sandbox.window.srcs[0].url;
-                    const event = await createEvent(link, false, {}, {quality: '', provider: 'Vidlink', source: 'Afdah'});
-                    sse.send(event, event.event);
-                } catch(err) {
+                    // const link = sandbox.window.srcs[0].url;
+                    // const event = createEvent(link, false, {}, {quality: '', provider: 'Vidlink', source: 'Afdah'});
+                    // sse.send(event, event.event);
+                // } catch(err) {
                     const openloadData = await rp({
                         uri: ' https://vidlink.org/opl/info',
                         method: 'POST',
@@ -170,11 +170,11 @@ async function Afdah(req, sse) {
                     const providerUrl = `https://oload.cloud/embed/${openloadData.id}`;
 
                     resolvePromises.push(resolve(sse, providerUrl, 'Afdah', jar, headers));
-                }
+                // }
             }
         } catch (err) {
             if (!sse.stopExecution) {
-                logger.error({source: 'Afdah', sourceUrl: url, query: {title: req.query.title}, error: err.message || err.toString()});
+                logger.error({source: 'Afdah', sourceUrl: url, query: {title: req.query.title}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
 

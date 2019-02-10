@@ -67,7 +67,7 @@ async function bfmovies(req, sse){
             resolvePromises.push(resolve(sse, openloadURL, 'BFMovies', jar, {}));
         } catch (err) {
             if (!sse.stopExecution) {
-                logger.error({source: 'StreamM4u', sourceUrl: url, query: {title: req.query.title}, error: err.message || err.toString()});
+                logger.error({source: 'StreamM4u', sourceUrl: url, query: {title: req.query.title}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
 

@@ -1,3 +1,5 @@
+const rp = require('request-promise');
+
 const resolvers = {
     Openload: require('./Openload').OpenloadHtml,
     Streamango: require('./Streamango').StreamangoHtml,
@@ -23,43 +25,44 @@ const resolvers = {
 
 const createEvent = require('../../utils/createEvent');
 
-async function resolveHtml(html, resolver, jar, headers) {
+async function resolveHtml(html, resolver, headers, cookie) {
+    const jar = rp.jar();
     const data = await resolvers[resolver](html, jar, headers);
 
     if (resolver === 'Openload') {
-        return [await createEvent(data, false, {}, {quality: '', provider: 'Openload'})];
+        return [await createEvent(data, false, {}, {quality: '', provider: 'Openload', cookie, isResultOfScrape: true})];
 
     } else if (resolver === 'Streamango') {
-        return [await createEvent(data, false, {}, {quality: '', provider: 'Streamango'})];
+        return [await createEvent(data, false, {}, {quality: '', provider: 'Streamango', cookie, isResultOfScrape: true})];
 
     } else if (resolver === 'VShare') {
-        return [await createEvent(data, false, {}, {quality: '', provider: 'VShare'})];
+        return [await createEvent(data, false, {}, {quality: '', provider: 'VShare', cookie, isResultOfScrape: true})];
 
     } else if (resolver === 'PowVideo') {
         const dataList = [];
-        for (const dataObject of data){
-            dataList.push(await createEvent(!!dataObject.file ? dataObject.file : dataObject.link, false, {}, {quality: '', provider: 'PowVideo'}));
-        }
+        data.forEach(dataObject => {
+            dataList.push(await createEvent(!!dataObject.file ? dataObject.file : dataObject.link, false, {}, {quality: '', provider: 'PowVideo', cookie, isResultOfScrape: true}));
+        });
         return dataList;
 
     } else if (resolver === 'GamoVideo') {
         const dataList = [];
         for (const dataObject of data){
-            dataList.push(await createEvent(dataObject, false, {}, {quality: '', provider: 'GamoVideo'}));
+            dataList.push(await createEvent(dataObject, false, {}, {quality: '', provider: 'GamoVideo', cookie, isResultOfScrape: true}));
         }
         return dataList;
 
     } else if (resolver === 'Vidoza') {
         const dataList = [];
         for (const dataObject of data) {
-            dataList.push(await createEvent(dataObject.src, false, {}, {quality: dataObject.res, provider: 'Vidoza'}));
+            dataList.push(await createEvent(dataObject.src, false, {}, {quality: dataObject.res, provider: 'Vidoza', cookie, isResultOfScrape: true}));
         }
         return dataList;
 
     } else if (resolver === 'GoogleDrive') {
         const dataList = [];
         for (const dataObject of data) {
-            dataList.push(await createEvent(dataObject.link, false, {}, {quality: dataObject.quality, provider: 'GoogleDrive'}));
+            dataList.push(await createEvent(dataObject.link, false, {}, {quality: dataObject.quality, provider: 'GoogleDrive', cookie, isResultOfScrape: true}));
         }
         return dataList;
 

@@ -1,6 +1,5 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
-const vm = require('vm');
 
 async function AfdahTV(uri, jar, headers) {
     const videoPageHtml = await rp({
