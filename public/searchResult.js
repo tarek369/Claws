@@ -26,6 +26,23 @@ function SearchResult(result, state, context) {
         cardimage.src = `https://image.tmdb.org/t/p/w200${result.poster_path}`
     }
 
+    var height = 0;
+    var range = document.createRange();
+    var parentNode = title.parentNode
+    var parentRect = parentNode.getBoundingClientRect()
+    var parentHeight = parentRect.height
+    var childNode = title
+    parentNode.style['font-size'] = parentNode.style['font-size'] || "14px"
+    range.selectNodeContents(childNode);
+    var rect = range.getBoundingClientRect();
+    height = rect.height;
+    while (height > parentHeight) {
+      parentNode.style['font-size'] = parseFloat(parentNode.style['font-size'], 10) - 0.01 + "px"
+      rect = range.getBoundingClientRect();
+      height = rect.height;
+      console.log(height, parentNode.style['font-size'])
+    }
+
     card.onclick = () => {
         state.selectedTitle = result
         state.selectedTitle.similarResults = []
