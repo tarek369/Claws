@@ -8,7 +8,7 @@ const {h} = stage0
 const view = h /* syntax: html */ `
     <section>
         <div>
-            <button #search class="mdl-button theme--dark mdl-js-button mdl-button--raised mdl-js-ripple-effect">Search TV shows and movies... <i class="material-icons">search</i></button>
+            <a #search class="btn-large waves-effect waves-light"><i class="material-icons right">search</i>Search TV shows and movies...</a>
         </div>
     </section>
 `
@@ -24,7 +24,6 @@ function Home(state, context) {
 
         update()
     }
-
 
     const update = () => {
         console.log('Rendered Home')

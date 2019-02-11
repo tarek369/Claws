@@ -38,13 +38,6 @@ function Genre(genreId, context) {
 
     chip.onclick = () => {
         console.log('NAVIGATE TO GENRE SEARCH')
-        // state.selectedTitle = result
-        // // history.pushState({}, '', `/${result.id}`)
-        // if (result.media_type === 'tv') {
-        //     context.navigate(TvTitlePage)
-        // } else {
-        //     context.navigate(MovieTitlePage)
-        // }
     }
 
     genre.nodeValue = MOVIE_GENRES[genreId]
@@ -54,8 +47,6 @@ function Genre(genreId, context) {
 
         genre.nodeValue = MOVIE_GENRES[newGenreId] || 'Unknown'
     }
-
-    componentHandler.upgradeElement(root)
 
     return root
 }

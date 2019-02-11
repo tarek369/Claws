@@ -6,6 +6,7 @@ import ManualPlay from './manualPlay.js'
 const {h, reconcile} = stage0
 
 const initialState = {
+    pageAction: 'favorite',
     results: [],
     lastResults: [],
     selectedTitle: {genre_ids: [], similarResults: []},
@@ -14,43 +15,38 @@ const initialState = {
 
 const routerView = h /* syntax: html */ `
     <section>
-        <div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
-            <header class="mdl-layout__header">
-                <div class="mdl-layout__header-row">
-                    <div class="mdl-layout-spacer"></div>
-                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable mdl-textfield--floating-label mdl-textfield--align-right">
-                        <label class="mdl-button mdl-js-button mdl-button--icon" for="fixed-header-drawer-exp">
-                            <i class="material-icons">search</i>
-                        </label>
-                        <div class="mdl-textfield__expandable-holder">
-                            <input class="mdl-textfield__input" type="text" name="sample" id="fixed-header-drawer-exp">
-                        </div>
-                    </div>
+        <div class="navbar-fixed">
+            <nav>
+                <div class="nav-wrapper">
+                    <span href="#" class="brand-logo left"><a href="#" data-target="slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a></span>
+                    <ul class="right">
+                        <li><a class="btn-floating btn-small btn-flat waves-effect transparent"><i class="material-icons">#pageaction</i></a></li>
+                    </ul>
                 </div>
-            </header>
-            <div class="mdl-layout__drawer theme--dark">
-                <span class="mdl-layout-title">ApolloTV</span>
-                <nav class="mdl-navigation">
-                    <a #home class="mdl-navigation__link" href="">Home</a>
-                    <a #search class="mdl-navigation__link" href="">Search</a>
-                    <a #player class="mdl-navigation__link" href="">Player</a>
-                    <a #manualplay class="mdl-navigation__link" href="">Manual Play</a>
-                </nav>
-            </div>
-            <main #page class="mdl-layout__content">
-            </main>
+            </nav>
         </div>
+
+        <ul #sidenav id="slide-out" class="sidenav sidenav-fixed">
+            <li><a #home class="mdl-navigation__link" href="">Home</a></li>
+            <li><a #search class="mdl-navigation__link" href="">Search</a></li>
+            <li><a #player class="mdl-navigation__link" href="">Player</a></li>
+            <li><a #manualplay class="mdl-navigation__link" href="">Manual Play</a></li>
+        </ul>
+
+        <main #page class="mdl-layout__content"></main>
     </section>
 `
 function Router(state) {
     const root = routerView
     const refs = routerView.collect(root)
 
-    let {page, player, search, home, manualplay} = refs
+    let {page, player, search, home, manualplay, pageaction, sidenav} = refs
 
     state.infiniteScrollElement = page;
 
     const context = {navigate: update}
+
+    M.Sidenav.init(sidenav)
 
     home.onclick = (e) => {
         e.preventDefault();
@@ -80,6 +76,9 @@ function Router(state) {
 
     function update(Component) {
         console.log('Rendered Router')
+
+        pageaction.nodeValue = state.pageAction
+
         if (Component) {
             let currentNode = Component(state, context, 'attach')
             if (!lastNode) {
@@ -89,9 +88,6 @@ function Router(state) {
                     page.replaceChild(currentNode, lastNode)
                 }
                 lastNode = currentNode
-
-            // From MDL: https://getmdl.io/started/index.html#dynamic
-                componentHandler.upgradeAllRegistered()
             }
         }
 

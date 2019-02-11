@@ -8,9 +8,9 @@ const {h, keyed} = stage0
 
 const view = h /* syntax: html */ `
     <section>
-        <div class="mdl-textfield mdl-js-textfield theme--dark">
-            <input #title class="mdl-textfield__input" type="text" id="search">
-            <label class="mdl-textfield__label" for="search">Search</label>
+        <div class="input-field col s6">
+            <input #title id="search" type="text">
+            <label for="search">Search</label>
         </div>
         <div #list class="search-results-list"></div>
     </section>
