@@ -3,7 +3,7 @@ const RequestPromise = require('request-promise');
 const cheerio = require('cheerio');
 const tough = require('tough-cookie');
 const randomUseragent = require('random-useragent');
-const vm = require('vm');
+const logger = require('../../../utils/logger');
 
 const resolve = require('../../resolvers/resolve');
 const {isSameSeriesName} = require('../../../utils');
@@ -46,15 +46,6 @@ async function StreamM4u(req, sse) {
             const providerUrl = $('iframe').attr('src');
 
             if (!providerUrl) {
-                // let setupObject = {};
-                // const sandbox = {$(){ return {scrollView(){}}; }, jwplayer(){ return {setup(value){ setupObject = value; }, on(){}}; }};
-                // vm.createContext(sandbox); // Contextify the sandbox.
-                // vm.runInContext($('script')[0].children[0].data, sandbox);
-                // setupObject.sources.forEach(source => {
-                //     resolveSourcesPromises.push(resolve(sse, source.file, 'StreamM4u', jar, headers, source.label));
-                // });
-                // return Promise.all(resolveSourcesPromises);
-
                 const providerUrlRegexResults = /(?:\<iframe\ssrc=")([^"]+)/.exec(iframePageHtml);
                 if (providerUrlRegexResults) {
                     return resolve(sse, providerUrlRegexResults[1], 'StreamM4u', jar, headers);
@@ -64,7 +55,7 @@ async function StreamM4u(req, sse) {
             }
         } catch (err) {
             if (!sse.stopExecution) {
-                console.error({source: 'StreamM4u', sourceUrl: url, query: {title: req.query.title}, error: err.message || err.toString()});
+                logger.error({source: 'StreamM4u', sourceUrl: url, query: {title: req.query.title}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
     }
@@ -123,7 +114,7 @@ async function StreamM4u(req, sse) {
             resolvePromises.push(Promise.all(resolveHiddenLinkPromises));
         } catch (err) {
             if (!sse.stopExecution) {
-                console.error({source: 'StreamM4u', sourceUrl: url, query: {title: req.query.title}, error: err.message || err.toString()});
+                logger.error({source: 'StreamM4u', sourceUrl: url, query: {title: req.query.title}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
 

@@ -2,8 +2,8 @@ const Promise = require('bluebird');
 const RequestPromise = require('request-promise');
 const cheerio = require('cheerio');
 const randomUseragent = require('random-useragent');
-const vm = require('vm');
 const URL = require('url');
+const logger = require('../../../utils/logger');
 
 const resolve = require('../../resolvers/resolve');
 
@@ -93,7 +93,7 @@ async function SwatchSeries(req, sse) {
             });
         } catch (err) {
             if (!sse.stopExecution) {
-                console.error({source: 'SwatchSeries', sourceUrl: url, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: err.message || err.toString()});
+                logger.error({source: 'SwatchSeries', sourceUrl: url, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
 

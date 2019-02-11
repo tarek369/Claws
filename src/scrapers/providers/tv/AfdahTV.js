@@ -2,6 +2,7 @@ const Promise = require('bluebird');
 const RequestPromise = require('request-promise');
 const cheerio = require('cheerio');
 const AES = require('crypto-js/aes');
+const logger = require('../../../utils/logger')
 
 const resolve = require('../../resolvers/resolve');
 const {padTvNumber} = require('../../../utils');
@@ -153,7 +154,7 @@ async function AfdahTV(req, sse) {
             }
         } catch (err) {
             if (!sse.stopExecution) {
-                console.error({source: 'AfdahTV', sourceUrl: url, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: err.message || err.toString()});
+                logger.error({source: 'AfdahTV', sourceUrl: url, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
 

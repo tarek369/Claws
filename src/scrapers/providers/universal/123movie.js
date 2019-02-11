@@ -1,6 +1,7 @@
 const Promise = require('bluebird');
 const RequestPromise = require('request-promise');
 const cheerio = require('cheerio');
+const logger = require('../../../utils/logger');
 
 const resolve = require('../../resolvers/resolve');
 
@@ -94,7 +95,7 @@ async function _123movie(req, sse){
             resolvePromises.push(resolve(sse, openloadVideoURL, '123Movie', jar, {}));
         } catch (err) {
             if (!sse.stopExecution) {
-                console.error({source: '123Movies', sourceUrl: url, query: {title: req.query.title}, error: err.message || err.toString()});
+                logger.error({source: '123Movies', sourceUrl: url, query: {title: req.query.title}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
 

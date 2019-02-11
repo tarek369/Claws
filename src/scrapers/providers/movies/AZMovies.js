@@ -3,6 +3,7 @@ const RequestPromise = require('request-promise');
 const cheerio = require('cheerio');
 const tough = require('tough-cookie');
 const randomUseragent = require('random-useragent');
+const logger = require('../../../utils/logger');
 
 const resolve = require('../../resolvers/resolve');
 
@@ -73,7 +74,7 @@ async function AZMovies(req, sse) {
 
         } catch (err) {
             if (!sse.stopExecution) {
-                console.error({source: 'AZMovies', sourceUrl: url, query: {title: req.query.title}, error: err.message || err.toString()});
+                logger.error({source: 'AZMovies', sourceUrl: url, query: {title: req.query.title}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
 

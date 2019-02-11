@@ -1,6 +1,7 @@
 const Promise = require('bluebird');
 const RequestPromise = require('request-promise');
 const cheerio = require('cheerio');
+const logger = require('../../../utils/logger')
 
 const resolve = require('../../resolvers/resolve');
 
@@ -52,7 +53,7 @@ async function bfmovies(req, sse){
             let openloadPage = $("iframe").attr('src');
 
             if(!openloadPage.includes("openload")){
-                console.log("BFMovies does not always use OpenLoad.");
+                logger.debug("BFMovies does not always use OpenLoad.");
                 return false;
             }
 
@@ -66,7 +67,7 @@ async function bfmovies(req, sse){
             resolvePromises.push(resolve(sse, openloadURL, 'BFMovies', jar, {}));
         } catch (err) {
             if (!sse.stopExecution) {
-                console.error({source: 'StreamM4u', sourceUrl: url, query: {title: req.query.title}, error: err.message || err.toString()});
+                logger.error({source: 'StreamM4u', sourceUrl: url, query: {title: req.query.title}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
 
