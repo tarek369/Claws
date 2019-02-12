@@ -16,7 +16,7 @@ const initialState = {
 const routerView = h /* syntax: html */ `
     <section>
         <div class="navbar-fixed">
-            <nav>
+            <nav class="deep-purple accent-3">
                 <div class="nav-wrapper">
                     <span href="#" class="brand-logo left"><a href="#" data-target="slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a></span>
                     <ul class="right">
@@ -83,13 +83,13 @@ function Router(state) {
             let currentNode = Component(state, context, 'attach')
             if (!lastNode) {
                 page.appendChild(currentNode)
-                } else {
-                    lastNode.cleanup && lastNode.cleanup()
-                    page.replaceChild(currentNode, lastNode)
-                }
-                lastNode = currentNode
+            } else {
+                lastNode.cleanup && lastNode.cleanup()
+                page.replaceChild(currentNode, lastNode)
             }
+            lastNode = currentNode
         }
+    }
 
         update(Home)
 

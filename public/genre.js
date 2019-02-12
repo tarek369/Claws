@@ -26,9 +26,9 @@ const MOVIE_GENRES = {
 };
 
 const view = h /* syntax: html */ `
-    <button #chip type="button" class="mdl-chip mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--primary genre">
-        <span class="mdl-chip__text capitalize">#genre</span>
-    </button>
+    <div #chip class="chip deep-purple accent-3 waves-effect waves-light genre">
+        #genre
+    </div>
 `
 function Genre(genreId, context) {
     const root = view.cloneNode(true)

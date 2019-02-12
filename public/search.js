@@ -8,7 +8,7 @@ const {h, keyed} = stage0
 
 const view = h /* syntax: html */ `
     <section>
-        <div class="input-field col s6">
+        <div class="input-field">
             <input #title id="search" type="text">
             <label for="search">Search</label>
         </div>

@@ -8,7 +8,7 @@ const {h} = stage0
 const view = h /* syntax: html */ `
     <section>
         <div>
-            <a #search class="btn-large waves-effect waves-light"><i class="material-icons right">search</i>Search TV shows and movies...</a>
+            <a #search class="btn-large grey darken-3 waves-effect waves-light"><i class="material-icons right">search</i>Search TV shows and movies...</a>
         </div>
     </section>
 `

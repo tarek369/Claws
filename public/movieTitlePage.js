@@ -22,15 +22,13 @@ const view = h /* syntax: html */ `
         <div class="movie-similar-list-container">
             <div class="movie-similar-list-title-container">
                 <h4>Similar Movies</h4>
-                <button #favoritebutton class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--primary">
-                    <i class="material-icons">#favoriteicon</i> #favoritetext
-                </button>
+                <a #favoritebutton class="btn-small waves-effect waves-light deep-purple accent-3 favorite-button"><i class="material-icons left">#favoriteicon</i>#favoritetext</a>
             </div>
             <div #similarlist class="movie-similar-list"></div>
         </div>
     </div>
 `
-function MovieTitlePage(state, context, action) {
+function MovieTitlePage(state, context) {
     const root = view
 
     // Collect references to dynamic parts
@@ -93,17 +91,25 @@ function MovieTitlePage(state, context, action) {
             }
         )
 
+        let components = []
+
         keyed(
             'id',
             similarlist,
             state.lastSelectedTitle.similarResults.slice(),
             state.selectedTitle.similarResults.slice(),
             // This assumes similar results are of the same media type (movie, tv)
-            result => SearchResult(result, state, {navigate: update}),
+            result => {
+                const Component = SearchResult(result, state, {navigate: update})
+                components.push(Component)
+                return Component
+            },
             (Component, result) => {
                 return Component.update()
             }
         )
+
+        setTimeout(() => components.forEach(Component => Component.update(action)), 0)
 
         state.lastSelectedTitle = state.selectedTitle
     }
@@ -111,6 +117,7 @@ function MovieTitlePage(state, context, action) {
 
     root.cleanup = function() {
         state.selectedTitle = {...state.selectedTitle, genre_ids: [], similarResults: []}
+        console.log('cleanup')
         update('remove')
     }
 
