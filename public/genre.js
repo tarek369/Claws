@@ -26,7 +26,7 @@ const MOVIE_GENRES = {
 };
 
 const view = h /* syntax: html */ `
-    <div #chip class="chip deep-purple accent-3 waves-effect waves-light genre">
+    <div #chip class="chip deep-purple accent-2 waves-effect waves-light genre">
         #genre
     </div>
 `

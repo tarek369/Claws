@@ -22,7 +22,7 @@ const view = h /* syntax: html */ `
         <div class="movie-similar-list-container">
             <div class="movie-similar-list-title-container">
                 <h4>Similar Movies</h4>
-                <a #favoritebutton class="btn-small waves-effect waves-light deep-purple accent-3 favorite-button"><i class="material-icons left">#favoriteicon</i>#favoritetext</a>
+                <a #favoritebutton class="btn-small waves-effect waves-light deep-purple accent-2 favorite-button"><i class="material-icons left">#favoriteicon</i>#favoritetext</a>
             </div>
             <div #similarlist class="movie-similar-list"></div>
         </div>

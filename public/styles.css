@@ -210,10 +210,10 @@ header, main, footer {
 /* Material UI Text Input */
 
 .input-field input[type=text]:focus + label {
-    color: #651fff !important;
+    color: #7c4dff !important;
 }
 
 .input-field input[type=text]:focus {
-    border-bottom: 1px solid #651fff !important;
-    box-shadow: 0 1px 0 0 #651fff !important;
+    border-bottom: 1px solid #7c4dff !important;
+    box-shadow: 0 1px 0 0 #7c4dff !important;
 }
