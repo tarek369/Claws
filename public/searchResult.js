@@ -36,7 +36,7 @@ function SearchResult(result, state, context) {
         }
     }
 
-    root.update = function(action) {
+    root.update = function() {
         console.log('Rendered SearchResult')
 
         let height = 0;

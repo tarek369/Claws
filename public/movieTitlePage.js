@@ -34,7 +34,7 @@ function MovieTitlePage(state, context) {
     // Collect references to dynamic parts
     const {backdropimg, title, subheader, genrelist, description, poster, similarlist, favoritebutton, favoriteicon, favoritetext} = view.collect(root)
 
-    favoritebutton.onclick = () => {
+    const toggleFavorites = () => {
         const favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
         const favoriteIndex = favorites.findIndex(favorite => favorite.id === state.selectedTitle.id)
         if (favoriteIndex !== -1) {
@@ -46,8 +46,10 @@ function MovieTitlePage(state, context) {
         update()
     }
 
+    favoritebutton.onclick = toggleFavorites
+
     async function update(action) {
-        console.log('Rendered MovieTitlePage', action, state)
+        console.log('Rendered MovieTitlePage')
 
         // TODO: Go 1.12 will eliminate the need for this Promise callback. Check Go's latest version in Febuary 2019
         if (action !== 'remove' && state.selectedTitle.id && !state.selectedTitle.similarResults.length) {
@@ -56,27 +58,42 @@ function MovieTitlePage(state, context) {
             state.selectedTitle.similarResults = response.results
         }
 
-        const favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
-        const favorite = favorites.find(favorite => favorite.id === state.selectedTitle.id)
-        if (favorite) {
-            favoriteicon.nodeValue = 'favorite'
-            favoritetext.nodeValue = 'Remove from favorites'
-        } else {
-            favoriteicon.nodeValue = 'favorite_border'
-            favoritetext.nodeValue = 'Add to favorites'
+        if (action !== 'remove') {
+            const favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
+            const favorite = favorites.find(favorite => favorite.id === state.selectedTitle.id)
+            if (favorite) {
+                favoriteicon.nodeValue = 'favorite'
+                favoritetext.nodeValue = 'Remove from favorites'
+                favoritebutton.classList.add('is-favorite')
+                context.updateActions([{icon: 'favorite', onclick: toggleFavorites, onlyOnMobile: true, className: 'is-favorite'}])
+
+            } else {
+                favoriteicon.nodeValue = 'favorite_border'
+                favoritetext.nodeValue = 'Add to favorites'
+                favoritebutton.classList.remove('is-favorite')
+                context.updateActions([{icon: 'favorite_border', onclick: toggleFavorites, onlyOnMobile: true}])
+            }
         }
 
         title.nodeValue = state.selectedTitle.title || state.selectedTitle.name
         subheader.nodeValue = `${state.selectedTitle.vote_average || 0} (${state.selectedTitle.vote_count})${state.selectedTitle.release_date ? ` | ${(new Date(state.selectedTitle.release_date)).getFullYear()}` : ''}`
         description.nodeValue = state.selectedTitle.overview
         if (description.parentNode.clientHeight > 96 && title.parentNode.clientHeight > 76) {
-            var words = description.nodeValue.split(/\s+/)
+            const words = description.nodeValue.split(/\s+/)
             words.push('...')
 
             do {
                 words.splice(-2, 1)
                 description.nodeValue = words.join(' ')
             } while(description.parentNode.clientHeight > 96)
+        } else if (description.parentNode.clientHeight > 170) {
+            const words = description.nodeValue.split(/\s+/)
+            words.push('...')
+
+            do {
+                words.splice(-2, 1)
+                description.nodeValue = words.join(' ')
+            } while(description.parentNode.clientHeight > 170)
         }
         poster.src = `https://image.tmdb.org/t/p/w300${state.selectedTitle.poster_path}`
         backdropimg.src = `https://image.tmdb.org/t/p/w500${state.selectedTitle.backdrop_path}`
@@ -109,7 +126,7 @@ function MovieTitlePage(state, context) {
             }
         )
 
-        setTimeout(() => components.forEach(Component => Component.update(action)), 0)
+        components.forEach(Component => setTimeout(() => Component.update(), 0))
 
         state.lastSelectedTitle = state.selectedTitle
     }
@@ -117,7 +134,7 @@ function MovieTitlePage(state, context) {
 
     root.cleanup = function() {
         state.selectedTitle = {...state.selectedTitle, genre_ids: [], similarResults: []}
-        console.log('cleanup')
+        context.updateActions([])
         update('remove')
     }
 

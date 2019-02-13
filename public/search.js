@@ -24,8 +24,7 @@ function Search(state, context, action) {
     // TODO: Go 1.12 will eliminate the need for this Promise callback. Check Go's latest version in Febuary 2019
     const infiniteScrollOptions = {
         action,
-        distance: 245,
-        element: state.infiniteScrollElement,
+        distance: 200,
         callback: async function(done) {
             // 1. fetch data from the server
             // 2. insert it into the document
@@ -68,21 +67,29 @@ function Search(state, context, action) {
         // Stupid hack for focus to work
         setTimeout(() => title.focus(), 0)
 
+        let components = []
+
         keyed(
             'id',
             list,
             state.lastResults,
             state.results.slice(),
-            result => SearchResult(result, state, context),
+            result => {
+                const Component = SearchResult(result, state, context)
+                components.push(Component)
+                return Component
+            },
             (Component, result) => Component.update()
         )
+
+        components.forEach(Component => setTimeout(() => Component.update(), 0))
 
         state.lastResults = state.results.slice()
     }
     update()
 
     root.cleanup = function() {
-        infiniteScroll({action: 'remove', element: state.infiniteScrollElement})
+        infiniteScroll({action: 'remove'})
     }
 
     return root

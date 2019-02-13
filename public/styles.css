@@ -87,6 +87,8 @@ input {
 .movie-similar-list-container {
     grid-area: movieSimilarList;
     z-index: 1;
+}
+.movie-similar-list-title-container {
     text-align: center;
 }
 .movie-similar-list {
@@ -95,8 +97,11 @@ input {
     grid-auto-rows: 160px;
     grid-gap: 5px;
 }
-.movie-similar-list-title-container > button {
+.favorite-button {
     display: none;
+}
+.is-favorite i {
+    color: #f44336;
 }
 @media (min-width: 768px) {
     .movie-metadata {
@@ -126,12 +131,12 @@ input {
     }
     .movie-similar-list-container {
         margin-top: -70px;
-        text-align: left;
     }
     .movie-similar-list-title-container {
         display: flex;
         align-items: center;
         justify-content: space-between;
+        text-align: left;
     }
     .movie-similar-list-title-container > button {
         display: block;
@@ -142,12 +147,21 @@ input {
         margin-right: 10px;
     }
     .favorite-button {
+        display: block;
         width: 220px;
         align-self: flex-start;
         margin-right: 15px;
         margin-top: -20px;
         font-size: 12px;
         letter-spacing: unset;
+    }
+}
+
+/* Actions */
+
+@media (min-width: 768px) {
+    .only-on-mobile {
+        display: none;
     }
 }
 
