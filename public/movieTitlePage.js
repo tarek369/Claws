@@ -18,6 +18,7 @@ const view = h /* syntax: html */ `
             <h4 class="movie-metadata"><i class="material-icons">star</i>#subheader</h4>
             <div #genrelist class="genres-container"></div>
             <p>#description</p>
+            <a class="btn-flat waves-effect waves-teal">Play</a>
         </div>
         <div class="movie-similar-list-container">
             <div class="movie-similar-list-title-container">
