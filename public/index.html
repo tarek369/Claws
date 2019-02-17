@@ -122,6 +122,10 @@
                 opacity: 0;
             }
 
+            .searchFilter {
+                color: white;
+            }
+
             .searchBox {
                 text-align: center;
                 width: 100%;
@@ -174,12 +178,12 @@
             <button type="button" class="material-button-raised primary" onclick="searchMovies()">Search</button>
             <button type="button" class="material-button-raised red" onclick="stop()">Stop</button>
         </div>
-        <div>
+        <div class="searchFilter">
             <input id="showTitle" type="text" placeholder="show" />
             <input id="season" type="text" placeholder="season" />
             <input id="episode" type="text" placeholder="episode" />
-
-            <button type="button" onclick="searchTV()">Search</button>
+            <label for="isAnime">Is Anime<input id="isAnime" type="checkbox"></label>
+            <button type="button" onclick="searchSeries()">Search</button>
             <button type="button" onclick="stop()">Stop</button>
         </div>
         <div id="results"></div>
@@ -260,17 +264,25 @@
                     alert("Connection is closed...");
                 };
             }
-            async function searchTV() {
+            async function searchSeries() {
                 let token = await authenticate();
                 let showTitle = document.getElementById('showTitle').value;
                 let season = document.getElementById('season').value;
                 let episode = document.getElementById('episode').value;
+                let isAnime = document.getElementById('isAnime').checked;
 
                 stop(); // Stop existing eventsource.
                 ws = new WebSocket(`ws://localhost:3000/?token=${token}`);
                 ws.onopen = function() {
                     // Web Socket is connected, send data using send()
-                    ws.send(`{"type": "tv", "title": "${showTitle}", "season": "${season}", "episode": "${episode}"}`);
+                    ws.send(JSON.stringify(
+                        {
+                            'type': isAnime ? 'anime' : 'tv',
+                            'title': showTitle,
+                            'season': season,
+                            'episode': episode
+                        }
+                    ));
                 };
 
                 ws.onmessage = function (e) {

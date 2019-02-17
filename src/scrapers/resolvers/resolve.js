@@ -22,7 +22,18 @@ const MovieFiles = require('./MovieFiles');
 const EnterVideo = require('./EnterVideo');
 const logger = require('../../utils/logger');
 
+const Mp4Upload = require('./Mp4Upload');
+const StreamLewd = require('./StreamLewd');
+const TikiWiki = require('./TikiWiki');
+
 const createEvent = require('../../utils/createEvent');
+
+/** @type {BaseResolver[]} */
+const resolvers = [
+    new Mp4Upload(),
+    new StreamLewd(),
+    new TikiWiki(),
+];
 
 async function resolve(sse, uri, source, jar, headers, quality = '') {
     if (sse.stopExecution) {
@@ -35,6 +46,21 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
     const ipLocked = process.env.CLAWS_ENV === 'server';
 
     try {
+        // Loop through all the available providers ordered by priority, the first one to support the uri is used.
+        for (let i = 0; i < resolvers.length; i++) {
+            let resolver = resolvers[i];
+            if (resolver.supportsUri(uri)) {
+                logger.debug(`${resolver.getResolverId()} supports ${uri}!`);
+                return await resolver.resolveUri({
+                    sse,
+                    source,
+                    quality
+                }, uri, jar, headers);
+            }
+        }
+        // TODO move all the resolvers below into their own subclasses for better code maintenance.
+        // Same logic should apply to resolveHtml.js.
+
         if (uri.includes('openload.co') || uri.includes('oload.cloud')) {
             const path = uri.split('/');
             const videoId = path[4];
