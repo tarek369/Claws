@@ -3,6 +3,8 @@
 // Load providers
 const providers = require('../scrapers/providers');
 
+const BaseProvider = require('../scrapers/providers/BaseProvider');
+
 /**
  * Sends the current time in milliseconds.
  */
@@ -26,7 +28,8 @@ const resolveLinks = async (data, ws, req) => {
             }
         },
         stopExecution: false
-    }
+    };
+
     sendInitialStatus(sse);
 
     ws.on('close', () => {
@@ -38,7 +41,23 @@ const resolveLinks = async (data, ws, req) => {
     req.query = {...data, type};
 
     // Get available providers.
-    [...providers[type], ...providers.universal].forEach(provider => promises.push(provider(req, sse)));
+    let availableProviders;
+    if (type === 'anime') {
+        // The universal provider won't work with animes.
+        availableProviders = [...providers[type]]
+    } else {
+        availableProviders = [...providers[type], ...providers.universal];
+    }
+
+    availableProviders.forEach((provider) => {
+        if (provider instanceof BaseProvider) {
+            // Use object orientated provider.
+            return promises.push(provider.resolveRequests(req, sse));
+        } else {
+            // Use declarative provider.
+            return promises.push(provider(req, sse));
+        }
+    });
 
     await Promise.all(promises);
 

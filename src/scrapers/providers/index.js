@@ -15,6 +15,9 @@ module.exports = exports = {
         require('./tv/Series8'),
         require('./tv/SwatchSeries'),
     ],
+    anime: [
+        new (require('./anime/MasterAnime'))(),
+    ],
     universal: [
         require('./universal/123movie'),
         //require('./universal/5movies')
