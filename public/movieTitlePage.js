@@ -1,5 +1,6 @@
 import Genre from './genre.js'
 import SearchResult from './searchResult.js'
+import Player from './player.js'
 
 const {h, keyed, reuseNodes} = stage0
 
@@ -17,8 +18,30 @@ const view = h /* syntax: html */ `
             <h2>#title</h2>
             <h4 class="movie-metadata"><i class="material-icons">star</i>#subheader</h4>
             <div #genrelist class="genres-container"></div>
-            <p>#description</p>
-            <a class="btn-flat waves-effect waves-teal">Play</a>
+            <p #descriptioncontainer><a #descriptiontrigger class="description">#description</a></p>
+            <div class="flex center">
+                <div class="resume-playing-container">
+                    <a #playorresume class="btn-flat waves-effect waves-light white-text play-button">
+                        <i class="material-icons left">play_arrow</i>
+                        #playtext
+                    </a>
+                </div>
+                <div #progress class="play-time progress deep-purple lighten-3">
+                    <div class="determinate deep-purple accent-2" style="width: 70%"></div>
+                </div>
+            </div>
+            <div #playfrombeginning>
+                <a class="btn-flat waves-effect waves-light white-text play-button">
+                    <i class="material-icons left">skip_previous</i>
+                    Play from beginning
+                </a>
+            </div>
+            <div>
+                <a class="btn-flat waves-effect waves-light white-text play-button">
+                    <i class="material-icons left">live_tv</i>
+                    Play trailer
+                </a>
+            </div>
         </div>
         <div class="movie-similar-list-container">
             <div class="movie-similar-list-title-container">
@@ -33,21 +56,36 @@ function MovieTitlePage(state, context) {
     const root = view
 
     // Collect references to dynamic parts
-    const {backdropimg, title, subheader, genrelist, description, poster, similarlist, favoritebutton, favoriteicon, favoritetext} = view.collect(root)
+    const {backdropimg, title, subheader, genrelist, description, descriptioncontainer, descriptiontrigger, poster, similarlist, favoritebutton, favoriteicon, favoritetext, playorresume, playtext, progress, playfrombeginning} = view.collect(root)
 
-    const toggleFavorites = () => {
-        const favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
-        const favoriteIndex = favorites.findIndex(favorite => favorite.id === state.selectedTitle.id)
-        if (favoriteIndex !== -1) {
-            favorites.splice(favoriteIndex, 1)
-        } else {
-            favorites.unshift({...state.selectedTitle, similarResults: []})
+    const toggleFavorites = async () => {
+        let favorite
+        try {
+            favorite = await getFavorite(state.selectedTitle.id)
+        } catch (err) {
+            console.error(err)
         }
-        localStorage.setItem('favorites', JSON.stringify(favorites))
+        if (favorite) {
+            try {
+                await removeFavorite(state.selectedTitle.id)
+            } catch (err) {
+                console.error(err)
+            }
+        } else {
+            try {
+                await addFavorite({...state.selectedTitle, similarResults: []})
+            } catch (err) {
+                console.error(err)
+            }
+        }
         update()
     }
 
     favoritebutton.onclick = toggleFavorites
+
+    descriptiontrigger.onclick = () => alert(state.selectedTitle.overview)
+
+    playorresume.onclick = () => context.navigate(Player)
 
     async function update(action) {
         console.log('Rendered MovieTitlePage')
@@ -60,8 +98,12 @@ function MovieTitlePage(state, context) {
         }
 
         if (action !== 'remove') {
-            const favorites = JSON.parse(localStorage.getItem('favorites') || '[]')
-            const favorite = favorites.find(favorite => favorite.id === state.selectedTitle.id)
+            let favorite
+            try {
+                favorite = await getFavorite(state.selectedTitle.id)
+            } catch (err) {
+                console.error(err)
+            }
             if (favorite) {
                 favoriteicon.nodeValue = 'favorite'
                 favoritetext.nodeValue = 'Remove from favorites'
@@ -76,25 +118,37 @@ function MovieTitlePage(state, context) {
             }
         }
 
+        playtext.nodeValue = 'Play'
+        progress.style.display = 'none'
+        playfrombeginning.style.display = 'none'
         title.nodeValue = state.selectedTitle.title || state.selectedTitle.name
         subheader.nodeValue = `${state.selectedTitle.vote_average || 0} (${state.selectedTitle.vote_count})${state.selectedTitle.release_date ? ` | ${(new Date(state.selectedTitle.release_date)).getFullYear()}` : ''}`
         description.nodeValue = state.selectedTitle.overview
-        if (description.parentNode.clientHeight > 96 && title.parentNode.clientHeight > 76) {
+
+        let height = 0
+        const range = document.createRange()
+        const parentNode = title.parentNode
+        const parentHeight = 65
+        parentNode.style['font-size'] = "50px"
+        range.selectNodeContents(title)
+        let rect = range.getBoundingClientRect()
+        height = rect.height
+        if (height > 0 && parentHeight > 0) {
+            while (height > parentHeight - 10) {
+                parentNode.style['font-size'] = parseFloat(parentNode.style['font-size'], 10) - 1 + "px"
+                rect = range.getBoundingClientRect()
+                height = rect.height
+            }
+        }
+
+        if (descriptioncontainer.clientHeight > 63) {
             const words = description.nodeValue.split(/\s+/)
             words.push('...')
 
             do {
                 words.splice(-2, 1)
                 description.nodeValue = words.join(' ')
-            } while(description.parentNode.clientHeight > 96)
-        } else if (description.parentNode.clientHeight > 170) {
-            const words = description.nodeValue.split(/\s+/)
-            words.push('...')
-
-            do {
-                words.splice(-2, 1)
-                description.nodeValue = words.join(' ')
-            } while(description.parentNode.clientHeight > 170)
+            } while(descriptioncontainer.clientHeight > 63)
         }
         poster.src = `https://image.tmdb.org/t/p/w300${state.selectedTitle.poster_path}`
         backdropimg.src = `https://image.tmdb.org/t/p/w500${state.selectedTitle.backdrop_path}`

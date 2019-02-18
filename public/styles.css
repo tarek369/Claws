@@ -15,8 +15,11 @@ input {
 .flex {
 	display: flex;
 }
+.flex.center {
+	align-items: center;
+}
 .flex.wrap {
-	flex-wrap: wrap;
+    flex-wrap: wrap;
 }
 
 .capitalize {
@@ -102,6 +105,19 @@ input {
 }
 .is-favorite i {
     color: #f44336;
+}
+.play-time.progress {
+    margin: 0;
+}
+.description {
+    color: #bcbcbc;
+}
+.resume-playing-container {
+    flex: 1 1 100%;
+    display: flex;
+}
+.play-button {
+    padding-left: 0;
 }
 @media (min-width: 768px) {
     .movie-metadata {

@@ -20,7 +20,7 @@ const TV_GENRES = {
     10767:  "Talk",
     10768:  "War & Politics",
     37:  "Western",
-};
+}
 
 const view = h /* syntax: html */ `
     <pre>

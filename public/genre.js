@@ -23,7 +23,7 @@ const MOVIE_GENRES = {
     53: "Thriller",
     10752: "War",
     37: "Western"
-};
+}
 
 const view = h /* syntax: html */ `
     <div #chip class="chip deep-purple accent-2 waves-effect waves-light genre">

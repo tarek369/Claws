@@ -12,27 +12,30 @@
 
         <script defer src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
         <script type="text/javascript" charset="utf-8" src="salsa20.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jsstore/dist/jsstore.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jsstore/dist/jsstore.worker.min.js"></script>
+        <script src="jsStore.js"></script>
         <script src="wasm_exec.js"></script>
         <script>
             const supported = (() => {
                 try {
                     if (typeof WebAssembly === "object"
                         && typeof WebAssembly.instantiate === "function") {
-                        const module = new WebAssembly.Module(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
+                        const module = new WebAssembly.Module(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00))
                         if (module instanceof WebAssembly.Module)
-                            return new WebAssembly.Instance(module) instanceof WebAssembly.Instance;
+                            return new WebAssembly.Instance(module) instanceof WebAssembly.Instance
                     }
                 } catch (e) {
                 }
-                return false;
-            })();
+                return false
+            })()
             if (!supported) {
                 alert("This won't work without WebAssembly support.")
             }
-            const go = new Go();
+            const go = new Go()
             WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then(async (result) => {
-                await go.run(result.instance);
-            });
+                await go.run(result.instance)
+            })
         </script>
         <script src="https://unpkg.com/stage0@0.0.19/dist/index.min.js"></script>
         <script src="https://unpkg.com/stage0@0.0.19/dist/reuseNodes.min.js"></script>

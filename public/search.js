@@ -41,7 +41,7 @@ function Search(state, context, action) {
     }
 
     if (state.results.length) {
-        infiniteScroll(infiniteScrollOptions);
+        infiniteScroll(infiniteScrollOptions)
     }
 
     title.oninput = () => {
@@ -56,7 +56,7 @@ function Search(state, context, action) {
             state.pageNumber = response.page
             state.totalPages = response.total_pages
             // setup infinite scroll
-            infiniteScroll(infiniteScrollOptions);
+            infiniteScroll(infiniteScrollOptions)
             update()
         }
     }

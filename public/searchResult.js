@@ -39,20 +39,20 @@ function SearchResult(result, state, context) {
     root.update = function() {
         console.log('Rendered SearchResult')
 
-        let height = 0;
-        const range = document.createRange();
+        let height = 0
+        const range = document.createRange()
         const parentNode = titlecontainer
         const parentRect = parentNode.getBoundingClientRect()
         const parentHeight = parentRect.height
         title.parentNode.style['font-size'] = title.parentNode.style['font-size'] || "14px"
-        range.selectNodeContents(title);
-        let rect = range.getBoundingClientRect();
-        height = rect.height;
+        range.selectNodeContents(title)
+        let rect = range.getBoundingClientRect()
+        height = rect.height
         if (height > 0 && parentHeight > 0) {
             while (height > parentHeight - 10) {
                 title.parentNode.style['font-size'] = parseFloat(title.parentNode.style['font-size'], 10) - 0.1 + "px"
-                rect = range.getBoundingClientRect();
-                height = rect.height;
+                rect = range.getBoundingClientRect()
+                height = rect.height
             }
         }
     }

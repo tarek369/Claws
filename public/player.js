@@ -23,6 +23,7 @@ function Player(state) {
 
     play.onclick = async () => {
         update()
+        video.requestFullscreen()
     }
 
     const update = () => {

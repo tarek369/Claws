@@ -12,7 +12,7 @@ const initialState = {
     lastResults: [],
     selectedTitle: {genre_ids: [], similarResults: []},
     lastSelectedTitle: {genre_ids: [], similarResults: []}
-};
+}
 
 const routerView = h /* syntax: html */ `
     <section>
@@ -46,30 +46,30 @@ function Router(state) {
     M.Sidenav.init(sidenav)
 
     home.onclick = (e) => {
-        e.preventDefault();
+        e.preventDefault()
         // history.pushState({}, '', '/')
         update(Home)
     }
 
     search.onclick = (e) => {
-        e.preventDefault();
+        e.preventDefault()
         // history.pushState({}, '', '/search')
         update(Search)
     }
 
     manualplay.onclick = (e) => {
-        e.preventDefault();
+        e.preventDefault()
         // history.pushState({}, '', '/manualplay')
         update(ManualPlay)
     }
 
     player.onclick = (e) => {
-        e.preventDefault();
+        e.preventDefault()
         // history.pushState({}, '', '/player')
         update(Player)
     }
 
-    let lastNode;
+    let lastNode
 
     function update(Component) {
         console.log('Rendered Router')
@@ -86,7 +86,7 @@ function Router(state) {
         }
     }
 
-    let lastActions = [];
+    let lastActions = []
 
     function updateActions(actions) {
         reconcile(

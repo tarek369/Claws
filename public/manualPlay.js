@@ -1,5 +1,5 @@
 const {h} = stage0
-let es;
+let es
 
 // Create view template.
 // Mark dynamic references with a #-syntax where needed.
@@ -61,8 +61,8 @@ function ManualPlay(state) {
     stopsearch.onclick = stop
 
     function resultListener(e) {
-        let data = JSON.parse(e.data);
-        console.log(data.event, data);
+        let data = JSON.parse(e.data)
+        console.log(data.event, data)
     }
 
     function scrapeListener(e) {
