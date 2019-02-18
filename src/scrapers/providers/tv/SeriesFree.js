@@ -4,7 +4,8 @@ const cheerio = require('cheerio');
 const randomUseragent = require('random-useragent');
 
 const resolve = require('../../resolvers/resolve');
-const {isSameSeriesName, debugLog} = require('../../../utils');
+const {isSameSeriesName} = require('../../../utils');
+const logger = require('../../../utils/logger');
 
 async function SeriesFree(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
@@ -74,7 +75,7 @@ async function SeriesFree(req, sse) {
             });
 
             if (!episodeUrl) {
-                debugLog('SeriesFree', `Could not find: ${showTitle} ${season}×${episode}`);
+                logger.debug('SeriesFree', `Could not find: ${showTitle} ${season}×${episode}`);
                 return Promise.all(resolvePromises);
             }
 
@@ -111,14 +112,14 @@ async function SeriesFree(req, sse) {
                     'x-forwarded-for': clientIp
                 };
                 resolvePromises.push(resolve(sse, providerUrl, 'SeriesFree', jar, headers));
-            })
+            });
         } catch (err) {
             if (!sse.stopExecution) {
-              console.error({
+              logger.error({
                 source: 'SeriesFree',
                 sourceUrl: url,
                 query: {title: req.query.title, season: req.query.season, episode: req.query.episode},
-                error: err.message || err.toString()
+                error: (err.message || err.toString()).substring(0, 100) + '...'
               });
             }
         }

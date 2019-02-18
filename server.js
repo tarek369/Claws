@@ -27,7 +27,7 @@ app.use(compression({filter: (req, res) => {
 }}));
 
 // Middleware: Initialise logging.
-app.use(require('morgan')('combined', {stream: logger.stream}));
+app.use(require('morgan')('tiny', {stream: logger.stream}));
 
 // Middlware: Add headers to API.
 app.use(function (req, res, next) {
@@ -66,29 +66,77 @@ app.use('/api/v1', generalRoutes);
 const authRoutes = require('./src/api/authRoutes');
 app.use('/api/v1', authRoutes);
 
-const searchRoutes = require('./src/api/searchRoutes');
-app.use('/api/v1/search', searchRoutes);
-
-const resolveRoutes = require('./src/api/resolveRoutes');
-app.use('/api/v1/resolve', resolveRoutes);
 /** ./API ROUTES **/
 
-// Start listening...
-app.listen(process.env.PORT, () => {
-    // Always binds to localhost.
-    console.log(`${pkg.name} v${pkg.version} server listening on: http://127.0.0.1:${process.env.PORT}`);
+const http = require('http');
+const WebSocket = require('ws');
+const URL = require('url');
+const {verifyToken} = require('./src/utils');
+const resolveLinks = require('./src/api/resolveLinks');
+const resolveHtml = require('./src/scrapers/resolvers/resolveHtml');
+
+//initialize a simple http server
+const server = http.createServer(app);
+
+async function verifyClient({req}) {
+    const token = URL.parse(req.url, true).query.token;
+    const {auth} = await verifyToken(token);
+    return auth;
+}
+
+//initialize the WebSocket server instance
+const wss = new WebSocket.Server({server, verifyClient});
+
+wss.on('connection', async (ws, req) => {
+    ws.isAlive = true;
+
+    ws.on('pong', () => {
+        ws.isAlive = true;
+    });
+
+    //connection is up, let's add a simple simple event
+    ws.on('message', async (message) => {
+        let data;
+        try {
+            data = JSON.parse(message);
+        } catch (err) {
+            logger.warn(err);
+            ws.send(`{"message": "That was not a JSON object..."}`);
+            return;
+        }
+
+        if (data.type == 'resolveHtml') {
+            try {
+                const results = await resolveHtml(Buffer.from(data.html, 'base64').toString(), data.resolver, data.headers, data.cookie);
+                ws.send(JSON.stringify({event: 'scrapeResults', results}));
+            } catch(err) {
+                ws.send(`{"event": "scrapeResults", "error": "${(err.message || err.toString()).substring(0, 100) + '...'}"}`);
+                logger.error(err);
+            }
+        } else {
+            resolveLinks(data, ws, req);
+        }
+    });
 });
 
-// Test a resolver with the below code
+setInterval(() => {
+    wss.clients.forEach((ws) => {
 
-// const Vidoza = require('./src/scrapers/resolvers/Vidoza');
-// (async function() {
-//  const videoSourceUrl = await Vidoza('http://vidoza.net/embed-9srjo96k713x.html', require('request-promise').jar(), {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:63.0) Gecko/20100101 Firefox/63.0'});
-//  console.log(videoSourceUrl);
-// })()
+        if (!ws.isAlive) {
+            return ws.terminate();
+        }
 
-// const rp = require('request-promise');
-// (async function() {
-//     const [html1, html2] = await Promise.all([rp({uri: 'http://vidoza.net/embed-9srjo96k713x.html', timeout: 5000}), rp({uri: 'http://vidoza.net/embed-9srjo96k713x.html', timeout: 5000})]);
-//     console.log(html1, html2);
-// })()
+        ws.isAlive = false;
+        try {
+            ws.ping(null, false, true);
+        } catch (err) {
+            console.log("WS client disconnected, can't ping");
+            ws.terminate();
+        }
+    });
+}, 10000);
+
+// Start listening...
+server.listen(process.env.PORT, () => {
+    logger.info(`${pkg.name} v${pkg.version} server listening on: http://127.0.0.1:${process.env.PORT}`);
+});

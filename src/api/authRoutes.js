@@ -12,30 +12,6 @@ const authDelay = 10;
 // Declare new router and start defining routes:
 const authRoutes = require('express').Router();
 
-// Rate limit 3 requests per hour
-const rateLimiter = process.env.NODE_ENV === 'production' ?
-    new RateLimiterCluster({
-        keyPrefix: 'pm2clusterlimiter', // name the limiter something unique
-        points: 3, // 3 requests
-        duration: 3600, // per hour
-        timeoutMs: 3000 // Promise is rejected, if master doesn't answer for 3 secs (cluster option)
-    }) :
-    new RateLimiterMemory({
-        keyPrefix: 'memorylimiter', // name the limiter something unique
-        points: 3, // 3 requests
-        duration: 3600, // per hour
-        timeoutMs: 3000 // Promise is rejected, if master doesn't answer for 3 secs (cluster option)
-    })
-
-async function rateLimit(req, res, next) {
-    try {
-        await rateLimiter.consume(process.env.NODE_ENV === 'production' ? req.headers['x-real-ip'] : req.client.remoteAddress);
-        next();
-    } catch (RateLimiterRes) {
-        res.status(429).json({auth: false, message: 'Too Many Requests'});
-    }
-}
-
 /**
  * /api/v1/login
  * ------
@@ -45,7 +21,8 @@ async function rateLimit(req, res, next) {
  * (It will check up to five seconds back )
  * If validated, it will generate a token that can be used by the client for one hour.
  */
-authRoutes.post('/login', rateLimit, async (req, res) => {
+
+async function login(req, res) {
     try {
         const [ivString, encryptedString] = req.body.clientID.split('|');
 
@@ -83,6 +60,36 @@ authRoutes.post('/login', rateLimit, async (req, res) => {
     } catch (err) {
         return res.status(401).json({auth: false, token: null});
     }
-});
+}
+
+if (process.env.RATE_LIMITER === 'true') {
+    // Rate limit 3 requests per hour
+    const rateLimiter = process.env.NODE_ENV === 'production' ?
+        new RateLimiterCluster({
+            keyPrefix: 'pm2clusterlimiter', // name the limiter something unique
+            points: 3, // 3 requests
+            duration: 3600, // per hour
+            timeoutMs: 3000 // Promise is rejected, if master doesn't answer for 3 secs (cluster option)
+        }) :
+        new RateLimiterMemory({
+            keyPrefix: 'memorylimiter', // name the limiter something unique
+            points: 3, // 3 requests
+            duration: 3600, // per hour
+            timeoutMs: 3000 // Promise is rejected, if master doesn't answer for 3 secs (cluster option)
+        })
+
+    async function rateLimit(req, res, next) {
+        try {
+            await rateLimiter.consume(process.env.NODE_ENV === 'production' ? req.headers['x-real-ip'] : req.client.remoteAddress);
+            next();
+        } catch (RateLimiterRes) {
+            res.status(429).json({auth: false, message: 'Too Many Requests'});
+        }
+    }
+
+    authRoutes.post('/login', rateLimit, login);
+} else {
+    authRoutes.post('/login', login);
+}
 
 module.exports = authRoutes;
