@@ -68,7 +68,7 @@ async function SwatchSeries(req, sse) {
 
             $ = cheerio.load(videoPageHtml);
 
-            const episodeUrl = $(`a[href="s${season}_e${episode}"]`).attr('href');
+            const episodeUrl = $(`a[href*="s${season}_e${episode}."]`).attr('href');
 
             const episodePageHtml = await rp({
                 uri: episodeUrl,
