@@ -11,7 +11,8 @@ const initialState = {
     results: [],
     lastResults: [],
     selectedTitle: {genre_ids: [], similarResults: []},
-    lastSelectedTitle: {genre_ids: [], similarResults: []}
+    lastSelectedTitle: {genre_ids: [], similarResults: []},
+    ws: null
 }
 
 const routerView = h /* syntax: html */ `

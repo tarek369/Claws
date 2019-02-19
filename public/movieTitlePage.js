@@ -85,7 +85,28 @@ function MovieTitlePage(state, context) {
 
     descriptiontrigger.onclick = () => alert(state.selectedTitle.overview)
 
-    playorresume.onclick = () => context.navigate(Player)
+    // TODO: Go 1.12 will eliminate the need for this Promise callback. Check Go's latest version in Febuary 2019
+    playorresume.onclick = () => {
+        const token = await new Promise((resolve) => authenticate(resolve))
+
+        if (state.ws) {
+            state.ws.close()
+        }
+        state.ws = new WebSocket(`ws://${location.host}/?token=${token}`);
+        state.ws.onopen = function() {
+            // Web Socket is connected, send data using send()
+            state.ws.send(`{"type": "movies", "title": "${state.selectedTitle.title}"}`);
+        };
+
+        state.ws.onmessage = handleResults
+
+        state.ws.onclose = function() {
+            // websocket is closed.
+            alert("Connection is closed...");
+        };
+
+        // context.navigate(Player)
+    }
 
     async function update(action) {
         console.log('Rendered MovieTitlePage')
@@ -194,6 +215,83 @@ function MovieTitlePage(state, context) {
     }
 
     return root
+}
+
+const promises = []
+const sourceList = []
+let scrapeResultsCounter = 0
+let doneEventStatus = false
+
+function handleResults(e) {
+    try {
+        const event = JSON.parse(e.data)
+        console.log(event);
+        switch (event.event) {
+            case 'scrapeResults': {
+                scrapeResultsCounter--;
+                console.log('# of SCRAPE events to wait for: ' + scrapeResultsCounter + ". Is done scraping for results? " + doneEventStatus);
+                if (event.results) {
+                    const results = event.results;
+                    results.forEach((result) => {
+                        futureList.add(_onSourceFound(sourceList, result, context));
+                    });
+                } else if (event.error) {
+                    console.log(event.error);
+                    break;
+                }
+
+                if (doneEventStatus && scrapeResultsCounter == 0) {
+                    console.log('======SCRAPE RESULTS EVENT AFTER DONE EVENT======');
+                    console.log('Server done scraping, closing WebSocket');
+                    state.ws.close();
+                    await Promise.all(futureList);
+                    console.log('All sources received');
+                    sourceList.sort((left, right) => {
+                        return left.metadata.ping - right.metadata.ping;
+                    });
+
+                    onComplete(context, displayTitle, sourceList);
+                }
+            }
+
+            case 'done': {
+                doneEventStatus = true;
+                if (scrapeResultsCounter == 0) {
+                    console.log('======DONE EVENT======');
+                    console.log('Server done scraping, closing WebSocket');
+                    state.ws.close();
+                    await Promise.all(futureList);
+                    console.log('All sources received');
+                    sourceList.sort((left, right) => {
+                        return left.metadata.ping - right.metadata.ping;
+                    });
+
+                    onComplete(context, displayTitle, sourceList);
+                }
+
+                break;
+            }
+
+            // The content can be accessed directly.
+            case 'result': {
+                promises.push(_onSourceFound(sourceList, event, context));
+                break;
+            }
+
+            // Claws needs the request to be proxied.
+            case 'scrape': {
+                promises.push(_onScrapeSource(event, _negotiator.socket, scrapeResultsCounter));
+                break;
+            }
+        }
+
+        // if (data.event === 'done') {
+        //     console.log('There should be no more events after this one. Comment out the `close` line to see if there are any events leaking.');
+        //     state.ws.close()
+        // }
+    } catch (err) {
+        console.error(e.data);
+    }
 }
 
 export default MovieTitlePage
