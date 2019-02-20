@@ -89,5 +89,22 @@ module.exports = {
      */
     timeout: (ms) => {
         return new Promise(resolve => setTimeout(resolve, ms));
+    },
+
+     /**
+     * returns formatted clientId
+     * @param req request sent to server.
+     */
+    getClientIp: (req) => { 
+        req.client.remoteAddress.replace('::ffff:', '').replace('::1', '') 
+    },
+
+    /**
+     * removes year from string ie: title (2019) -> title
+     * @param title title including year to be removed.
+     */
+    removeYearFromTitle: (title) => {
+        console.log(title)
+        return title.replace(/\s\([0-9]{4}\)$/, "");
     }
 };

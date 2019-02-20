@@ -1,76 +1,51 @@
-const Promise = require('bluebird');
-const URL = require('url');
-const RequestPromise = require('request-promise');
 const cheerio = require('cheerio');
 const randomUseragent = require('random-useragent');
-const tough = require('tough-cookie');
-const logger = require('../../../utils/logger');
+const { absoluteUrl, getClientIp, removeYearFromTitle } = require('../../../utils');
+const BaseProvider = require('../BaseProvider');
 
-const resolve = require('../../resolvers/resolve');
-const {absoluteUrl} = require('../../../utils');
+module.exports = class Series8 extends BaseProvider {
+    /** @inheritdoc */
+    getUrls() {
+        return ['https://www2.seriesonline8.co'];
+    }
 
-async function Series8(req, sse) {
-    const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
-    const showTitle = req.query.title.toLowerCase();
-    const {season, episode} = req.query;
-
-    const urls = ['https://www2.seriesonline8.co'];
-    const promises = [];
-
-    const rp = RequestPromise.defaults(target => {
-        if (sse.stopExecution) {
-            return null;
-        }
-
-        return RequestPromise(target);
-    });
-
-    async function scrape(url) {
+    /** @inheritdoc */
+    async scrape(url, req, ws) {
+        const clientIp = getClientIp(req);
+        const showTitle = req.query.title.toLowerCase();
+        const season = req.query.season;
+        const episode = req.query.episode;
+        const type = req.query.type;
         const resolvePromises = [];
-
+        const headers = {
+            'user-agent': randomUseragent.getRandom(),
+            'x-real-ip': req.client.remoteAddress,
+            'x-forwarded-for': req.client.remoteAddress
+        };
+    
         try {
-            var jar = rp.jar();
-            const userAgent = randomUseragent.getRandom();
-            const html = await rp({
-                uri: `${url}/movie/search/${showTitle.replace(/\s+/g, '-')}`,
-                headers: {
-                    'user-agent': userAgent,
-                    'x-real-ip': req.client.remoteAddress,
-                    'x-forwarded-for': req.client.remoteAddress
-                },
-                jar,
-                timeout: 5000
-            });
-
-            let $ = cheerio.load(html);
-
+            const searchTitle = removeYearFromTitle(showTitle).replace(/\s+/g, '-');
+            let searchUrl = (`${url}/movie/search/${searchTitle}`);
+            const rp = this._getRequest(req, ws);
+            const jar = rp.jar();
+            const response = await this._createRequest(rp, searchUrl);
+            let $ = cheerio.load(response);
+            
             const seasonLink = $('.ml-mask').toArray().find((moviePoster) => {
-                if (moviePoster.type === 'tag' &&  moviePoster.name === 'a') {
+                if (moviePoster.type === 'tag' && moviePoster.name === 'a') {
                     const link = $(moviePoster).attr('href');
                     const title = showTitle.replace(/ /g, '-');
-                    return link.includes(`${title}-season-${season}`);
+                    return link.includes(`${searchTitle}-season-${season}`);
                 }
             });
-
             if (!seasonLink) {
-                logger.debug('Series8', `Could not find: ${showTitle} Season ${season}`);
+                this.logger.debug('Series8', `Could not find: ${showTitle} Season ${season}`);
                 return Promise.all(resolvePromises);
             }
 
             const seasonPageLink = absoluteUrl(url, $(seasonLink).attr('href'));
-
             const episodeLink = `${seasonPageLink}/watching.html?ep=${episode}`;
-
-            const episodePageHtml = await rp({
-                uri: episodeLink,
-                headers: {
-                    'user-agent': userAgent,
-                    'x-real-ip': req.client.remoteAddress,
-                    'x-forwarded-for': req.client.remoteAddress
-                },
-                jar,
-                timeout: 5000
-            });
+            const episodePageHtml = await this._createRequest(rp, episodeLink);
 
             $ = cheerio.load(episodePageHtml);
 
@@ -81,29 +56,18 @@ async function Series8(req, sse) {
                 return providerUrls;
             }, []);
 
-            videoUrls.forEach(async (provider) => {
+            videoUrls.forEach(async (link) => {
                 const headers = {
-                    'user-agent': userAgent,
+                    'user-agent': randomUseragent.getRandom(),
                     'x-real-ip': clientIp,
                     'x-forwarded-for': clientIp
                 };
-                resolvePromises.push(resolve(sse, provider, 'Series8', jar, headers));
+                resolvePromises.push(this.resolveLink(link, ws, jar, headers));
             });
-        } catch (err) {
-            if (!sse.stopExecution) {
-                logger.error({source: 'Series8', sourceUrl: url, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: (err.message || err.toString()).substring(0, 100) + '...'});
-            }
         }
-
-        return Promise.all(resolvePromises);
+        catch (err) {
+            this._onErrorOccurred(err)
+        }
+        return Promise.all(resolvePromises)
     }
-
-    urls.forEach((url) => {
-        promises.push(scrape(url));
-    });
-
-    return Promise.all(promises);
-
 }
-
-module.exports = exports = Series8;

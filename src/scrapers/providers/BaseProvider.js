@@ -3,6 +3,7 @@ const querystring = require('querystring');
 const Promise = require('bluebird');
 const RequestPromise = require('request-promise');
 const resolve = require('../resolvers/resolve');
+const logger = require('../../utils/logger');
 
 function _implementMe(functionName) {
     throw new Error(`Must implement ${functionName}()`);
@@ -16,6 +17,8 @@ function _implementMe(functionName) {
  */
 const BaseProvider = class BaseProvider {
     constructor() {
+        this.logger = logger;
+
         if (new.target === BaseProvider) {
             throw new TypeError("Cannot construct BaseProvider instances directly");
         }
@@ -174,7 +177,7 @@ const BaseProvider = class BaseProvider {
                 options: e.options,
             }
         }
-        console.error(`${this.getProviderId()}: An unexpected error occurred:`, e);
+        this.logger.error(`${this.getProviderId()}: An unexpected error occurred:`, e);
     }
 };
 
