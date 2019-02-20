@@ -12,7 +12,7 @@ async function _123movie(req, sse){
     let episode = req.query.episode;
 
     // If it's a TV show, we need to strip the year
-    if(req.query.type === 'tv') queryTitle = queryTitle.substring(0, queryTitle.length - 7);
+    if(req.query.type === 'tv') queryTitle = queryTitle.replace(/\s\([0-9]{4}\)$/, "");
 
     const urls = ["https://123movie.gl"];
     const promises = [];
