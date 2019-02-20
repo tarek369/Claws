@@ -104,7 +104,6 @@ module.exports = {
      * @param title title including year to be removed.
      */
     removeYearFromTitle: (title) => {
-        console.log(title)
         return title.replace(/\s\([0-9]{4}\)$/, "");
     }
 };
