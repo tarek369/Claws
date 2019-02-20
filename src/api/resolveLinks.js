@@ -41,12 +41,12 @@ const resolveLinks = async (data, ws, req) => {
     req.query = {...data, type};
 
     // Get available providers.
-    let availableProviders;
+    let availableProviders = [...providers[type], ...providers.universal];
+
+    // Add anime providers if Anime tag sent from client. 
+    // TODO: Add and send this tag from the client
     if (type === 'anime') {
-        // The universal provider won't work with animes.
-        availableProviders = [...providers[type]]
-    } else {
-        availableProviders = [...providers[type], ...providers.universal];
+        availableProviders.push([...providers.anime]);
     }
 
     availableProviders.forEach((provider) => {
