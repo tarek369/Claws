@@ -11,6 +11,9 @@ async function _123movie(req, sse){
     let season = req.query.season;
     let episode = req.query.episode;
 
+    // If it's a TV show, we need to strip the year
+    if(req.query.type === 'tv') queryTitle = queryTitle.substring(0, queryTitle.length - 7);
+
     const urls = ["https://123movie.gl"];
     const promises = [];
 
@@ -29,7 +32,7 @@ async function _123movie(req, sse){
             const jar = rp.jar();
             // Fetch the HTML from the page
             let html = await rp({
-                uri: `${url}?s=${queryTitle.replace(/ /g, '+')}`,
+                uri: `${url}/search/?s=${queryTitle.replace(/ /g, '+')}`,
                 timeout: 5000
             });
 
