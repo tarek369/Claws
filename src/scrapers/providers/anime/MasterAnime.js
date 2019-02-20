@@ -27,7 +27,7 @@ module.exports = class MasterAnime extends BaseProvider {
             let animes = JSON.parse(response);
             for (let i = 0; i < animes.length; i++) {
                 let anime = animes[i];
-                if (this._isTheSameSeries(anime['title'], title)) {
+                if (this._isTheSameSeries(anime['title'], title.replace(/\s\([0-9]{4}\)$/, ""))) {
                     let detailsResponse = await this._createRequest(rp, `${url}/api/anime/${anime['id']}/detailed`);
                     let details = JSON.parse(detailsResponse);
                     let currentEpisode;
