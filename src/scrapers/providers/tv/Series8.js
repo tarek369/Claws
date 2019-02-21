@@ -1,6 +1,6 @@
 const cheerio = require('cheerio');
 const randomUseragent = require('random-useragent');
-const { absoluteUrl, getClientIp, removeYearFromTitle } = require('../../../utils');
+const { absoluteUrl, removeYearFromTitle } = require('../../../utils');
 const BaseProvider = require('../BaseProvider');
 
 module.exports = class Series8 extends BaseProvider {
@@ -11,7 +11,7 @@ module.exports = class Series8 extends BaseProvider {
 
     /** @inheritdoc */
     async scrape(url, req, ws) {
-        const clientIp = getClientIp(req);
+        const clientIp = this._getClientIp(req);
         const showTitle = req.query.title.toLowerCase();
         const season = req.query.season;
         const episode = req.query.episode;
