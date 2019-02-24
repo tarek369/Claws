@@ -57,7 +57,7 @@ async function AZMovies(req, sse) {
             let movieUrl = '';
             $('a').toArray().forEach(searchResultElement => {
                 searchResultElement.childNodes.forEach(childNode => {
-                    if (childNode.data === `${movieTitle} (${year})` || childNode.data === `${movieTitle}`) {
+                    if (childNode.data === `${movieTitle} (${year})` || childNode.data === movieTitle) {
                         movieUrl = `${url}/${$(searchResultElement).attr('href')}`;
                     }
                 })

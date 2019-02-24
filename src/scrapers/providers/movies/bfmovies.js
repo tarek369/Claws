@@ -6,8 +6,8 @@ const logger = require('../../../utils/logger')
 const resolve = require('../../resolvers/resolve');
 
 async function bfmovies(req, sse){
-
     const movieTitle = req.query.title;
+    const year = (new Date(req.query.release_date)).getFullYear();
 
     const urls = ["https://bfmovies.net/"];
     const promises = [];
@@ -41,8 +41,14 @@ async function bfmovies(req, sse){
                 let contentTitle = $(element).find(`*[itemprop="name"]`).text();
                 let contentPage = linkElement.attr('href');
 
-                if(contentTitle.includes(movieTitle)) videoPage = contentPage;
+                if (contentTitle === `${movieTitle} (${year})` || contentTitle === movieTitle) {
+                    videoPage = contentPage;
+                }
             });
+
+            if (!videoPage) {
+                return Promise.resolve();
+            }
 
             let videoPageHTML = await rp({
                 uri: videoPage,
@@ -64,10 +70,14 @@ async function bfmovies(req, sse){
 
             // This is the provider URL
             let openloadURL = cheerio.load(openloadHTML)('meta[name="og:url"]').attr('content');
-            resolvePromises.push(resolve(sse, openloadURL, 'BFMovies', jar, {}));
+            if (openloadURL) {
+                resolvePromises.push(resolve(sse, openloadURL, 'BFMovies', jar, {}));
+            } else {
+                return Promise.resolve();
+            }
         } catch (err) {
             if (!sse.stopExecution) {
-                logger.error({source: 'StreamM4u', sourceUrl: url, query: {title: req.query.title}, error: (err.message || err.toString()).substring(0, 100) + '...'});
+                logger.error({source: 'BFMovies', sourceUrl: url, query: {title: req.query.title}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
 
