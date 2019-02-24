@@ -10,9 +10,10 @@ const resolve = require('../../resolvers/resolve');
 async function AZMovies(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
     const movieTitle = req.query.title;
+    const year = (new Date(req.query.release_date)).getFullYear();
 
     // These are all the same host I think. https://xmovies8.org isn't loading.
-    const urls = ["https://azmovies.xyz"];
+    const urls = ["https://azmovie.to"];
     const promises = [];
 
     const rp = RequestPromise.defaults(target => {
@@ -29,8 +30,8 @@ async function AZMovies(req, sse) {
 
         try {
             const jar = rp.jar();
-            const movieUrl = `${url}/watch.php?title=${movieTitle.replace(/ /g, '+')}`;
-            const referer = `https://azmovies.xyz/`;
+            const searchMovieUrl = `${url}/livesearch.php`;
+            const referer = `https://azmovie.to/`;
             const userAgent = randomUseragent.getRandom();
             const headers = {
                 referer,
@@ -38,6 +39,33 @@ async function AZMovies(req, sse) {
                 'x-real-ip': clientIp,
                 'x-forwarded-for': clientIp
             };
+
+            let searchResults = await rp({
+                uri: searchMovieUrl,
+                method: 'POST',
+                formData: {
+                    searchVal: movieTitle,
+                },
+                headers,
+                jar,
+                followAllRedirects: true,
+                timeout: 5000
+            });
+
+            let $ = cheerio.load(searchResults);
+
+            let movieUrl = '';
+            $('a').toArray().forEach(searchResultElement => {
+                searchResultElement.childNodes.forEach(childNode => {
+                    if (childNode.data === `${movieTitle} (${year})` || childNode.data === `${movieTitle}`) {
+                        movieUrl = `${url}/${$(searchResultElement).attr('href')}`;
+                    }
+                })
+            });
+
+            if (!movieUrl) {
+                return Promise.resolve();
+            }
 
             let html = await rp({
                 uri: movieUrl,
@@ -65,7 +93,7 @@ async function AZMovies(req, sse) {
                 timeout: 5000
             });
 
-            let $ = cheerio.load(videoPageHtml);
+            $ = cheerio.load(videoPageHtml);
 
             $('#serverul li a').toArray().forEach((element) => {
                 const providerUrl = $(element).attr('href');

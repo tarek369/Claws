@@ -15,12 +15,12 @@ const sendInitialStatus = (sse) => sse.send({ data: [`${new Date().getTime()}`],
  * @param req request
  * @return {Function}
  */
-const resolveLinks = async (data, ws, req) => {
-    const type = data.type;
+const resolveLinks = async (searchData, ws, req) => {
+    const type = searchData.type;
     const sse = {
-        send: (data) => {
+        send: (resultData) => {
             try {
-                ws.send(JSON.stringify(data));
+                ws.send(JSON.stringify(resultData));
             } catch (err) {
                 console.log("WS client disconnected, can't send data");
             }
@@ -35,7 +35,7 @@ const resolveLinks = async (data, ws, req) => {
 
     const promises = [];
 
-    req.query = {...data, type};
+    req.query = searchData;
 
     // Get available providers.
     [...providers[type], ...providers.universal].forEach(provider => promises.push(provider(req, sse)));

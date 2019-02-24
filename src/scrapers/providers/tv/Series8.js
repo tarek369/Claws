@@ -11,7 +11,7 @@ const {absoluteUrl} = require('../../../utils');
 
 async function Series8(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
-    const showTitle = req.query.title.toLowerCase();
+    const showTitle = req.query.name.toLowerCase();
     const {season, episode} = req.query;
 
     const urls = ['https://www2.seriesonline8.co'];
@@ -91,7 +91,7 @@ async function Series8(req, sse) {
             });
         } catch (err) {
             if (!sse.stopExecution) {
-                logger.error({source: 'Series8', sourceUrl: url, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: (err.message || err.toString()).substring(0, 100) + '...'});
+                logger.error({source: 'Series8', sourceUrl: url, query: {title: req.query.name, season: req.query.season, episode: req.query.episode}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
 

@@ -9,7 +9,7 @@ const {padTvNumber} = require('../../../utils');
 
 async function AfdahTV(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
-    const title = req.query.title;
+    const title = req.query.name;
     const season = padTvNumber(req.query.season);
     const episode = padTvNumber(req.query.episode);
 
@@ -154,7 +154,7 @@ async function AfdahTV(req, sse) {
             }
         } catch (err) {
             if (!sse.stopExecution) {
-                logger.error({source: 'AfdahTV', sourceUrl: url, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: (err.message || err.toString()).substring(0, 100) + '...'});
+                logger.error({source: 'AfdahTV', sourceUrl: url, query: {title: req.query.name, season: req.query.season, episode: req.query.episode}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
 

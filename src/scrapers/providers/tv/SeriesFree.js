@@ -9,7 +9,7 @@ const logger = require('../../../utils/logger');
 
 async function SeriesFree(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
-    const showTitle = req.query.title;
+    const showTitle = req.query.name;
     const {season, episode} = req.query;
 
     // These providers were in the Terarium source, but are now dead..... We need to find others
@@ -118,7 +118,7 @@ async function SeriesFree(req, sse) {
               logger.error({
                 source: 'SeriesFree',
                 sourceUrl: url,
-                query: {title: req.query.title, season: req.query.season, episode: req.query.episode},
+                query: {title: req.query.name, season: req.query.season, episode: req.query.episode},
                 error: (err.message || err.toString()).substring(0, 100) + '...'
               });
             }

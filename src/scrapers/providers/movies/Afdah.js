@@ -8,6 +8,7 @@ const resolve = require('../../resolvers/resolve');
 
 async function Afdah(req, sse) {
     const showTitle = req.query.title;
+    const year = (new Date(req.query.release_date)).getFullYear();
 
     // These are all the same host I think. https://xmovies8.org isn't loading.
     const urls = ["https://afdah.org", "https://genvideos.com", "https://genvideos.co", "https://watch32hd.co", "https://putlockerhd.co"/* , "https://xmovies8.org" */];
@@ -52,7 +53,8 @@ async function Afdah(req, sse) {
 
             $('.cell').toArray().some(element => {
                 const videoName = $(element).find('.video_title').text().trim();
-                if (videoName === showTitle) {
+                const videoYearAndQuality = $(element).find('.video_quality').text().trim();
+                if ((videoName === `${showTitle} (${year})` || videoName === showTitle) && videoYearAndQuality.startsWith(`Year: ${year}`)) {
                     videoId = $(element).find('.video_title h3 a').attr('href').trim();
                     return true;
                 }

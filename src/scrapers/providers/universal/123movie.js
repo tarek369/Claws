@@ -7,7 +7,7 @@ const resolve = require('../../resolvers/resolve');
 
 async function _123movie(req, sse){
 
-    let queryTitle = req.query.title;
+    let queryTitle = req.query.title || req.query.name;
     let season = req.query.season;
     let episode = req.query.episode;
 
@@ -95,7 +95,7 @@ async function _123movie(req, sse){
             resolvePromises.push(resolve(sse, openloadVideoURL, '123Movie', jar, {}));
         } catch (err) {
             if (!sse.stopExecution) {
-                logger.error({source: '123Movies', sourceUrl: url, query: {title: req.query.title}, error: (err.message || err.toString()).substring(0, 100) + '...'});
+                logger.error({source: '123Movies', sourceUrl: url, query: {title: queryTitle}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
 
