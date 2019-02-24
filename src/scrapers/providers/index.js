@@ -3,7 +3,7 @@
 module.exports = exports = {
     movies: [
         require('./movies/Afdah'),
-        require('./movies/AZMovies'),
+        new (require('./movies/AZMovies'))(),
         require('./movies/bfmovies'),
         require('./movies/StreamM4u'),
         require('./movies/MovieFiles'),

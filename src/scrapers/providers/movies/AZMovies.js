@@ -1,92 +1,56 @@
-const Promise = require('bluebird');
-const RequestPromise = require('request-promise');
 const cheerio = require('cheerio');
-const tough = require('tough-cookie');
 const randomUseragent = require('random-useragent');
-const logger = require('../../../utils/logger');
+const BaseProvider = require('../BaseProvider');
+const tough = require('tough-cookie');
 
-const resolve = require('../../resolvers/resolve');
+module.exports = class AZMovies extends BaseProvider {
+    /** @inheritdoc */
+    getUrls() {
+        return ['https://azmovies.xyz'];
+    }
 
-async function AZMovies(req, sse) {
-    const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
-    const movieTitle = req.query.title;
-
-    // These are all the same host I think. https://xmovies8.org isn't loading.
-    const urls = ["https://azmovies.xyz"];
-    const promises = [];
-
-    const rp = RequestPromise.defaults(target => {
-        if (sse.stopExecution) {
-            return null;
-        }
-
-        return RequestPromise(target);
-    });
-
-    // Go to each url and scrape for links, then send the link to the client
-    async function scrape(url) {
+    /** @inheritdoc */
+    async scrape(url, req, ws) {
+        const clientIp = this._getClientIp(req);
+        const title = req.query.title.toLowerCase();
         const resolvePromises = [];
-
+        let headers = {
+            'user-agent': randomUseragent.getRandom(),
+            'x-real-ip': clientIp,
+            'x-forwarded-for': clientIp,
+            'referer': url
+        };
+    
         try {
+            const searchTitle = title.replace(/ /g, '+');
+            let searchUrl = (`${url}/watch.php?title=${searchTitle}`);
+            const rp = this._getRequest(req, ws);
             const jar = rp.jar();
-            const movieUrl = `${url}/watch.php?title=${movieTitle.replace(/ /g, '+')}`;
-            const referer = `https://azmovies.xyz/`;
-            const userAgent = randomUseragent.getRandom();
-            const headers = {
-                referer,
-                'user-agent': userAgent,
-                'x-real-ip': clientIp,
-                'x-forwarded-for': clientIp
-            };
-
-            let html = await rp({
-                uri: movieUrl,
-                headers,
-                jar,
-                followAllRedirects: true,
-                timeout: 5000
-            });
-
-            let documentCookie = /document\.cookie\s*=\s*"(.*)=(.*)";/g.exec(html);
+            const response = await this._createRequest(rp, searchUrl, jar, headers);
+            
+            let documentCookie = /document\.cookie\s*=\s*"(.*)=(.*)";/g.exec(response);
             while (documentCookie) {
                 const cookie = new tough.Cookie({
                     key: documentCookie[1],
                     value: documentCookie[2]
                 });
                 jar.setCookie(cookie, url);
-                html = html.replace('document.cookie', '');
-                documentCookie = /document\.cookie\s*=\s*"(.*)=(.*)";/g.exec(html);
+                response = response.replace('document.cookie', '');
+                documentCookie = /document\.cookie\s*=\s*"(.*)=(.*)";/g.exec(response);
             }
 
-            const videoPageHtml = await rp({
-                uri: movieUrl,
-                headers,
-                jar,
-                timeout: 5000
-            });
+            const videoPageHtml = await this._createRequest(rp, searchUrl, jar, headers);
 
             let $ = cheerio.load(videoPageHtml);
 
             $('#serverul li a').toArray().forEach((element) => {
                 const providerUrl = $(element).attr('href');
-                resolvePromises.push(resolve(sse, providerUrl, 'AZMovies', jar, headers));
+                resolvePromises.push(this.resolveLink(providerUrl, ws, jar, headers));
             });
-
-        } catch (err) {
-            if (!sse.stopExecution) {
-                logger.error({source: 'AZMovies', sourceUrl: url, query: {title: req.query.title}, error: (err.message || err.toString()).substring(0, 100) + '...'});
-            }
         }
-
-        return Promise.all(resolvePromises);
+        catch (err) {
+            this._onErrorOccurred(err)
+        }
+        return Promise.all(resolvePromises)
     }
-
-    // Asynchronously start all the scrapers for each url
-    urls.forEach((url) => {
-        promises.push(scrape(url));
-    });
-
-    return Promise.all(promises);
 }
-
-module.exports = exports = AZMovies;
