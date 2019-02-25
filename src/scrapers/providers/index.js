@@ -5,8 +5,8 @@ module.exports = exports = {
         // require('./movies/Afdah'),
         // require('./movies/AZMovies'),
         // require('./movies/bfmovies'),
-        require('./movies/StreamM4u'),
-        // require('./movies/MovieFiles'),
+        // require('./movies/StreamM4u'),
+        require('./movies/MovieFiles'),
     ],
     tv: [
         // require('./tv/GoWatchSeries'),
