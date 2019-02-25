@@ -22,7 +22,18 @@ const MovieFiles = require('./MovieFiles');
 const EnterVideo = require('./EnterVideo');
 const logger = require('../../utils/logger');
 
+const Mp4Upload = require('./Mp4Upload');
+const StreamLewd = require('./StreamLewd');
+const TikiWiki = require('./TikiWiki');
+
 const createEvent = require('../../utils/createEvent');
+
+/** @type {BaseResolver[]} */
+const resolvers = [
+    new Mp4Upload(),
+    new StreamLewd(),
+    new TikiWiki(),
+];
 
 async function resolve(sse, uri, source, jar, headers, quality = '') {
     if (sse.stopExecution) {
@@ -35,6 +46,21 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
     const ipLocked = process.env.CLAWS_ENV === 'server';
 
     try {
+        // Loop through all the available providers ordered by priority, the first one to support the uri is used.
+        for (let i = 0; i < resolvers.length; i++) {
+            let resolver = resolvers[i];
+            if (resolver.supportsUri(uri)) {
+                logger.debug(`${resolver.getResolverId()} supports ${uri}!`);
+                return await resolver.resolveUri({
+                    sse,
+                    source,
+                    quality
+                }, uri, jar, headers);
+            }
+        }
+        // TODO move all the resolvers below into their own subclasses for better code maintenance.
+        // Same logic should apply to resolveHtml.js.
+
         if (uri.includes('openload.co') || uri.includes('oload.cloud')) {
             const path = uri.split('/');
             const videoId = path[4];
@@ -45,7 +71,7 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
             if (!ipLocked) {
                 data = await Openload(uri, jar, headers);
             }
-            const event = await createEvent(data, ipLocked, {url: 'https://olpair.com', videoId, target: uri}, {quality, provider: 'Openload', source});
+            const event = createEvent(data, ipLocked, {url: 'https://olpair.com', videoId, target: uri}, {quality, provider: 'Openload', source});
             sse.send(event, event.event);
 
         } else if (uri.includes('streamango.com')) {
@@ -53,23 +79,23 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
             if (!ipLocked) {
                 data = await Streamango(uri, jar, headers);
             }
-            const event = await createEvent(data, ipLocked, {target: uri}, {quality, provider: 'Streamango', source});
+            const event = createEvent(data, ipLocked, {target: uri}, {quality, provider: 'Streamango', source});
             sse.send(event, event.event);
 
         } else if (uri.includes('rapidvideo.com')) {
             const data = await RapidVideo(uri, jar);
-            const event = await createEvent(data, false, undefined, {quality, provider: 'RapidVideo', source});
+            const event = createEvent(data, false, undefined, {quality, provider: 'RapidVideo', source});
             sse.send(event, event.event);
 
         } else if (uri.includes('azmovies.co') || uri.includes('azmovies.ws')) {
             const file = await AZMovies(uri, jar, headers);
-            const event = await createEvent(file, false, undefined, {quality, provider: 'AZMovies', source});
+            const event = createEvent(file, false, undefined, {quality, provider: 'AZMovies', source});
             sse.send(event, event.event);
 
         } else if (uri.includes('vidlox.me') || uri.includes('vidlox.tv')) {
             const dataList = await Vidlox(uri, jar, headers);
             for (const data of dataList) {
-                const event = await createEvent(data, false, undefined, {quality, provider: 'Vidlox', source}, {referer: uri});
+                const event = createEvent(data, false, undefined, {quality, provider: 'Vidlox', source}, {referer: uri});
                 sse.send(event, event.event);
             }
 
@@ -84,7 +110,7 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
             if (!ipLocked) {
                 data = await VShare(uri, jar, headers);
             }
-            const event = await createEvent(data, ipLocked, {url: 'https://vshare.eu/pair', videoId, target: uri}, {quality, provider: 'VShare', source});
+            const event = createEvent(data, ipLocked, {url: 'https://vshare.eu/pair', videoId, target: uri}, {quality, provider: 'VShare', source});
             sse.send(event, event.event);
 
         } else if (uri.includes('speedvid.net')) {
@@ -95,7 +121,7 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
             }
             const dataList = await SpeedVid(uri, jar, headers);
             for (const data of dataList) {
-                const event = await createEvent(data, false, undefined, {quality, provider: 'SpeedVid', source});
+                const event = createEvent(data, false, undefined, {quality, provider: 'SpeedVid', source});
                 sse.send(event, event.event);
             }
 
@@ -107,14 +133,14 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
             }
             const dataObjects = await VidCloud(uri, jar, headers);
             for(dataObject of dataObjects){
-                const event = await createEvent(!!dataObject.file ? dataObject.file : dataObject.link, false, undefined, {quality, provider: 'VidCloud', source});
+                const event = createEvent(!!dataObject.file ? dataObject.file : dataObject.link, false, undefined, {quality, provider: 'VidCloud', source});
                 sse.send(event, event.event);
             }
 
         } else if (uri.includes('clipwatching.com')) {
             const dataObjects = await ClipWatching(uri, jar, headers);
             for (const dataObject of dataObjects) {
-                const event = await createEvent(dataObject.file, false, undefined, {quality: dataObject.label || quality, provider: 'ClipWatching', source});
+                const event = createEvent(dataObject.file, false, undefined, {quality: dataObject.label || quality, provider: 'ClipWatching', source});
                 sse.send(event, event.event);
             }
 
@@ -139,7 +165,7 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
         } else if (uri.includes('vidtodo.me') || uri.includes('vidtodo.com') || uri.includes('vidstodo.me')) {
             const dataObjects = await VidTodo(uri, jar, headers);
             for (const dataObject of dataObjects) {
-                const event = await createEvent(dataObject.file, false, undefined, {quality: dataObject.label || quality, provider: 'VidTodo', source}, {referer: uri.replace('vidtodo.me', 'vidstodo.me')});
+                const event = createEvent(dataObject.file, false, undefined, {quality: dataObject.label || quality, provider: 'VidTodo', source}, {referer: uri.replace('vidtodo.me', 'vidstodo.me')});
                 sse.send(event, event.event);
             }
 
@@ -154,11 +180,11 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
             if (!ipLocked) {
                 dataObjects = await PowVideo(uri, jar, headers, videoId);
                 for (const dataObject of dataObjects) {
-                    const event = await createEvent(!!dataObject.file ? dataObject.file : dataObject.link, false, undefined, {quality, provider: 'PowVideo', source});
+                    const event = createEvent(!!dataObject.file ? dataObject.file : dataObject.link, false, undefined, {quality, provider: 'PowVideo', source});
                     sse.send(event, event.event);
                 }
             } else {
-                const event = await createEvent(undefined, true, {target: uri, headers: {referer: `https://povwideo.cc/preview-${videoId}-954x562.html`}}, {quality, provider: 'PowVideo', source});
+                const event = createEvent(undefined, true, {target: uri, headers: {referer: `https://povwideo.cc/preview-${videoId}-954x562.html`}}, {quality, provider: 'PowVideo', source});
                 sse.send(event, event.event);
             }
 
@@ -170,11 +196,11 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
             if (!ipLocked) {
                 dataList = await GamoVideo(uri, jar, headers);
                 for (const data of dataList) {
-                    const event = await createEvent(data, false, undefined, {quality, provider: 'GamoVideo', source});
+                    const event = createEvent(data, false, undefined, {quality, provider: 'GamoVideo', source});
                     sse.send(event, event.event);
                 }
             } else {
-                const event = await createEvent(undefined, true, {target: uri}, {quality, provider: 'GamoVideo', source});
+                const event = createEvent(undefined, true, {target: uri}, {quality, provider: 'GamoVideo', source});
                 sse.send(event, event.event);
             }
 
@@ -182,21 +208,21 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
         } else if (uri.includes('gorillavid.com') || uri.includes('gorillavid.in')) {
             const dataObjects = await GorillaVid(uri, jar, headers);
             for (const dataObject of dataObjects) {
-                const event = await createEvent(dataObject.src, false, undefined, {quality, provider: 'GorillaVid', source});
+                const event = createEvent(dataObject.src, false, undefined, {quality, provider: 'GorillaVid', source});
                 sse.send(event, event.event);
             }
 
         } else if (uri.includes('daclips.com') || uri.includes('daclips.in')) {
             const dataObjects = await DaClips(uri, jar, headers);
             for (const dataObject of dataObjects) {
-                const event = await createEvent(dataObject.src, false, undefined, {quality, provider: 'DaClips', source});
+                const event = createEvent(dataObject.src, false, undefined, {quality, provider: 'DaClips', source});
                 sse.send(event, event.event);
             }
 
         } else if (uri.includes('movpod.com') || uri.includes('movpod.in')) {
             const dataObjects = await MovPod(uri, jar, headers);
             for (const dataObject of dataObjects) {
-                const event = await createEvent(dataObject.src, false, undefined, {quality, provider: 'MovPod', source});
+                const event = createEvent(dataObject.src, false, undefined, {quality, provider: 'MovPod', source});
                 sse.send(event, event.event);
             }
 
@@ -233,22 +259,22 @@ async function resolve(sse, uri, source, jar, headers, quality = '') {
                 const cookieValue = cookieObject ? cookieObject.value : false;
                 const cookie = cookieValue ? `DRIVE_STREAM=${cookieValue}` : undefined;
                 for (const dataObject of dataObjects) {
-                    const event = await createEvent(dataObject.link, false, undefined, {quality: dataObject.quality || quality, provider: 'GoogleDrive', source, cookie});
+                    const event = createEvent(dataObject.link, false, undefined, {quality: dataObject.quality || quality, provider: 'GoogleDrive', source, cookie});
                     sse.send(event, event.event);
                 }
             } else {
-                const event = await createEvent(undefined, true, {target: uri}, {quality, provider: 'GoogleDrive', source, cookieRequired: 'DRIVE_STREAM'});
+                const event = createEvent(undefined, true, {target: uri}, {quality, provider: 'GoogleDrive', source, cookieRequired: 'DRIVE_STREAM'});
                 sse.send(event, event.event);
             }
 
         } else if (uri.includes('moviefiles.org')) {
             const data = await MovieFiles(uri, jar, headers);
-            const event = await createEvent(data, false, undefined, {quality, provider: 'MovieFiles', source, isDownload: true});
+            const event = createEvent(data, false, undefined, {quality, provider: 'MovieFiles', source, isDownload: true});
             sse.send(event, event.event);
 
        /* } else if (uri.includes('entervideo.net')) {
             const data = await EnterVideo(uri, jar, headers);
-            const event = await createEvent(data, false, undefined, {quality, provider: 'EnterVideo', source});
+            const event = createEvent(data, false, undefined, {quality, provider: 'EnterVideo', source});
             sse.send(event, event.event);*/
         } else {
             logger.warn({source, providerUrl: uri, warning: 'Missing resolver'});

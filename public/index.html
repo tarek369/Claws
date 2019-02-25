@@ -122,6 +122,10 @@
                 opacity: 0;
             }
 
+            .searchFilter {
+                color: white;
+            }
+
             .searchBox {
                 text-align: center;
                 /*width: 100%;
@@ -206,6 +210,7 @@
             <br><br><br>
             <button type="button" class="material-button-raised primary" onclick="search()">Search</button>
             <button id="stop" type="button" class="material-button-raised red" disabled onclick="stop()">Stop Scraping</button>
+            <label for="isAnime">Is Anime<input id="isAnime" type="checkbox"></label>
         </div>
         <div id="results" class="search-results-list"></div>
         <script type="text/javascript" charset="utf-8" src="salsa20.min.js"></script>
@@ -295,12 +300,13 @@
                 let token = await authenticate();
                 stop(); // Stop existing eventsource.
                 ws = new WebSocket(`ws://localhost:3000/?token=${token}`);
+                let isAnime = document.getElementById('isAnime').checked;
                 ws.onopen = function() {
                     // Web Socket is connected, send data using send()
                     const season = Number(window.prompt('Type a number for the season', ''));
                     const episode = Number(window.prompt('Type a number for the episode', ''));
                     if (season && episode) {
-                        ws.send(JSON.stringify({type: 'tv', title: searchData.name, year: (new Date(searchData.first_air_date)).getFullYear(), season, episode}));
+                        ws.send(JSON.stringify({type: isAnime ? 'anime' : 'tv', title: searchData.name, year: (new Date(searchData.first_air_date)).getFullYear(), season, episode}));
                         document.getElementById('stop').disabled = false;
                     } else {
                         stop();

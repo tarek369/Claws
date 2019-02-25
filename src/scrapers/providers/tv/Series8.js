@@ -1,49 +1,36 @@
-const Promise = require('bluebird');
-const URL = require('url');
-const RequestPromise = require('request-promise');
 const cheerio = require('cheerio');
 const randomUseragent = require('random-useragent');
-const tough = require('tough-cookie');
-const logger = require('../../../utils/logger');
-
-const resolve = require('../../resolvers/resolve');
 const {absoluteUrl, padTvNumber} = require('../../../utils');
+const BaseProvider = require('../BaseProvider');
 
-async function Series8(req, sse) {
-    const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
-    const showTitle = req.query.title.toLowerCase();
-    const year = req.query.year;
-    const {season, episode} = req.query;
+module.exports = class Series8 extends BaseProvider {
+    /** @inheritdoc */
+    getUrls() {
+        return ['https://www2.seriesonline8.co'];
+    }
 
-    const urls = ['https://www2.seriesonline8.co'];
-    const promises = [];
-
-    const rp = RequestPromise.defaults(target => {
-        if (sse.stopExecution) {
-            return null;
-        }
-
-        return RequestPromise(target);
-    });
-
-    async function scrape(url) {
+    /** @inheritdoc */
+    async scrape(url, req, ws) {
+        const clientIp = this._getClientIp(req);
+        const showTitle = req.query.title.toLowerCase();
+        const year = req.query.year;
+        const season = req.query.season;
+        const episode = req.query.episode;
+        const type = req.query.type;
         const resolvePromises = [];
+        const headers = {
+            'user-agent': randomUseragent.getRandom(),
+            'x-real-ip': req.client.remoteAddress,
+            'x-forwarded-for': req.client.remoteAddress
+        };
 
         try {
-            var jar = rp.jar();
-            const userAgent = randomUseragent.getRandom();
-            const html = await rp({
-                uri: `${url}/movie/search/${showTitle.replace(/\s+/g, '-')}`,
-                headers: {
-                    'user-agent': userAgent,
-                    'x-real-ip': req.client.remoteAddress,
-                    'x-forwarded-for': req.client.remoteAddress
-                },
-                jar,
-                timeout: 5000
-            });
-
-            let $ = cheerio.load(html);
+            const searchTitle = showTitle.replace(/\s+/g, '-');
+            let searchUrl = (`${url}/movie/search/${searchTitle}`);
+            const rp = this._getRequest(req, ws);
+            const jar = rp.jar();
+            const response = await this._createRequest(rp, searchUrl);
+            let $ = cheerio.load(response);
 
             const escapedShowTitle = showTitle.replace(/[^a-zA-Z0-9]+/g, '-');
             let isPadded = true;
@@ -75,46 +62,19 @@ async function Series8(req, sse) {
 
             const formattedEpisode = isPadded ? padTvNumber(episode) : episode;
             const episodeLink = `${seasonPageLink}/watching.html`;
-
-            const episodePageHtml = await rp({
-                uri: episodeLink,
-                headers: {
-                    'user-agent': userAgent,
-                    'x-real-ip': req.client.remoteAddress,
-                    'x-forwarded-for': req.client.remoteAddress
-                },
-                jar,
-                timeout: 5000
-            });
+            const episodePageHtml = await this._createRequest(rp, episodeLink);
 
             $ = cheerio.load(episodePageHtml);
 
-            const headers = {
-                'user-agent': userAgent,
-                'x-real-ip': clientIp,
-                'x-forwarded-for': clientIp
-            };
-            const videoUrls = $('.btn-eps').toArray().forEach((iframeLinks) => {
+            $('.btn-eps').toArray().forEach((iframeLinks) => {
                 if ($(iframeLinks).attr('episode-data') === formattedEpisode.toString()) {
-                    const provider = $(iframeLinks).attr('player-data');
-                    resolvePromises.push(resolve(sse, provider, 'Series8', jar, headers));
+                    const link = $(iframeLinks).attr('player-data');
+                    resolvePromises.push(this.resolveLink(link, ws, jar, headers));
                 }
             });
         } catch (err) {
-            if (!sse.stopExecution) {
-                logger.error({source: 'Series8', sourceUrl: url, query: {title: req.query.name, season: req.query.season, episode: req.query.episode}, error: (err.message || err.toString()).substring(0, 100) + '...'});
-            }
+            this._onErrorOccurred(err)
         }
-
-        return Promise.all(resolvePromises);
+        return Promise.all(resolvePromises)
     }
-
-    urls.forEach((url) => {
-        promises.push(scrape(url));
-    });
-
-    return Promise.all(promises);
-
 }
-
-module.exports = exports = Series8;
