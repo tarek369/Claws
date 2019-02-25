@@ -9,8 +9,8 @@ module.exports = exports = {
         require('./movies/MovieFiles'),
     ],
     tv: [
-        require('./tv/GoWatchSeries'),
-        // require('./tv/SeriesFree'),
+        // require('./tv/GoWatchSeries'),
+        require('./tv/SeriesFree'),
         // require('./tv/AfdahTV'),
         // require('./tv/Series8'),
         // require('./tv/SwatchSeries'),

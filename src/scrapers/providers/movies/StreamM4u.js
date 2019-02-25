@@ -108,10 +108,8 @@ async function StreamM4u(req, sse) {
             const resolveHiddenLinkPromises = [];
             $('.le-server span').toArray().forEach((element) => {
                 const videoId = $(element).attr('data');
-                resolveHiddenLinkPromises.push(scrapeHarder(url, _token, videoId, headers, jar, req.query.title));
+                resolvePromises.push(scrapeHarder(url, _token, videoId, headers, jar, req.query.title));
             });
-
-            resolvePromises.push(Promise.all(resolveHiddenLinkPromises));
         } catch (err) {
             if (!sse.stopExecution) {
                 logger.error({source: 'StreamM4u', sourceUrl: url, query: {title: req.query.title}, error: (err.message || err.toString()).substring(0, 100) + '...'});

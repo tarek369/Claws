@@ -10,6 +10,7 @@ const logger = require('../../../utils/logger');
 async function SeriesFree(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
     const showTitle = req.query.name;
+    const year = (new Date(req.query.first_air_date)).getFullYear();
     const {season, episode} = req.query;
 
     // These providers were in the Terarium source, but are now dead..... We need to find others
@@ -25,6 +26,28 @@ async function SeriesFree(req, sse) {
 
         return RequestPromise(target);
     });
+
+    async function scrapeHarder(videoUrl, userAgent, clientIp, sse, jar) {
+        const videoPageHtml = await rp({
+            uri: videoUrl,
+            headers: {
+                'user-agent': userAgent
+            },
+            jar,
+            timeout: 5000
+        });
+
+        let $ = cheerio.load(videoPageHtml);
+
+        const providerUrl = $('.action-btn').attr('href');
+
+        const headers = {
+            'user-agent': userAgent,
+            'x-real-ip': clientIp,
+            'x-forwarded-for': clientIp
+        };
+        return resolve(sse, providerUrl, 'SeriesFree', jar, headers);
+    }
 
     // Go to each url and scrape for links, then send the link to the client
     async function scrape(url) {
@@ -45,14 +68,17 @@ async function SeriesFree(req, sse) {
             let $ = cheerio.load(html);
 
             let showUrl = '';
-
             $('.serie-title').toArray().some(element => {
-                if (isSameSeriesName(showTitle, $(element).text())) {
+                if ($(element).text() === `${showTitle} (${year})` || $(element).text() === showTitle) {
                     showUrl = `${url}${$(element).parent().attr('href')}`;
                     return true;
                 }
                 return false;
             });
+
+            if (!showUrl) {
+                return Promise.resolve();
+            }
 
             const videoPageHtml = await rp({
                 uri: showUrl,
@@ -76,7 +102,7 @@ async function SeriesFree(req, sse) {
 
             if (!episodeUrl) {
                 logger.debug('SeriesFree', `Could not find: ${showTitle} ${season}×${episode}`);
-                return Promise.all(resolvePromises);
+                return Promise.resolve();
             }
 
             const episodePageHtml = await rp({
@@ -92,26 +118,8 @@ async function SeriesFree(req, sse) {
 
             const videoUrls = $('.watch-btn').toArray().map(element => `${url}${$(element).attr('href')}`);
 
-            videoUrls.forEach(async (videoUrl) => {
-                const videoPageHtml = await rp({
-                    uri: videoUrl,
-                    headers: {
-                        'user-agent': userAgent
-                    },
-                    jar,
-                    timeout: 5000
-                });
-
-                $ = cheerio.load(videoPageHtml);
-
-                const providerUrl = $('.action-btn').attr('href');
-
-                const headers = {
-                    'user-agent': userAgent,
-                    'x-real-ip': clientIp,
-                    'x-forwarded-for': clientIp
-                };
-                resolvePromises.push(resolve(sse, providerUrl, 'SeriesFree', jar, headers));
+            videoUrls.forEach((videoUrl) => {
+                resolvePromises.push(scrapeHarder(videoUrl, userAgent, clientIp, sse, jar));
             });
         } catch (err) {
             if (!sse.stopExecution) {
