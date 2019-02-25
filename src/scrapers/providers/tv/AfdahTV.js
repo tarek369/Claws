@@ -1,3 +1,6 @@
+// Suspending development on this because it only has 15 TV shows
+// Possible solution: make this into a movie provider and ignore the TV shows section until there's more
+
 const Promise = require('bluebird');
 const RequestPromise = require('request-promise');
 const cheerio = require('cheerio');
@@ -13,7 +16,7 @@ async function AfdahTV(req, sse) {
     const season = padTvNumber(req.query.season);
     const episode = padTvNumber(req.query.episode);
 
-    const urls = ['https://afdah.to'];
+    const urls = ['https://afdah.info'];
     const promises = [];
 
     const rp = RequestPromise.defaults(target => {

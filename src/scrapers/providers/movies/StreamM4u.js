@@ -105,7 +105,6 @@ async function StreamM4u(req, sse) {
             $ = cheerio.load(streamPageHtml);
             const _token = $('meta[name="csrf-token"]').attr('content');
 
-            const resolveHiddenLinkPromises = [];
             $('.le-server span').toArray().forEach((element) => {
                 const videoId = $(element).attr('data');
                 resolvePromises.push(scrapeHarder(url, _token, videoId, headers, jar, req.query.title));
