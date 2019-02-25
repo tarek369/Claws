@@ -11,7 +11,7 @@ async function _123movie(req, sse){
     let season = req.query.season;
     let episode = req.query.episode;
 
-    const urls = ["https://123movie.gl"];
+    const urls = ["https://www6.123movie.cc"];
     const promises = [];
 
     const rp = RequestPromise.defaults(target => {
@@ -29,7 +29,7 @@ async function _123movie(req, sse){
             const jar = rp.jar();
             // Fetch the HTML from the page
             let html = await rp({
-                uri: `${url}?s=${queryTitle.replace(/ /g, '+')}`,
+                uri: `${url}/search/?s=${queryTitle.replace(/ /g, '+')}`,
                 timeout: 5000
             });
 
@@ -61,7 +61,7 @@ async function _123movie(req, sse){
             // If it's a TV show, we have to click the episode number
             if(req.query.type === 'tv'){
                 $(`.paginated-openload .episodios .mark .liopv`).each((index, element) => {
-                    if($(element).text() === episode) {
+                    if($(element).text() === episode.toString()) {
                         pageURL = $(element).attr('onclick').split("'")[1];
                         return false;
                     }

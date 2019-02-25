@@ -9,13 +9,12 @@ module.exports = exports = {
         require('./movies/MovieFiles'),
     ],
     tv: [
-        // require('./tv/GoWatchSeries'),
-        // require('./tv/SeriesFree'),
+        require('./tv/GoWatchSeries'),
+        require('./tv/SeriesFree'),
         require('./tv/Series8'),
-        // require('./tv/SwatchSeries'),
+        require('./tv/SwatchSeries'),
     ],
     universal: [
-        // require('./universal/123movie'),
-        //require('./universal/5movies')
+        require('./universal/123movie'),
     ]
 };
