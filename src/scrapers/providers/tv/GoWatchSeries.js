@@ -5,13 +5,14 @@ const randomUseragent = require('random-useragent');
 const tough = require('tough-cookie');
 
 const resolve = require('../../resolvers/resolve');
-const { normalizeUrl } = require('../../../utils');
+const {normalizeUrl, padTvNumber} = require('../../../utils');
 const logger = require('../../../utils/logger');
 
 async function GoWatchSeries(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
     const showTitle = req.query.name.toLowerCase();
-    const { season, episode } = req.query;
+    const year = (new Date(req.query.first_air_date)).getFullYear();
+    const {season, episode} = req.query;
 
     const urls = ['https://gowatchseries.co'];
     const promises = [];
@@ -44,36 +45,35 @@ async function GoWatchSeries(req, sse) {
 
             let $ = cheerio.load(html);
 
-            const seasonLink = $('.hover_watch').toArray().find((moviePoster) => {
-                const link = $(moviePoster.parent).attr('href');
-                const title = showTitle.replace(/ /g, '-');
-                return link.includes(`${title}-season-${season}`);
-            });
-            if (!seasonLink || !seasonLink.parent) {
+            const escapedShowTitle = showTitle.replace(/[^a-zA-Z0-9]+/g, '-');
+            let isPadded = true;
+            const paddedSeason = padTvNumber(season);
+            let linkText = `${escapedShowTitle}-${year}-season-${paddedSeason}`;
+            let seasonLinkElement = $(`a[href="/info/${linkText}"]`);
+            if (!seasonLinkElement.length) {
+                isPadded = false;
+                linkText = `${escapedShowTitle}-${year}-season-${season}`;
+                seasonLinkElement = $(`a[href="/info/${linkText}"]`);
+                if (!seasonLinkElement.length) {
+                    isPadded = true;
+                    linkText = `${escapedShowTitle}-season-${paddedSeason}`;
+                    seasonLinkElement = $(`a[href="/info/${linkText}"]`);
+                    if (!seasonLinkElement.length) {
+                        isPadded = false;
+                        linkText = `${escapedShowTitle}-season-${season}`;
+                        seasonLinkElement = $(`a[href="/info/${linkText}"]`);
+                    }
+                }
+            }
+            if (!seasonLinkElement.length) {
                 // No season link.
-                logger.debug('GoWatchSeries', `Could not find: ${showTitle} Season ${season}`);
-                return Promise.all(resolvePromises);
+                logger.debug('GoWatchSeries', `Could not find: ${showTitle} (${year}) Season ${season}`);
+                return Promise.resolve();
             }
 
-            const seasonPageLink = `${url}${$(seasonLink.parent).attr('href')}`;
+            linkText += `-episode-${isPadded ? padTvNumber(episode) : episode}`;
 
-            const seasonPageHtml = await rp({
-                uri: `${seasonPageLink}`,
-                headers: {
-                    'user-agent': userAgent,
-                    'x-real-ip': req.client.remoteAddress,
-                    'x-forwarded-for': req.client.remoteAddress
-                },
-                jar,
-                timeout: 5000
-            });
-
-            $ = cheerio.load(seasonPageHtml);
-            const episodePageLink = $('.child_episode').toArray().find((e) => {
-                const link = $(e).find('a').attr('href');
-                return link.includes(`episode-${episode}`)
-            });
-            const episodeLink = `${url}${$(episodePageLink).find('a').attr('href')}`;
+            const episodeLink = `${url}/${linkText}`;
 
             const episodePageHtml = await rp({
                 uri: `${episodeLink}`,
