@@ -12,7 +12,7 @@ module.exports = exports = {
         require('./tv/GoWatchSeries'),
         require('./tv/SeriesFree'),
         require('./tv/AfdahTV'),
-        require('./tv/SwatchSeries'),
+        new (require('./tv/SwatchSeries'))(),
         new (require('./tv/series8'))()
     ],
     anime: [

@@ -180,6 +180,7 @@
         </div>
         <div class="searchFilter">
             <input id="showTitle" type="text" placeholder="show" />
+            <input id="year" type="text" placeholder="year" />
             <input id="season" type="text" placeholder="season" />
             <input id="episode" type="text" placeholder="episode" />
             <label for="isAnime">Is Anime<input id="isAnime" type="checkbox"></label>
@@ -269,6 +270,7 @@
                 let showTitle = document.getElementById('showTitle').value;
                 let season = document.getElementById('season').value;
                 let episode = document.getElementById('episode').value;
+                let year = document.getElementById('year').value;
                 let isAnime = document.getElementById('isAnime').checked;
 
                 stop(); // Stop existing eventsource.
@@ -279,6 +281,7 @@
                         {
                             'type': isAnime ? 'anime' : 'tv',
                             'title': showTitle,
+                            'year': year,
                             'season': season,
                             'episode': episode
                         }
