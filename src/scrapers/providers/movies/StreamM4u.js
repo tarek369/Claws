@@ -11,6 +11,7 @@ const {isSameSeriesName} = require('../../../utils');
 async function StreamM4u(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
     const movieTitle = req.query.title;
+    const year = (new Date(req.query.release_date)).getFullYear();
 
     // These are all the same host I think. https://xmovies8.org isn't loading.
     const urls = ["http://streamm4u.com"];
@@ -66,24 +67,13 @@ async function StreamM4u(req, sse) {
 
         try {
             const jar = rp.jar();
-            const movieSearchUrl = `${url}/searchJS?term=${movieTitle.replace(/ /g, '+')}`;
             const userAgent = randomUseragent.getRandom();
             const headers = {
                 'user-agent': userAgent,
             };
 
-            let searchResults = await rp({
-                uri: movieSearchUrl,
-                headers,
-                jar,
-                json: true,
-                timeout: 5000,
-            });
-
-            let searchTitle = searchResults.find(result => isSameSeriesName(movieTitle, result));
-
             const searchPageHtml = await rp({
-                uri: `${url}/search/${searchTitle}`,
+                uri: `${url}/search/${movieTitle.replace(/[^a-zA-Z0-9]+/g, '-')}`,
                 headers,
                 jar,
                 timeout: 5000
@@ -92,8 +82,18 @@ async function StreamM4u(req, sse) {
             let $ = cheerio.load(searchPageHtml);
 
 
-            const streamPageUrl = $(`a .card img[alt^="${searchTitle}"]`).parent().parent().attr('href');
-            const quality = $(`a .card img[alt^="${searchTitle}"]`).parent().find('h4').text().split(' - ');
+            let searchResult = $(`a .card img[alt^="${movieTitle} (${year})"]`);
+            if (!searchResult.length) {
+                searchResult = $(`a .card img[alt^="${movieTitle} ${year}"]`);
+                if (!searchResult.length) {
+                    searchResult = $(`a .card img[alt^="${movieTitle}"]`);
+                }
+            }
+            if (!searchResult.length) {
+                return Promise.resolve();
+            }
+            const streamPageUrl = searchResult.parent().parent().attr('href');
+            const quality = searchResult.parent().find('h4').text().split(' - ');
 
             const streamPageHtml = await rp({
                 uri: streamPageUrl,

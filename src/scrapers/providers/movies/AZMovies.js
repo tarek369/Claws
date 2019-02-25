@@ -55,12 +55,15 @@ async function AZMovies(req, sse) {
             let $ = cheerio.load(searchResults);
 
             let movieUrl = '';
-            $('a').toArray().forEach(searchResultElement => {
-                searchResultElement.childNodes.forEach(childNode => {
+            $('a').toArray().some(searchResultElement => {
+                for (let childNode of searchResultElement.childNodes) {
                     if (childNode.data === `${movieTitle} (${year})` || childNode.data === movieTitle) {
                         movieUrl = `${url}/${$(searchResultElement).attr('href')}`;
+                        return true;
                     }
-                })
+                }
+
+                return false;
             });
 
             if (!movieUrl) {
