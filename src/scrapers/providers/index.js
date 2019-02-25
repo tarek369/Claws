@@ -11,7 +11,7 @@ module.exports = exports = {
     tv: [
         // require('./tv/GoWatchSeries'),
         // require('./tv/SeriesFree'),
-        // require('./tv/Series8'),
+        require('./tv/Series8'),
         // require('./tv/SwatchSeries'),
     ],
     universal: [

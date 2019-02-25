@@ -7,11 +7,12 @@ const tough = require('tough-cookie');
 const logger = require('../../../utils/logger');
 
 const resolve = require('../../resolvers/resolve');
-const {absoluteUrl} = require('../../../utils');
+const {absoluteUrl, padTvNumber} = require('../../../utils');
 
 async function Series8(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
     const showTitle = req.query.name.toLowerCase();
+    const year = (new Date(req.query.first_air_date)).getFullYear();
     const {season, episode} = req.query;
 
     const urls = ['https://www2.seriesonline8.co'];
@@ -44,22 +45,36 @@ async function Series8(req, sse) {
 
             let $ = cheerio.load(html);
 
-            const seasonLink = $('.ml-mask').toArray().find((moviePoster) => {
-                if (moviePoster.type === 'tag' &&  moviePoster.name === 'a') {
-                    const link = $(moviePoster).attr('href');
-                    const title = showTitle.replace(/ /g, '-');
-                    return link.includes(`${title}-season-${season}`);
+            const escapedShowTitle = showTitle.replace(/[^a-zA-Z0-9]+/g, '-');
+            let isPadded = true;
+            const paddedSeason = padTvNumber(season);
+            let linkText = `${escapedShowTitle}-${year}-season-${paddedSeason}`;
+            let seasonLinkElement = $(`a.ml-mask[href="/film/${linkText}"]`);
+            if (!seasonLinkElement.length) {
+                isPadded = false;
+                linkText = `${escapedShowTitle}-${year}-season-${season}`;
+                seasonLinkElement = $(`a.ml-mask[href="/film/${linkText}"]`);
+                if (!seasonLinkElement.length) {
+                    isPadded = true;
+                    linkText = `${escapedShowTitle}-season-${paddedSeason}`;
+                    seasonLinkElement = $(`a.ml-mask[href="/film/${linkText}"]`);
+                    if (!seasonLinkElement.length) {
+                        isPadded = false;
+                        linkText = `${escapedShowTitle}-season-${season}`;
+                        seasonLinkElement = $(`a.ml-mask[href="/film/${linkText}"]`);
+                    }
                 }
-            });
-
-            if (!seasonLink) {
-                logger.debug('Series8', `Could not find: ${showTitle} Season ${season}`);
-                return Promise.all(resolvePromises);
+            }
+            if (!seasonLinkElement.length) {
+                // No season link.
+                logger.debug('Series8', `Could not find: ${showTitle} (${year}) Season ${season}`);
+                return Promise.resolve();
             }
 
-            const seasonPageLink = absoluteUrl(url, $(seasonLink).attr('href'));
+            const seasonPageLink = absoluteUrl(url, `/film/${linkText}`);
 
-            const episodeLink = `${seasonPageLink}/watching.html?ep=${episode}`;
+            const formattedEpisode = isPadded ? padTvNumber(episode) : episode;
+            const episodeLink = `${seasonPageLink}/watching.html`;
 
             const episodePageHtml = await rp({
                 uri: episodeLink,
@@ -74,20 +89,16 @@ async function Series8(req, sse) {
 
             $ = cheerio.load(episodePageHtml);
 
-            const videoUrls = $('.btn-eps').toArray().reduce((providerUrls, iframeLinks) => {
-                if ($(iframeLinks).attr('episode-data') === `${episode}`) {
-                    providerUrls.push($(iframeLinks).attr('player-data'));
+            const headers = {
+                'user-agent': userAgent,
+                'x-real-ip': clientIp,
+                'x-forwarded-for': clientIp
+            };
+            const videoUrls = $('.btn-eps').toArray().forEach((iframeLinks) => {
+                if ($(iframeLinks).attr('episode-data') === formattedEpisode.toString()) {
+                    const provider = $(iframeLinks).attr('player-data');
+                    resolvePromises.push(resolve(sse, provider, 'Series8', jar, headers));
                 }
-                return providerUrls;
-            }, []);
-
-            videoUrls.forEach(async (provider) => {
-                const headers = {
-                    'user-agent': userAgent,
-                    'x-real-ip': clientIp,
-                    'x-forwarded-for': clientIp
-                };
-                resolvePromises.push(resolve(sse, provider, 'Series8', jar, headers));
             });
         } catch (err) {
             if (!sse.stopExecution) {
