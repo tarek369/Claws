@@ -11,7 +11,7 @@
     "status": "pm2 list",
     "flush": "pm2 flush logs",
     "delete": "pm2 delete all",
-    "build-dev-dependencies": "browserify ./public/salsa20.js -o ./public/salsa20.min.js",
+    "build-dev-dependencies": "browserify ./libs/salsa20.js -o ./public/salsa20.min.js",
     "build": "node build.js",
     "dev": "npm run build-dev-dependencies && cross-env NODE_ENV=development nodemon --inspect server.js",
     "local-prod": "npm run build-dev-dependencies && cross-env NODE_ENV=production nodemon server.js"

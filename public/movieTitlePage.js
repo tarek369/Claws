@@ -86,7 +86,7 @@ function MovieTitlePage(state, context) {
     descriptiontrigger.onclick = () => alert(state.selectedTitle.overview)
 
     // TODO: Go 1.12 will eliminate the need for this Promise callback. Check Go's latest version in Febuary 2019
-    playorresume.onclick = () => {
+    playorresume.onclick = async () => {
         const token = await new Promise((resolve) => authenticate(resolve))
 
         if (state.ws) {
@@ -222,7 +222,7 @@ const sourceList = []
 let scrapeResultsCounter = 0
 let doneEventStatus = false
 
-function handleResults(e) {
+async function handleResults(e) {
     try {
         const event = JSON.parse(e.data)
         console.log(event);
@@ -233,7 +233,7 @@ function handleResults(e) {
                 if (event.results) {
                     const results = event.results;
                     results.forEach((result) => {
-                        futureList.add(_onSourceFound(sourceList, result, context));
+                        promises.push(_onSourceFound(sourceList, result, context));
                     });
                 } else if (event.error) {
                     console.log(event.error);
@@ -244,7 +244,7 @@ function handleResults(e) {
                     console.log('======SCRAPE RESULTS EVENT AFTER DONE EVENT======');
                     console.log('Server done scraping, closing WebSocket');
                     state.ws.close();
-                    await Promise.all(futureList);
+                    await Promise.all(promises);
                     console.log('All sources received');
                     sourceList.sort((left, right) => {
                         return left.metadata.ping - right.metadata.ping;
@@ -260,7 +260,7 @@ function handleResults(e) {
                     console.log('======DONE EVENT======');
                     console.log('Server done scraping, closing WebSocket');
                     state.ws.close();
-                    await Promise.all(futureList);
+                    await Promise.all(promises);
                     console.log('All sources received');
                     sourceList.sort((left, right) => {
                         return left.metadata.ping - right.metadata.ping;
