@@ -10,8 +10,7 @@ const resolve = require('../../resolvers/resolve');
 async function SwatchSeries(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '')
     const showTitle = req.query.name;
-    const year = (new Date(req.query.first_air_date)).getFullYear();
-    const {season, episode} = req.query;
+    const {season, episode, year} = req.query;
 
     const urls = ["https://www1.swatchseries.to"];
     const promises = [];

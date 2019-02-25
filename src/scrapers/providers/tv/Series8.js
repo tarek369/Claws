@@ -11,8 +11,8 @@ const {absoluteUrl, padTvNumber} = require('../../../utils');
 
 async function Series8(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
-    const showTitle = req.query.name.toLowerCase();
-    const year = (new Date(req.query.first_air_date)).getFullYear();
+    const showTitle = req.query.title.toLowerCase();
+    const year = req.query.year;
     const {season, episode} = req.query;
 
     const urls = ['https://www2.seriesonline8.co'];

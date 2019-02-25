@@ -11,7 +11,7 @@ const resolve = require('../../resolvers/resolve');
 async function MovieFiles(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
     const movieTitle = req.query.title;
-    const year = (new Date(req.query.release_date)).getFullYear();
+    const year = req.query.year;
 
     // These are all the same host I think. https://xmovies8.org isn't loading.
     const urls = ["https://moviefiles.org"];

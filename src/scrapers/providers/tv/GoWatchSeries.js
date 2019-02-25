@@ -10,8 +10,8 @@ const logger = require('../../../utils/logger');
 
 async function GoWatchSeries(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
-    const showTitle = req.query.name.toLowerCase();
-    const year = (new Date(req.query.first_air_date)).getFullYear();
+    const showTitle = req.query.title.toLowerCase();
+    const year = req.query.year;
     const {season, episode} = req.query;
 
     const urls = ['https://gowatchseries.co'];

@@ -7,7 +7,7 @@ const resolve = require('../../resolvers/resolve');
 
 async function bfmovies(req, sse){
     const movieTitle = req.query.title;
-    const year = (new Date(req.query.release_date)).getFullYear();
+    const year = req.query.year;
 
     const urls = ["https://bfmovies.net/"];
     const promises = [];

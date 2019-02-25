@@ -9,9 +9,8 @@ const logger = require('../../../utils/logger');
 
 async function SeriesFree(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
-    const showTitle = req.query.name;
-    const year = (new Date(req.query.first_air_date)).getFullYear();
-    const {season, episode} = req.query;
+    const showTitle = req.query.title;
+    const {season, episode, year} = req.query;
 
     // These providers were in the Terarium source, but are now dead..... We need to find others
     // https://seriesfree1.bypassed.bz, https://seriesfree1.bypassed.eu, https://seriesfree1.bypassed.bz

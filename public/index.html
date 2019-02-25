@@ -268,8 +268,7 @@
                 ws = new WebSocket(`ws://localhost:3000/?token=${token}`);
                 ws.onopen = function() {
                     // Web Socket is connected, send data using send()
-                    searchData.type = 'movies';
-                    ws.send(JSON.stringify(searchData));
+                    ws.send(JSON.stringify({type: 'movies', title: searchData.title, year: (new Date(searchData.release_date)).getFullYear()}));
                     document.getElementById('stop').disabled = false;
                 };
 
@@ -298,11 +297,10 @@
                 ws = new WebSocket(`ws://localhost:3000/?token=${token}`);
                 ws.onopen = function() {
                     // Web Socket is connected, send data using send()
-                    searchData.type = 'tv';
-                    searchData.season = Number(window.prompt('Type a number for the season', ''));
-                    searchData.episode = Number(window.prompt('Type a number for the episode', ''));
-                    if (searchData.season && searchData.episode) {
-                        ws.send(JSON.stringify(searchData));
+                    const season = Number(window.prompt('Type a number for the season', ''));
+                    const episode = Number(window.prompt('Type a number for the episode', ''));
+                    if (season && episode) {
+                        ws.send(JSON.stringify({type: 'tv', title: searchData.name, year: (new Date(searchData.first_air_date)).getFullYear(), season, episode}));
                         document.getElementById('stop').disabled = false;
                     } else {
                         stop();
