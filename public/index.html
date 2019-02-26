@@ -128,13 +128,15 @@
 
             .searchBox {
                 text-align: center;
-                width: 100%;
+                /*width: 100%;
                 position: fixed;
                 top: 50%;
                 left: 50%;
                 -webkit-transform: translate(-50%, -50%);
                 transform: translate(-50%, -50%);
-                overflow: hidden;
+                overflow: hidden;*/
+
+                margin: 15px;
             }
 
             .searchBox input[type="text"]{
@@ -165,6 +167,37 @@
             button.red {
                 background-color: #23272A;
             }
+
+            .search-results-list {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(130px, max-content));
+                grid-auto-rows: 225px;
+                grid-gap: 5px;
+            }
+
+            .search-result {
+                width: 100%;
+                height: 100%;
+                max-width: 162px;
+                display: flex;
+                align-items: flex-end;
+                cursor: pointer;
+            }
+
+            .search-result > .search-result-title-container {
+                height: 52px;
+                padding: 5px;
+                background: rgba(0, 0, 0, 0.7);
+                width: 100%;
+                display: flex;
+                align-items: center;
+            }
+
+            .search-result-title {
+                color: #fff;
+                font-size: 14px;
+                font-weight: 500;
+            }
         </style>
     </head>
     <body>
@@ -173,26 +206,24 @@
         </noscript>
 
         <div class="searchBox">
-            <input id="movieTitle" type="text" placeholder="Enter a movie..." />
+            <input id="searchText" type="text" placeholder="Enter a movie..." />
             <br><br><br>
-            <button type="button" class="material-button-raised primary" onclick="searchMovies()">Search</button>
-            <button type="button" class="material-button-raised red" onclick="stop()">Stop</button>
-        </div>
-        <div class="searchFilter">
-            <input id="showTitle" type="text" placeholder="show" />
-            <input id="year" type="text" placeholder="year" />
-            <input id="season" type="text" placeholder="season" />
-            <input id="episode" type="text" placeholder="episode" />
+            <button type="button" class="material-button-raised primary" onclick="search()">Search</button>
+            <button id="stop" type="button" class="material-button-raised red" disabled onclick="stop()">Stop Scraping</button>
             <label for="isAnime">Is Anime<input id="isAnime" type="checkbox"></label>
-            <button type="button" onclick="searchSeries()">Search</button>
-            <button type="button" onclick="stop()">Stop</button>
         </div>
-        <div id="results"></div>
+        <div id="results" class="search-results-list"></div>
         <script type="text/javascript" charset="utf-8" src="salsa20.min.js"></script>
         <script type="text/javascript" charset="utf-8">
             // Provided by the .env file.
+            const TMDB_API_KEY = '<%= tmdb_api_key %>';
             const SECRET_CLIENT_ID = '<%= secret_client_id %>';
+
             let ws;
+            let results = [];
+
+            document.getElementById('searchText').onkeydown = searchByEnter;
+
             async function authenticate() {
                 let token = localStorage.getItem('token');
                 if (token) {
@@ -236,56 +267,14 @@
                 return token;
             }
 
-            async function searchMovies() {
+            async function scrapeMovies(searchData) {
                 let token = await authenticate();
-                let movieTitle = document.getElementById('movieTitle').value;
-
                 stop(); // Stop existing eventsource.
                 ws = new WebSocket(`ws://localhost:3000/?token=${token}`);
                 ws.onopen = function() {
                     // Web Socket is connected, send data using send()
-                    ws.send(`{"type": "movies", "title": "${movieTitle}"}`);
-                };
-
-                ws.onmessage = function (e) {
-                    try {
-                        const data = JSON.parse(e.data)
-                        console.log(data);
-                        if (data.event === 'done') {
-                            console.log('There should be no more events after this one. Comment out the `close` line to see if there are any events leaking.');
-                            ws.close()
-                        }
-                    } catch (err) {
-                        console.error(e.data);
-                    }
-                };
-
-                ws.onclose = function() {
-                    // websocket is closed.
-                    alert("Connection is closed...");
-                };
-            }
-            async function searchSeries() {
-                let token = await authenticate();
-                let showTitle = document.getElementById('showTitle').value;
-                let season = document.getElementById('season').value;
-                let episode = document.getElementById('episode').value;
-                let year = document.getElementById('year').value;
-                let isAnime = document.getElementById('isAnime').checked;
-
-                stop(); // Stop existing eventsource.
-                ws = new WebSocket(`ws://localhost:3000/?token=${token}`);
-                ws.onopen = function() {
-                    // Web Socket is connected, send data using send()
-                    ws.send(JSON.stringify(
-                        {
-                            'type': isAnime ? 'anime' : 'tv',
-                            'title': showTitle,
-                            'year': year,
-                            'season': season,
-                            'episode': episode
-                        }
-                    ));
+                    ws.send(JSON.stringify({type: 'movies', title: searchData.title, year: (new Date(searchData.release_date)).getFullYear()}));
+                    document.getElementById('stop').disabled = false;
                 };
 
                 ws.onmessage = function (e) {
@@ -303,11 +292,79 @@
 
                 ws.onclose = function() {
                     // websocket is closed.
+                    document.getElementById('stop').disabled = true;
+                    alert("Connection is closed...");
+                };
+            }
+            async function scrapeTV(searchData) {
+                let token = await authenticate();
+                stop(); // Stop existing eventsource.
+                ws = new WebSocket(`ws://localhost:3000/?token=${token}`);
+                let isAnime = document.getElementById('isAnime').checked;
+                ws.onopen = function() {
+                    // Web Socket is connected, send data using send()
+                    const season = Number(window.prompt('Type a number for the season', ''));
+                    const episode = Number(window.prompt('Type a number for the episode', ''));
+                    if (season && episode) {
+                        ws.send(JSON.stringify({type: isAnime ? 'anime' : 'tv', title: searchData.name, year: (new Date(searchData.first_air_date)).getFullYear(), season, episode}));
+                        document.getElementById('stop').disabled = false;
+                    } else {
+                        stop();
+                    }
+                };
+
+                ws.onmessage = function (e) {
+                    try {
+                        const data = JSON.parse(e.data)
+                        console.log(data);
+                        if (data.event === 'done') {
+                            console.log('There should be no more events after this one. Comment out the `close` line to see if there are any events leaking.');
+                            // ws.close()
+                        }
+                    } catch (err) {
+                        console.error(e.data);
+                    }
+                };
+
+                ws.onclose = function() {
+                    // websocket is closed.
+                    document.getElementById('stop').disabled = true;
                     alert("Connection is closed...");
                 };
             }
             function stop() {
                 ws && ws.close();
+                document.getElementById('stop').disabled = true;
+            }
+            function searchByEnter(e) {
+                if (e.which == 13 || e.keyCode == 13) {
+                    search();
+                }
+            }
+            async function search() {
+                document.getElementById('results').innerHTML = '';
+                const response = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&language=en-US&query=${document.getElementById('searchText').value}&page=1&include_adult=false`)
+                const responseJSON = await response.json();
+                results = responseJSON.results;
+                for(let result of results) {
+                    const resultContainer = document.createElement('div');
+                    resultContainer.style.background = `url('https://image.tmdb.org/t/p/w200${result.poster_path}') center / cover`;
+                    resultContainer.classList.add('search-result');
+                    const titleContainer = document.createElement('div');
+                    titleContainer.classList.add('search-result-title-container');
+                    const title = document.createElement('span');
+                    title.classList.add('search-result-title');
+                    title.innerText = `${result.title || result.name}${result.release_date ? ` (${(new Date(result.release_date)).getFullYear()})` : ''}`;
+
+                    titleContainer.appendChild(title);
+                    resultContainer.appendChild(titleContainer);
+                    if (result.media_type === 'movie') {
+                        resultContainer.onclick = () => scrapeMovies(result);
+                    } else if (result.media_type === 'tv') {
+                        resultContainer.onclick = () => scrapeTV(result);
+                    }
+                    document.getElementById('results').appendChild(resultContainer);
+                }
             }
             function b64DecodeUnicode(str) {
                 return decodeURIComponent(atob(str).replace(/(.)/g, function (m, p) {
