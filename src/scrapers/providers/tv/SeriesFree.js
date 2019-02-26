@@ -49,7 +49,7 @@ async function SeriesFree(req, sse) {
             return resolve(sse, providerUrl, 'SeriesFree', jar, headers);
         } catch (err) {
             if (!sse.stopExecution) {
-                logger.error({source: 'SeriesFree', sourceUrl: url, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: (err.message || err.toString()).substring(0, 100) + '...'});
+                logger.error({source: 'SeriesFree', sourceUrl: videoUrl, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
     }
