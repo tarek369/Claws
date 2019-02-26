@@ -30,7 +30,7 @@ module.exports = class bfmovies extends BaseProvider {
                 let contentTitle = $(element).find(`*[itemprop="name"]`).text().toLowerCase();
                 let contentPage = linkElement.attr('href');
 
-                if (contentTitle === `${movieTitle} (${year})` || contentTitle === movieTitle) {
+                if (contentTitle === `${title} (${year})` || contentTitle === title) {
                     videoPage = contentPage;
                 }
             });
