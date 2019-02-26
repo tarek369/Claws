@@ -108,7 +108,7 @@ async function SwatchSeries(req, sse) {
             });
         } catch (err) {
             if (!sse.stopExecution) {
-                logger.error({source: 'SwatchSeries', sourceUrl: url, query: {title: req.query.name, season: req.query.season, episode: req.query.episode}, error: (err.message || err.toString()).substring(0, 100) + '...'});
+                logger.error({source: 'SwatchSeries', sourceUrl: url, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
 
