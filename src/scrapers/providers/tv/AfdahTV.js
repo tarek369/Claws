@@ -1,3 +1,6 @@
+// Suspending development on this because it only has 15 TV shows
+// Possible solution: make this into a movie provider and ignore the TV shows section until there's more
+
 const Promise = require('bluebird');
 const RequestPromise = require('request-promise');
 const cheerio = require('cheerio');
@@ -9,11 +12,11 @@ const {padTvNumber} = require('../../../utils');
 
 async function AfdahTV(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
-    const title = req.query.title;
+    const title = req.query.name;
     const season = padTvNumber(req.query.season);
     const episode = padTvNumber(req.query.episode);
 
-    const urls = ['https://afdah.to'];
+    const urls = ['https://afdah.info'];
     const promises = [];
 
     const rp = RequestPromise.defaults(target => {
@@ -154,7 +157,7 @@ async function AfdahTV(req, sse) {
             }
         } catch (err) {
             if (!sse.stopExecution) {
-                logger.error({source: 'AfdahTV', sourceUrl: url, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: (err.message || err.toString()).substring(0, 100) + '...'});
+                logger.error({source: 'AfdahTV', sourceUrl: url, query: {title: req.query.name, season: req.query.season, episode: req.query.episode}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
 

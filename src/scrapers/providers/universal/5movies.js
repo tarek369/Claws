@@ -7,7 +7,7 @@ const resolve = require('../../resolvers/resolve');
 
 async function _5movies(req, sse){
     logger.debug("5movies NOTICE: This primitively removes the year from the end of the title. If this source breaks, did you change the title parameter?");
-    let showTitle = req.query.title;
+    let showTitle = req.query.title || req.query.name;
     showTitle = showTitle.substr(0, showTitle.length - 7);
 
     const season = req.query.season;

@@ -11,6 +11,7 @@ const resolve = require('../../resolvers/resolve');
 async function MovieFiles(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '');
     const movieTitle = req.query.title;
+    const year = req.query.year;
 
     // These are all the same host I think. https://xmovies8.org isn't loading.
     const urls = ["https://moviefiles.org"];
@@ -48,11 +49,11 @@ async function MovieFiles(req, sse) {
             let $ = cheerio.load(searchPageHtml);
 
             $(`a:contains("${modifiedSearchTitle}")`).toArray().forEach(element => {
-                const isTitleExp = new RegExp(`${escapeRegExp(modifiedSearchTitle)}\\.\\d\\d\\d\\d`);
+                const isTitleExp = new RegExp(`${escapeRegExp(modifiedSearchTitle)}\\.${year}`);
                 const foundTitle = $(element).text();
                 if (isTitleExp.test(foundTitle)) {
                     const providerUrl = `${url}/${$(element).attr('href')}`;
-                    const qualityExp = new RegExp(`${escapeRegExp(modifiedSearchTitle)}\\.\\d\\d\\d\\d\\.[^\\d]*(\\d\\d\\d\\d?p)`);
+                    const qualityExp = new RegExp(`${escapeRegExp(modifiedSearchTitle)}\\.${year}\\.[^\\d]*(\\d\\d\\d\\d?p)`);
                     const qualityExec = qualityExp.exec(foundTitle);
                     const quality = qualityExec ? qualityExec[1] : '';
                     resolvePromises.push(resolve(sse, providerUrl, 'MovieFiles', jar, headers, quality));

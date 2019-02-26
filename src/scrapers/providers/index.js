@@ -11,15 +11,14 @@ module.exports = exports = {
     tv: [
         require('./tv/GoWatchSeries'),
         require('./tv/SeriesFree'),
-        require('./tv/AfdahTV'),
-        require('./tv/Series8'),
         require('./tv/SwatchSeries'),
+        new (require('./tv/series8'))()
     ],
     anime: [
         new (require('./anime/MasterAnime'))(),
     ],
     universal: [
         require('./universal/123movie'),
-        //require('./universal/5movies')
+        new (require('./anime/MasterAnime'))()
     ]
 };
