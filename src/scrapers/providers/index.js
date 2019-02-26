@@ -4,7 +4,7 @@ module.exports = exports = {
     movies: [
         require('./movies/Afdah'),
         new (require('./movies/AZMovies'))(),
-        require('./movies/bfmovies'),
+        new (require('./movies/bfmovies'))(),
         require('./movies/StreamM4u'),
         require('./movies/MovieFiles'),
     ],
