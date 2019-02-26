@@ -125,7 +125,7 @@ async function SeriesFree(req, sse) {
               logger.error({
                 source: 'SeriesFree',
                 sourceUrl: url,
-                query: {title: req.query.name, season: req.query.season, episode: req.query.episode},
+                query: {title: req.query.title, season: req.query.season, episode: req.query.episode},
                 error: (err.message || err.toString()).substring(0, 100) + '...'
               });
             }
