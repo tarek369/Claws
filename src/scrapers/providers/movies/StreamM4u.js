@@ -12,6 +12,7 @@ module.exports = class StreamM4u extends BaseProvider {
     /** @inheritdoc */
     async scrape(url, req, ws) {
         const movieTitle = req.query.title;
+        const year = req.query.year;
         const resolvePromises = [];
 
         try {
@@ -23,24 +24,35 @@ module.exports = class StreamM4u extends BaseProvider {
             const movieSearchUrl = `${url}/searchJS?term=${movieTitle.replace(/ /g, '+')}`;
             const response = await this._createRequest(rp, movieSearchUrl, jar, headers, { json: true });
 
-            const searchTitle = response.find(result => this._isTheSameSeries(movieTitle, result));
-            const searchPageHtml = await this._createRequest(rp, `${url}/search/${searchTitle}`, jar, headers);
+
+            const searchPageHtml = await this._createRequest(rp,
+                `${url}/search/${movieTitle.replace(/[^a-zA-Z0-9]+/g, '-')}`,
+                jar, headers
+            )
+
             let $ = cheerio.load(searchPageHtml);
 
-            const streamPageUrl = $(`a .card img[alt^="${searchTitle}"]`).parent().parent().attr('href');
-            const quality = $(`a .card img[alt^="${searchTitle}"]`).parent().find('h4').text().split(' - ');
-            const streamPageHtml = await this._createRequest(rp, streamPageUrl, jar, headers);
+            let searchResult = $(`a .card img[alt^="${movieTitle} (${year})"]`);
+            if (!searchResult.length) {
+                searchResult = $(`a .card img[alt^="${movieTitle} ${year}"]`);
+                if (!searchResult.length) {
+                    searchResult = $(`a .card img[alt^="${movieTitle}"]`);
+                }
+            }
+            if (!searchResult.length) {
+                return Promise.resolve();
+            }
+            const streamPageUrl = searchResult.parent().parent().attr('href');
+            const quality = searchResult.parent().find('h4').text().split(' - ');
 
+            const streamPageHtml = await this._createRequest(rp, streamPageUrl, jar, headers)
             $ = cheerio.load(streamPageHtml);
             const _token = $('meta[name="csrf-token"]').attr('content');
-            const resolveHiddenLinkPromises = [];
 
             $('.le-server span').toArray().forEach((element) => {
                 const videoId = $(element).attr('data');
-                resolveHiddenLinkPromises.push(this.scrapeHarder(rp, ws, url, _token, videoId, headers, jar, req.query.title));
+                resolvePromises.push(this.scrapeHarder(rp, ws, url, _token, videoId, headers, jar, req.query.title));
             });
-
-            resolvePromises.push(Promise.all(resolveHiddenLinkPromises));
         } catch (err) {
             this._onErrorOccurred(err);
         }
