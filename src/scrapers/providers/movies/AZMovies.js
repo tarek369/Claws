@@ -6,29 +6,57 @@ const tough = require('tough-cookie');
 module.exports = class AZMovies extends BaseProvider {
     /** @inheritdoc */
     getUrls() {
-        return ['https://azmovies.xyz'];
+        return ["https://azmovie.to"];
     }
 
     /** @inheritdoc */
     async scrape(url, req, ws) {
         const clientIp = this._getClientIp(req);
-        const title = req.query.title.toLowerCase();
+        const movieTitle = req.query.title;
+        const year = req.query.year;
         const resolvePromises = [];
-        let headers = {
-            'user-agent': randomUseragent.getRandom(),
-            'x-real-ip': clientIp,
-            'x-forwarded-for': clientIp,
-            'referer': url
-        };
-    
+
         try {
-            const searchTitle = title.replace(/ /g, '+');
-            let searchUrl = (`${url}/watch.php?title=${searchTitle}`);
             const rp = this._getRequest(req, ws);
             const jar = rp.jar();
-            const response = await this._createRequest(rp, searchUrl, jar, headers);
-            
-            let documentCookie = /document\.cookie\s*=\s*"(.*)=(.*)";/g.exec(response);
+            const searchMovieUrl = `${url}/livesearch.php`;
+            const referer = `https://azmovie.to/`;
+            const userAgent = randomUseragent.getRandom();
+            const headers = {
+                referer,
+                'user-agent': userAgent,
+                'x-real-ip': clientIp,
+                'x-forwarded-for': clientIp
+            };
+
+            let searchResults = await this._createRequest(rp, searchMovieUrl, jar, headers, {
+                method: 'POST',
+                formData: {
+                    searchVal: movieTitle,
+                },
+                followAllRedirects: true,
+            })
+
+            let $ = cheerio.load(searchResults);
+
+            let movieUrl = '';
+            $('a').toArray().some(searchResultElement => {
+                for (let childNode of searchResultElement.childNodes) {
+                    if (childNode.data === `${movieTitle} (${year})` || childNode.data === movieTitle) {
+                        movieUrl = `${url}/${$(searchResultElement).attr('href')}`;
+                        return true;
+                    }
+                }
+
+                return false;
+            });
+            if (!movieUrl) {
+                return Promise.resolve();
+            }
+
+            let html = await this._createRequest(rp, movieUrl, jar, headers)
+
+            let documentCookie = /document\.cookie\s*=\s*"(.*)=(.*)";/g.exec(html);
             while (documentCookie) {
                 const cookie = new tough.Cookie({
                     key: documentCookie[1],
@@ -39,9 +67,9 @@ module.exports = class AZMovies extends BaseProvider {
                 documentCookie = /document\.cookie\s*=\s*"(.*)=(.*)";/g.exec(response);
             }
 
-            const videoPageHtml = await this._createRequest(rp, searchUrl, jar, headers);
+            const videoPageHtml = await this._createRequest(rp, movieUrl, jar, headers);
 
-            let $ = cheerio.load(videoPageHtml);
+            $ = cheerio.load(videoPageHtml);
 
             $('#serverul li a').toArray().forEach((element) => {
                 const providerUrl = $(element).attr('href');

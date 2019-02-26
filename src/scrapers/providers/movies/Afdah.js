@@ -7,7 +7,8 @@ const logger = require('../../../utils/logger');
 const resolve = require('../../resolvers/resolve');
 
 async function Afdah(req, sse) {
-    const showTitle = req.query.title;
+    const movieTitle = req.query.title;
+    const year = req.query.year;
 
     // These are all the same host I think. https://xmovies8.org isn't loading.
     const urls = ["https://afdah.org", "https://genvideos.com", "https://genvideos.co", "https://watch32hd.co", "https://putlockerhd.co"/* , "https://xmovies8.org" */];
@@ -30,18 +31,18 @@ async function Afdah(req, sse) {
 
             try {
                 html = await rp({
-                    uri: `${url}/results?q=${showTitle.toLowerCase().replace(/ /g, '%20').replace(/\:/g, '')}`,
+                    uri: `${url}/results?q=${movieTitle.toLowerCase().replace(/ /g, '%20').replace(/\:/g, '')}`,
                     timeout: 5000
                 });
             } catch(err) {
                 try {
                     html = await rp({
-                        uri: `${url}/results?q=${showTitle.toLowerCase().replace(/ /g, '+').replace(/\:/g, '')}`,
+                        uri: `${url}/results?q=${movieTitle.toLowerCase().replace(/ /g, '+').replace(/\:/g, '')}`,
                         timeout: 5000
                     });
                 } catch(err) {
                     html = await rp({
-                        uri: `${url}/results?q=${showTitle.toLowerCase().replace(/ /g, '%2B').replace(/\:/g, '')}`,
+                        uri: `${url}/results?q=${movieTitle.toLowerCase().replace(/ /g, '%2B').replace(/\:/g, '')}`,
                         timeout: 5000
                     });
                 }
@@ -52,7 +53,8 @@ async function Afdah(req, sse) {
 
             $('.cell').toArray().some(element => {
                 const videoName = $(element).find('.video_title').text().trim();
-                if (videoName === showTitle) {
+                const videoYearAndQuality = $(element).find('.video_quality').text().trim();
+                if ((videoName === `${movieTitle} (${year})` || videoName === movieTitle) && videoYearAndQuality.startsWith(`Year: ${year}`)) {
                     videoId = $(element).find('.video_title h3 a').attr('href').trim();
                     return true;
                 }

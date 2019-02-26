@@ -8,13 +8,9 @@ const resolve = require('../../resolvers/resolve');
 async function _123movie(req, sse){
 
     let queryTitle = req.query.title;
-    let season = req.query.season;
-    let episode = req.query.episode;
+    const {season, episode, year} = req.query;
 
-    // If it's a TV show, we need to strip the year
-    if(req.query.type === 'tv') queryTitle = queryTitle.replace(/\s\([0-9]{4}\)$/, "");
-
-    const urls = ["https://123movie.gl"];
+    const urls = ["https://www6.123movie.cc"];
     const promises = [];
 
     const rp = RequestPromise.defaults(target => {
@@ -43,14 +39,30 @@ async function _123movie(req, sse){
 
             // Find the link to the content
             let $ = cheerio.load(html);
-            $("article.item").toArray().forEach(element => {
+            const formattedQueryTitle = queryTitle.toLowerCase().replace(/[^a-zA-Z0-9]+/g, '-');
+            $("article.item").toArray().some(element => {
                 let linkElement = $(element).find(".titlecover");
-
-                let contentTitle = linkElement.text();
                 let contentPage = linkElement.attr('href');
 
-                if(contentTitle === queryTitle) videoPage = contentPage;
+                if (req.query.type === 'tv') {
+                    let contentTitle = linkElement.text();
+
+                    if(contentTitle === queryTitle) {
+                        videoPage = contentPage;
+                        return true;
+                    }
+                } else {
+                    if(contentPage === `${url}/movies/${formattedQueryTitle}-${year}/` || contentPage === `${url}/movies/${formattedQueryTitle}/`) {
+                        videoPage = contentPage;
+                        return true;
+                    };
+                }
+                return false;
             });
+
+            if (!videoPage) {
+                return Promise.resolve();
+            }
 
             let videoPageHTML = await rp({
                 uri: videoPage,
@@ -62,15 +74,20 @@ async function _123movie(req, sse){
             let pageURL = '';
 
             // If it's a TV show, we have to click the episode number
-            if(req.query.type === 'tv'){
+            if (req.query.type === 'tv'){
+                // FIXME: I we need to grab all the links here intead of just a single openload link
                 $(`.paginated-openload .episodios .mark .liopv`).each((index, element) => {
-                    if($(element).text() === episode) {
+                    if($(element).text() === episode.toString()) {
                         pageURL = $(element).attr('onclick').split("'")[1];
                         return false;
                     }
                 });
-            }else{
+            } else {
                 pageURL = $(`.liopv[onclick*="openload"]`).attr('onclick').split("'")[1];
+            }
+
+            if (!pageURL) {
+                return Promise.resolve();
             }
 
             // targetPageHTML is the HTML for the player page.
@@ -98,7 +115,7 @@ async function _123movie(req, sse){
             resolvePromises.push(resolve(sse, openloadVideoURL, '123Movie', jar, {}));
         } catch (err) {
             if (!sse.stopExecution) {
-                logger.error({source: '123Movies', sourceUrl: url, query: {title: req.query.title}, error: (err.message || err.toString()).substring(0, 100) + '...'});
+                logger.error({source: '123Movies', sourceUrl: url, query: {title: queryTitle}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
 

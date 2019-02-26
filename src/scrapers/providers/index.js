@@ -11,7 +11,6 @@ module.exports = exports = {
     tv: [
         require('./tv/GoWatchSeries'),
         require('./tv/SeriesFree'),
-        require('./tv/AfdahTV'),
         require('./tv/SwatchSeries'),
         new (require('./tv/series8'))()
     ],
@@ -20,7 +19,6 @@ module.exports = exports = {
     ],
     universal: [
         require('./universal/123movie'),
-        new (require('./anime/MasterAnime'))(),
-        //require('./universal/5movies')
+        new (require('./anime/MasterAnime'))()
     ]
 };
