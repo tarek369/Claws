@@ -11,7 +11,6 @@ module.exports = exports = {
     tv: [
         require('./tv/GoWatchSeries'),
         require('./tv/SeriesFree'),
-        require('./tv/AfdahTV'),
         new (require('./tv/SwatchSeries'))(),
         new (require('./tv/series8'))()
     ],
