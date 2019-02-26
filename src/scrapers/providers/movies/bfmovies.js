@@ -30,10 +30,15 @@ module.exports = class bfmovies extends BaseProvider {
                 let contentTitle = $(element).find(`*[itemprop="name"]`).text().toLowerCase();
                 let contentPage = linkElement.attr('href');
 
-                if (this._isTheSameSeries(contentTitle, searchTitle)) {
+                if (contentTitle === `${movieTitle} (${year})` || contentTitle === movieTitle) {
                     videoPage = contentPage;
                 }
             });
+
+            if (!videoPage) {
+                return Promise.resolve();
+            }
+
             const videoPageHTML = await this._createRequest(rp, videoPage, jar, headers);
 
             $ = cheerio.load(videoPageHTML);
@@ -46,9 +51,13 @@ module.exports = class bfmovies extends BaseProvider {
             const openloadHTML = await this._createRequest(rp, openloadPage);
 
             let openloadURL = cheerio.load(openloadHTML)('meta[name="og:url"]').attr('content');
-            resolvePromises.push(this.resolveLink(openloadURL, ws, jar, headers));
-        }
-        catch (err) {
+            if (openloadURL) {
+                resolvePromises.push(this.resolveLink(openloadURL, ws, jar, headers));
+            } else {
+                return Promise.resolve();
+            }
+
+        } catch (err) {
             this._onErrorOccurred(err)
         }
         return Promise.all(resolvePromises)

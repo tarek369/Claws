@@ -49,7 +49,7 @@ app.get('/', function(req, res) {
         res.redirect("https://apollotv.xyz/");
     } else {
         // Otherwise, render the index file with the secret client id set.
-        res.render('index', {secret_client_id: process.env.SECRET_CLIENT_ID});
+        res.render('index', {secret_client_id: process.env.SECRET_CLIENT_ID, tmdb_api_key: process.env.TMDB_API_KEY});
     }
 });
 app.get('/salsa20.min.js', (req, res) => res.sendFile(`${pathToApp}/public/salsa20.min.js`));

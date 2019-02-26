@@ -10,7 +10,7 @@ const resolve = require('../../resolvers/resolve');
 async function SwatchSeries(req, sse) {
     const clientIp = req.client.remoteAddress.replace('::ffff:', '').replace('::1', '')
     const showTitle = req.query.title;
-    const {season, episode} = req.query;
+    const {season, episode, year} = req.query;
 
     const urls = ["https://www1.swatchseries.to"];
     const promises = [];
@@ -45,7 +45,7 @@ async function SwatchSeries(req, sse) {
             let showUrl = '';
 
             $(`a strong`).toArray().some(element => {
-                if ($(element).text() === showTitle) {
+                if ($(element).text() === `${showTitle} (${year})` || $(element).text() === `${showTitle} (${year}) (${year})` || $(element).text() === showTitle) {
                     showUrl = $(element).parent().attr('href');
                     return true;
                 }
@@ -68,7 +68,22 @@ async function SwatchSeries(req, sse) {
 
             $ = cheerio.load(videoPageHtml);
 
-            const episodeUrl = $(`a[href*="s${season}_e${episode}."]`).attr('href');
+            // const episodeUrl = $(`a[href*="s${season}_e${episode}.html"]`).attr('href');
+            let episodeUrl = '';
+            $(`div[itemtype="http://schema.org/TVSeason"]`).toArray().some(seasonDiv => {
+                const seasonSpan = $(seasonDiv).find('a[itemprop="url"] > span[itemprop="name"]');
+                if (seasonSpan.length && seasonSpan.text() === `Season ${season}`) {
+                    const episodeListItem = $(seasonDiv).find(`li[itemtype="http://schema.org/TVEpisode"]:has(meta[itemprop="episodenumber"][content="${episode}"])`);
+                    episodeUrl = episodeListItem.find('a').attr('href');
+                    return true;
+                }
+
+                return false;
+            });
+
+            if (!episodeUrl) {
+                return Promise.resolve();
+            }
 
             const episodePageHtml = await rp({
                 uri: episodeUrl,
@@ -83,7 +98,7 @@ async function SwatchSeries(req, sse) {
 
             const videoUrls = $('.watchlink').toArray().map(element => URL.parse($(element).attr('href') || '', true).query.r).filter(url => !!url).map(url => Buffer.from(url, 'base64').toString());
 
-            videoUrls.forEach(async (providerUrl) => {
+            videoUrls.forEach((providerUrl) => {
                 const headers = {
                     'user-agent': userAgent,
                     'x-real-ip': clientIp,
