@@ -54,7 +54,7 @@ module.exports = class Series8 extends BaseProvider {
             }
             if (!seasonLinkElement.length) {
                 // No season link.
-                logger.debug('Series8', `Could not find: ${showTitle} (${year}) Season ${season}`);
+                this.logger.debug('Series8', `Could not find: ${showTitle} (${year}) Season ${season}`);
                 return Promise.resolve();
             }
 
