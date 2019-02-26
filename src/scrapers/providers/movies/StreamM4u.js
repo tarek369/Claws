@@ -26,8 +26,6 @@ async function StreamM4u(req, sse) {
     });
 
     async function scrapeHarder(url, _token, videoId, headers, jar, title) {
-        const resolveSourcesPromises = [];
-
         try {
             const resolveHiddenLinkUrl = `${url}/anhjax`;
             const iframePageHtml = await rp({

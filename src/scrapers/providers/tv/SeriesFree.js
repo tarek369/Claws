@@ -27,25 +27,31 @@ async function SeriesFree(req, sse) {
     });
 
     async function scrapeHarder(videoUrl, userAgent, clientIp, sse, jar) {
-        const videoPageHtml = await rp({
-            uri: videoUrl,
-            headers: {
-                'user-agent': userAgent
-            },
-            jar,
-            timeout: 5000
-        });
+        try {
+            const videoPageHtml = await rp({
+                uri: videoUrl,
+                headers: {
+                    'user-agent': userAgent
+                },
+                jar,
+                timeout: 5000
+            });
 
-        let $ = cheerio.load(videoPageHtml);
+            let $ = cheerio.load(videoPageHtml);
 
-        const providerUrl = $('.action-btn').attr('href');
+            const providerUrl = $('.action-btn').attr('href');
 
-        const headers = {
-            'user-agent': userAgent,
-            'x-real-ip': clientIp,
-            'x-forwarded-for': clientIp
-        };
-        return resolve(sse, providerUrl, 'SeriesFree', jar, headers);
+            const headers = {
+                'user-agent': userAgent,
+                'x-real-ip': clientIp,
+                'x-forwarded-for': clientIp
+            };
+            return resolve(sse, providerUrl, 'SeriesFree', jar, headers);
+        } catch (err) {
+            if (!sse.stopExecution) {
+                logger.error({source: 'SeriesFree', sourceUrl: url, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: (err.message || err.toString()).substring(0, 100) + '...'});
+            }
+        }
     }
 
     // Go to each url and scrape for links, then send the link to the client
@@ -122,12 +128,7 @@ async function SeriesFree(req, sse) {
             });
         } catch (err) {
             if (!sse.stopExecution) {
-              logger.error({
-                source: 'SeriesFree',
-                sourceUrl: url,
-                query: {title: req.query.title, season: req.query.season, episode: req.query.episode},
-                error: (err.message || err.toString()).substring(0, 100) + '...'
-              });
+              logger.error({source: 'SeriesFree', sourceUrl: url, query: {title: req.query.title, season: req.query.season, episode: req.query.episode}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
 
