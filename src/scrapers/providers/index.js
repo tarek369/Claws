@@ -19,7 +19,7 @@ module.exports = exports = {
         new (require('./anime/MasterAnime'))(),
     ],
     universal: [
-        require('./universal/123movie'),
+        new (require('./universal/123movie'))(),
         new (require('./anime/MasterAnime'))(),
         //require('./universal/5movies')
     ]
