@@ -2,7 +2,7 @@
 
 module.exports = exports = {
     movies: [
-        require('./movies/Afdah'),
+        new (require('./movies/Afdah'))(),
         new (require('./movies/AZMovies'))(),
         new (require('./movies/bfmovies'))(),
         new (require('./movies/StreamM4u'))(),
