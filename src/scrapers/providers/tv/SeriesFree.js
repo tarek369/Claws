@@ -21,7 +21,6 @@ module.exports = class extends BaseProvider {
             const rp = this._getRequest(req, ws);
             const jar = rp.jar();
             const searchTitle = showTitle.replace(/\s+/g, '%20');
-            console.log(showTitle, searchTitle)
             const response = await this._createRequest(rp, `${url}/search/${searchTitle}`, jar, { 'user-agent': userAgent })
             let $ = cheerio.load(response);
 
