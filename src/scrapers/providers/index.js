@@ -15,12 +15,9 @@ module.exports = exports = {
         //require('./tv/AfdahTV'),
         new (require('./tv/series8'))()
     ],
-    anime: [
-        new (require('./anime/MasterAnime'))(),
-    ],
+    anime: [],
     universal: [
         new (require('./universal/123movie'))(),
-        new (require('./anime/MasterAnime'))(),
         //require('./universal/5movies')
     ]
 };
