@@ -92,20 +92,141 @@ function MovieTitlePage(state, context) {
         if (state.ws) {
             state.ws.close()
         }
-        state.ws = new WebSocket(`ws://${location.host}/?token=${token}`);
+        state.ws = new WebSocket(`ws://localhost:3000/?token=${token}`)
         state.ws.onopen = function() {
             // Web Socket is connected, send data using send()
-            state.ws.send(`{"type": "movies", "title": "${state.selectedTitle.title}"}`);
-        };
+            state.ws.send(`{"type": "movies", "title": "${state.selectedTitle.title}"}`)
+            state.sourceList = []
+            state.scrapeResultsCounter = 0
+        }
 
-        state.ws.onmessage = handleResults
+        const promises = []
+        let doneEventStatus = false
+
+        state.ws.onmessage = async function(e) {
+            try {
+                const event = JSON.parse(e.data)
+                console.log(event)
+                switch (event.event) {
+                    case 'scrapeResults': {
+                        state.scrapeResultsCounter--
+                        console.log('# of SCRAPE events to wait for: ' + state.scrapeResultsCounter + ". Is done scraping for results? " + doneEventStatus)
+                        if (event.results) {
+                            const results = event.results
+                            results.forEach((result) => {
+                                // promises.push(_onSourceFound(state.sourceList, result, context))
+                            })
+                        } else if (event.error) {
+                            console.log(event.error)
+                            break
+                        }
+
+                        if (doneEventStatus && state.scrapeResultsCounter == 0) {
+                            console.log('======SCRAPE RESULTS EVENT AFTER DONE EVENT======')
+                            console.log('Server done scraping, closing WebSocket')
+                            state.ws.close()
+                            await Promise.all(promises)
+                            console.log('All sources received')
+                            state.sourceList.sort((left, right) => {
+                                return left.metadata.ping - right.metadata.ping
+                            })
+
+                            // onComplete(context, displayTitle, state.sourceList)
+                        }
+                    }
+
+                    case 'done': {
+                        doneEventStatus = true
+                        if (state.scrapeResultsCounter == 0) {
+                            console.log('======DONE EVENT======')
+                            console.log('Server done scraping, closing WebSocket')
+                            state.ws.close()
+                            await Promise.all(promises)
+                            console.log('All sources received')
+                            state.sourceList.sort((left, right) => {
+                                return left.metadata.ping - right.metadata.ping
+                            })
+
+                            // onComplete(context, displayTitle, state.sourceList)
+                        }
+
+                        break
+                    }
+
+                    // The content can be accessed directly.
+                    case 'result': {
+                        // promises.push(_onSourceFound(state.sourceList, event, context))
+                        break
+                    }
+
+                    // Claws needs the request to be proxied.
+                    case 'scrape': {
+                        promises.push(_onScrapeSource(event, state.ws, state))
+                        break
+                    }
+                }
+
+                // if (data.event === 'done') {
+                //     console.log('There should be no more events after this one. Comment out the `close` line to see if there are any events leaking.')
+                //     state.ws.close()
+                // }
+            } catch (err) {
+                console.error(e.data)
+            }
+        }
 
         state.ws.onclose = function() {
             // websocket is closed.
-            alert("Connection is closed...");
-        };
+            alert("Connection is closed...")
+        }
 
         // context.navigate(Player)
+    }
+
+    async function _onScrapeSource(event, webSocket, state) {
+        if (!event.headers) {
+            event.headers = {}
+        }
+
+        const targetUrl = new URL(event.target)
+        for (let header in event.headers) {
+            targetUrl.searchParams.set(`xApolloTvProxy-${header}`, event.headers[header]);
+        }
+        targetUrl.searchParams.set('xApolloTvProxy-Host', targetUrl.host);
+        if (targetUrl.protocol === 'https:') {
+            targetUrl.searchParams.set('xApolloTvProxyIsSecure', targetUrl.host);
+        }
+        const proxyUrl = new URL(targetUrl.pathname + targetUrl.search, location.origin)
+
+        alert(proxyUrl.href)
+
+        const resp = await fetch(proxyUrl.href)
+        const test = await resp.text()
+        alert(test);
+
+        // Fetch HTML content from the source.
+        // let cookie = ''
+        // try {
+        //     const response = await fetch(event.target, {headers: event.headers});
+        //     if (event.cookieRequired) {
+        //         const cookieKey = event['cookieRequired']
+        //         const cookieList = response.headers['set-cookie'].split(',')
+        //         cookie = cookieList.lastWhere((i) => i.contains(cookieKey)).split('').firstWhere((i) => i.contains(cookieKey))
+        //     }
+        // } catch (ex) {
+        //     console.log('Error receiving stream data from source: ' + ex.toString())
+        //     return
+        // }
+
+        // POST the HTML content to Claws which will find the link.
+        // try {
+        //     const message = JSON.stringify({ "type": "resolveHtml", "resolver": event["resolver"], "cookie": cookie, "html": Convert.base64.encode(Convert.utf8.encode(htmlContent.body)) })
+        //     webSocket.add(message)
+        //     state.scrapeResultsCounter.value++
+        //     console.log('# of SCRAPE events to wait for ' + state.scrapeResultsCounter.value.toString())
+        // } catch (ex){
+        //     console.log('Error receiving stream data from Claws: ' + ex.toString())
+        // }
     }
 
     async function update(action) {
@@ -215,83 +336,6 @@ function MovieTitlePage(state, context) {
     }
 
     return root
-}
-
-const promises = []
-const sourceList = []
-let scrapeResultsCounter = 0
-let doneEventStatus = false
-
-async function handleResults(e) {
-    try {
-        const event = JSON.parse(e.data)
-        console.log(event);
-        switch (event.event) {
-            case 'scrapeResults': {
-                scrapeResultsCounter--;
-                console.log('# of SCRAPE events to wait for: ' + scrapeResultsCounter + ". Is done scraping for results? " + doneEventStatus);
-                if (event.results) {
-                    const results = event.results;
-                    results.forEach((result) => {
-                        promises.push(_onSourceFound(sourceList, result, context));
-                    });
-                } else if (event.error) {
-                    console.log(event.error);
-                    break;
-                }
-
-                if (doneEventStatus && scrapeResultsCounter == 0) {
-                    console.log('======SCRAPE RESULTS EVENT AFTER DONE EVENT======');
-                    console.log('Server done scraping, closing WebSocket');
-                    state.ws.close();
-                    await Promise.all(promises);
-                    console.log('All sources received');
-                    sourceList.sort((left, right) => {
-                        return left.metadata.ping - right.metadata.ping;
-                    });
-
-                    onComplete(context, displayTitle, sourceList);
-                }
-            }
-
-            case 'done': {
-                doneEventStatus = true;
-                if (scrapeResultsCounter == 0) {
-                    console.log('======DONE EVENT======');
-                    console.log('Server done scraping, closing WebSocket');
-                    state.ws.close();
-                    await Promise.all(promises);
-                    console.log('All sources received');
-                    sourceList.sort((left, right) => {
-                        return left.metadata.ping - right.metadata.ping;
-                    });
-
-                    onComplete(context, displayTitle, sourceList);
-                }
-
-                break;
-            }
-
-            // The content can be accessed directly.
-            case 'result': {
-                promises.push(_onSourceFound(sourceList, event, context));
-                break;
-            }
-
-            // Claws needs the request to be proxied.
-            case 'scrape': {
-                promises.push(_onScrapeSource(event, _negotiator.socket, scrapeResultsCounter));
-                break;
-            }
-        }
-
-        // if (data.event === 'done') {
-        //     console.log('There should be no more events after this one. Comment out the `close` line to see if there are any events leaking.');
-        //     state.ws.close()
-        // }
-    } catch (err) {
-        console.error(e.data);
-    }
 }
 
 export default MovieTitlePage

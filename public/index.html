@@ -19,8 +19,7 @@
         <script>
             const supported = (() => {
                 try {
-                    if (typeof WebAssembly === "object"
-                        && typeof WebAssembly.instantiate === "function") {
+                    if (typeof WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function') {
                         const module = new WebAssembly.Module(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00))
                         if (module instanceof WebAssembly.Module)
                             return new WebAssembly.Instance(module) instanceof WebAssembly.Instance
@@ -29,13 +28,25 @@
                 }
                 return false
             })()
+
             if (!supported) {
                 alert("This won't work without WebAssembly support.")
             }
+
             const go = new Go()
-            WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then(async (result) => {
-                await go.run(result.instance)
-            })
+            if (typeof WebAssembly.instantiateStreaming === 'function') {
+                WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject)
+                    .then(async (result) => {
+                        await go.run(result.instance)
+                    })
+            } else {
+                fetch('main.wasm')
+                    .then(response => response.arrayBuffer())
+                    .then(bytes => WebAssembly.instantiate(bytes, go.importObject))
+                    .then(async (result) => {
+                        await go.run(result.instance)
+                    })
+            }
         </script>
         <script src="https://unpkg.com/stage0@0.0.19/dist/index.min.js"></script>
         <script src="https://unpkg.com/stage0@0.0.19/dist/reuseNodes.min.js"></script>
