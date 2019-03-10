@@ -117,7 +117,7 @@ module.exports = class Afdah extends BaseProvider {
 
                 // const link = sandbox.window.srcs[0].url;
                 // const event = createEvent(link, false, {}, {quality: '', provider: 'Vidlink', source: 'Afdah'});
-                // sse.send(event, event.event);
+                // await ws.send(event, event.event);
                 // } catch(err) {
                 headers = {
                     accept: 'text/html, */*; q=0.01',
