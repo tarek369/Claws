@@ -47,7 +47,7 @@ const resolveLinks = async (data, ws, req) => {
 
     await Promise.all(promises);
 
-    wsWrapper.send({event: 'done'}, 'done');
+    ws.send({event: 'done'});
 };
 
 module.exports = resolveLinks;
