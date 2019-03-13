@@ -47,7 +47,7 @@ const resolveLinks = async (data, ws, req) => {
 
     await Promise.all(promises);
 
-    ws.send({event: 'done'});
+    ws.send(JSON.stringify({event: 'done'}));
 };
 
 module.exports = resolveLinks;

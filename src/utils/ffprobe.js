@@ -9,9 +9,9 @@ const { execFile } = require('child_process')
  * @param   {Array<String>} args Array of arguments passed to ffprobe
  * @returns {Promise<Object>}    Promise that resolves to the ffprobe JSON output
  */
-function ffprobeExecFile (path, args) {
+function ffprobeExecFile (path, args, options) {
   return new Promise((resolve, reject) => {
-    execFile(path, args, (err, stdout, stderr) => {
+    execFile(path, args, options, (err, stdout, stderr) => {
       if (err) {
         if (err.code === 'ENOENT') {
           reject(err)
@@ -44,7 +44,21 @@ function ffprobe (target, config = {}) {
     target
   ]
 
-  return ffprobeExecFile(path, args)
+  if (config.headers) {
+    args.push('-headers')
+    let headersArg = ''
+    for (let header in config.headers) {
+      headersArg += `${header}: ${config.headers[header]}\r\n`
+    }
+    args.push(headersArg)
+  }
+
+  if (config.endOffset) {
+    args.push('-end_offset')
+    args.push(config.endOffset)
+  }
+
+  return ffprobeExecFile(path, args, config.execOptions)
 }
 
 module.exports = ffprobe

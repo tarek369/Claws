@@ -16,7 +16,6 @@ function createEvent(data, ipLocked, pairing, {quality, provider, source, isResu
         event: 'result',
         file: {
             data,
-            kind: getDataKind(data),
         },
         isResultOfScrape,
         metadata: {
@@ -27,22 +26,6 @@ function createEvent(data, ipLocked, pairing, {quality, provider, source, isResu
         },
         headers
     };
-}
-
-function getDataKind(link) {
-    const file = URL.parse(link).pathname;
-
-    if (file.endsWith('.mp4')) {
-        return 'video/mp4';
-    } else if (file.endsWith('.m3u8')) {
-        return 'application/x-mpegURL';
-    } else if (file.endsWith('.mkv')) {
-        return 'video/x-matroska';
-    } else if (file.endsWith('==')) {
-        return 'file';
-    } else {
-        return 'video/*';
-    }
 }
 
 module.exports = exports = createEvent;
