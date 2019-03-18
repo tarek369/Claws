@@ -17,10 +17,10 @@ function _implementMe(functionName) {
  * - scrape
  */
 const BaseProvider = class BaseProvider {
-    constructor() {
+    constructor(queue) {
         this.logger = logger;
         this.userAgent = randomUseragent.getRandom();        
-
+        this.queue = queue;
         if (new.target === BaseProvider) {
             throw new TypeError("Cannot construct BaseProvider instances directly");
         }
@@ -144,11 +144,27 @@ const BaseProvider = class BaseProvider {
             headers,
             jar,
             followAllRedirects: true,
-            timeout: 5000,
+            timeout: 10000,
             ...extraOptions,
         };
 
-        return rp(options);
+        return new Promise((resolve, reject) => {
+            // name = name || 'Default_Name';
+            var job = this.queue.create('request', {
+                rp: rp(options)
+            });
+
+            job
+                .on('complete', function (result) {
+                    console.log('Job', job.id, 'is  done');
+                    resolve(result);
+                })
+                .on('failed', function () {
+                    console.log('Job', job.id, 'with name', job.data.name, 'has  failed');
+                    reject(job.data);
+                });
+            job.save();
+        });
     }
 
     /**

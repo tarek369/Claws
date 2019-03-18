@@ -1,7 +1,9 @@
 'use strict';
 
 // Load providers
-const providers = require('../scrapers/providers');
+const {providers, queue} = require('../scrapers/providers');
+const RequestPromise = require('request-promise');
+var events = require('kue/lib/queue/events');
 
 const BaseProvider = require('../scrapers/providers/BaseProvider');
 
@@ -52,6 +54,17 @@ const resolveLinks = async (searchData, ws, req) => {
     availableProviders.forEach((provider) => {
             return promises.push(provider.resolveRequests(req, sse));
     });
+
+    queue.process('request', async function (job, done) {
+        try {
+            const data = await RequestPromise(job.data.rp)
+            done(null, data)
+        } catch (err) {
+            console.log(err)
+            done(err, null)
+        }
+
+    })
 
     await Promise.all(promises);
 
