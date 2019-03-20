@@ -152,7 +152,7 @@ const BaseProvider = class BaseProvider {
             // name = name || 'Default_Name';
             var job = this.queue.create('request', {
                 rp: rp(options)
-            });
+            }).attempts(3).backoff(true).removeOnComplete(true);
 
             job
                 .on('complete', function (result) {

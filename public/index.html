@@ -230,8 +230,18 @@
         let results = [];
         let scrapes = 0;
         let resultsCount = 0;
+        let resultTable = [];
+        let resultCountObject = {};
+        let aggregatedDebugInfo = [];
 
         document.getElementById('searchText').onkeydown = searchByEnter;
+        function updateresultCountObject(obj, provider) {
+            if (!obj[provider]) {
+                obj[provider] = 0;
+            }
+            obj[provider] += 1;
+            return obj;
+        }
 
         async function authenticate() {
             let token = localStorage.getItem('token');
@@ -275,7 +285,7 @@
 
             return token;
         }
-
+        let debugData;
         async function scrapeMovies(searchData) {
             let token = await authenticate();
             stop(); // Stop existing eventsource.
@@ -285,23 +295,42 @@
                 ws.send(JSON.stringify({ type: 'movies', title: searchData.title, year: (new Date(searchData.release_date)).getFullYear() }));
                 document.getElementById('stop').disabled = false;
             };
+            debugData = searchData;
 
             ws.onmessage = function (e) {
                 try {
                     const data = JSON.parse(e.data)
                     console.log(data);
                     if (data.event === 'scrape') {
-                        scrapes = scrapes+1;
+                        provider = data.source;
+                        scrapes = scrapes + 1;
+                        provider = data.source;
                     }
                     if (data.event === 'result') {
-                        resultsCount = resultsCount+1;
+                        resultsCount = resultsCount + 1;
+                        provider = data.metadata.source;
                     }
+                    if (data.event === 'scrape' || data.event === 'result') {
+                        resultObject = updateresultCountObject(resultCountObject, provider);
+                    }
+
                     if (data.event === 'done') {
                         console.log('There should be no more events after this one. Comment out the `close` line to see if there are any events leaking.');
                         console.log('scrapes: ', scrapes);
                         console.log('results: ', resultsCount);
+                        resultTable.push({ 'Details': debugData.title, 'Scrape': scrapes, 'Result': resultsCount })
                         scrapes = 0;
                         resultsCount = 0;
+                        resultCountObject = {};
+                        console.log('Results per provider: ', resultCountObject);
+                        aggregatedDebugInfo.push({
+                            search: debugData.title,
+                            results: { scrape: scrapes, results: resultsCount },
+                            provider: resultCountObject
+                        });
+                        console.log(aggregatedDebugInfo)
+
+                        console.table(resultTable);
                         // ws.close()
                     }
                 } catch (err) {
@@ -324,6 +353,7 @@
                 // Web Socket is connected, send data using send()
                 const season = Number(window.prompt('Type a number for the season', ''));
                 const episode = Number(window.prompt('Type a number for the episode', ''));
+                debugData = { ...searchData, season, episode };
                 if (season && episode) {
                     ws.send(JSON.stringify({ type: isAnime ? 'anime' : 'tv', title: searchData.name, year: (new Date(searchData.first_air_date)).getFullYear(), season, episode }));
                     document.getElementById('stop').disabled = false;
@@ -335,20 +365,36 @@
             ws.onmessage = function (e) {
                 try {
                     const data = JSON.parse(e.data)
+                    let provider;
                     console.log(data);
                     if (data.event === 'scrape') {
-                        scrapes = scrapes+1;
+                        scrapes = scrapes + 1;
+                        provider = data.source;
                     }
                     if (data.event === 'result') {
-                        resultsCount = resultsCount+1;
+                        resultsCount = resultsCount + 1;
+                        provider = data.metadata.source;
+                    }
+                    if (data.event === 'scrape' || data.event === 'result') {
+                        resultCountObject = updateresultCountObject(resultCountObject, provider);
                     }
 
                     if (data.event === 'done') {
                         console.log('There should be no more events after this one. Comment out the `close` line to see if there are any events leaking.');
                         console.log('scrapes: ', scrapes);
                         console.log('results: ', resultsCount);
+                        resultTable.push({ 'Details': `${debugData.name}, S${debugData.season}E${debugData.episode}`, 'Scrape': scrapes, 'Result': resultsCount })
+                        console.log('Results per provider: ', resultCountObject);
+                        aggregatedDebugInfo.push({
+                            search: `${debugData.name}, S${debugData.season}E${debugData.episode}`,
+                            results: { scrape: scrapes, results: resultsCount },
+                            provider: resultCountObject
+                        })
                         scrapes = 0;
                         resultsCount = 0;
+                        resultCountObject = {};
+                        console.log(aggregatedDebugInfo)
+                        console.table(resultTable);
                         // ws.close()
                     }
                 } catch (err) {
@@ -371,7 +417,11 @@
                 search();
             }
         }
+
         async function search() {
+            scrapes = 0;
+            resultsCount = 0;
+            resultCountObject = {}
             document.getElementById('results').innerHTML = '';
             const response = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&language=en-US&query=${document.getElementById('searchText').value}&page=1&include_adult=false`)
             const responseJSON = await response.json();
