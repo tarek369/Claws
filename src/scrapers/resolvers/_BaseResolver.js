@@ -142,7 +142,7 @@ const BaseResolver = class BaseResolver {
             for (let link of links) {
                 const event = this.createEvent(link.data, false, undefined, {
                     quality: link.meta.quality || metaData.quality,
-                    source: metaData.source
+                    provider: metaData.provider
                 });
                 await metaData.ws.send(event, event.event);
             }
@@ -168,8 +168,8 @@ const BaseResolver = class BaseResolver {
      * @return {Object} The event object.
      */
     createEvent(data, ipLocked, pairing, metaData, headers) {
-        if (!metaData['provider']) {
-            metaData['provider'] = this.getResolverId();
+        if (!metaData['source']) {
+            metaData['source'] = this.getResolverId();
         }
         return createEvent(data, ipLocked, pairing, metaData, headers);
     }
@@ -179,12 +179,12 @@ const BaseResolver = class BaseResolver {
      * @see scrapeFromClientResponse
      *
      * @param {String} uri The uri for the current resolver.
-     * @param {{quality: String, source: String}|ClawsMetadata} metaData The request metadata.
+     * @param {{quality: String, provider: String}|ClawsMetadata} metaData The request metadata.
      *
      * @return {Object}
      */
     createScrapeEvent(uri, metaData) {
-        return this.createEvent(undefined, true, {target: uri}, {quality: metaData.quality, source: metaData.source})
+        return this.createEvent(undefined, true, {target: uri}, {quality: metaData.quality, provider: metaData.provider})
     }
 
     /**

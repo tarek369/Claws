@@ -273,7 +273,7 @@
 
             async function scrapeMovies(searchData) {
                 let token = await authenticate();
-                stop(); // Stop existing eventsource.
+                stop(); // Stop existing websocket.
                 ws = new WebSocket(`ws://localhost:3000/?token=${token}`);
                 ws.onopen = function() {
                     // Web Socket is connected, send data using send()
@@ -302,7 +302,7 @@
             }
             async function scrapeTV(searchData) {
                 let token = await authenticate();
-                stop(); // Stop existing eventsource.
+                stop(); // Stop existing websocket.
                 ws = new WebSocket(`ws://localhost:3000/?token=${token}`);
                 let isAnime = document.getElementById('isAnime').checked;
                 ws.onopen = function() {

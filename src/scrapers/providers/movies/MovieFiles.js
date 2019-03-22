@@ -60,7 +60,7 @@ async function MovieFiles(req, ws) {
             });
         } catch (err) {
             if (!ws.stopExecution) {
-                logger.error({source: 'MovieFiles', sourceUrl: url, query: {title: req.query.title}, error: (err.message || err.toString()).substring(0, 100) + '...'});
+                logger.error({provider: 'MovieFiles', providerUrl: url, query: {title: req.query.title}, error: (err.message || err.toString()).substring(0, 100) + '...'});
             }
         }
 
