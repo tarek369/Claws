@@ -29,6 +29,10 @@
             font-family: "Roboto", sans-serif;
         }
 
+        label {
+            color: white;
+        }
+
         .material-button-raised {
             position: relative;
             display: inline-block;
@@ -209,7 +213,7 @@
     </noscript>
 
     <div class="searchBox">
-        <input id="searchText" type="text" placeholder="Enter a movie..." />
+        <input id="searchText" type="text" placeholder="Search for something..." />
         <br>
         <br>
         <br>
@@ -288,7 +292,7 @@
         let debugData;
         async function scrapeMovies(searchData) {
             let token = await authenticate();
-            stop(); // Stop existing eventsource.
+            stop(); // Stop existing websocket.
             ws = new WebSocket(`ws://localhost:3000/?token=${token}`);
             ws.onopen = function () {
                 // Web Socket is connected, send data using send()
@@ -313,7 +317,6 @@
                     if (data.event === 'scrape' || data.event === 'result') {
                         resultObject = updateresultCountObject(resultCountObject, provider);
                     }
-
                     if (data.event === 'done') {
                         console.log('There should be no more events after this one. Comment out the `close` line to see if there are any events leaking.');
                         console.log('scrapes: ', scrapes);
@@ -329,7 +332,6 @@
                             provider: resultCountObject
                         });
                         console.log(aggregatedDebugInfo)
-
                         console.table(resultTable);
                         // ws.close()
                     }
@@ -346,7 +348,7 @@
         }
         async function scrapeTV(searchData) {
             let token = await authenticate();
-            stop(); // Stop existing eventsource.
+            stop(); // Stop existing websocket.
             ws = new WebSocket(`ws://localhost:3000/?token=${token}`);
             let isAnime = document.getElementById('isAnime').checked;
             ws.onopen = function () {
@@ -365,7 +367,6 @@
             ws.onmessage = function (e) {
                 try {
                     const data = JSON.parse(e.data)
-                    let provider;
                     console.log(data);
                     if (data.event === 'scrape') {
                         scrapes = scrapes + 1;
@@ -378,9 +379,9 @@
                     if (data.event === 'scrape' || data.event === 'result') {
                         resultCountObject = updateresultCountObject(resultCountObject, provider);
                     }
-
                     if (data.event === 'done') {
                         console.log('There should be no more events after this one. Comment out the `close` line to see if there are any events leaking.');
+                        // ws.close()
                         console.log('scrapes: ', scrapes);
                         console.log('results: ', resultsCount);
                         resultTable.push({ 'Details': `${debugData.name}, S${debugData.season}E${debugData.episode}`, 'Scrape': scrapes, 'Result': resultsCount })
@@ -395,7 +396,6 @@
                         resultCountObject = {};
                         console.log(aggregatedDebugInfo)
                         console.table(resultTable);
-                        // ws.close()
                     }
                 } catch (err) {
                     console.error(e.data);
@@ -417,7 +417,6 @@
                 search();
             }
         }
-
         async function search() {
             scrapes = 0;
             resultsCount = 0;

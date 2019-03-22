@@ -78,7 +78,7 @@ const BaseProvider = class BaseProvider {
     resolveRequests(req, ws) {
         // Set instance variables that depend on `req` or `ws`
         this._setInstanceVariables(req, ws);
-        
+
         // Asynchronously start all the scrapers for each url
         const promises = [];
         this.getUrls().forEach((url) => {
