@@ -6,8 +6,8 @@ function createEvent(data, ipLocked, pairing, {quality, provider, source, isResu
             event: 'scrape',
             target: pairing.target,
             headers,
-            source,
-            resolver: provider,
+            provider,
+            resolver: source,
             cookieRequired
         }
     }
