@@ -24,7 +24,8 @@ class WsWrapper {
     async send(resultData) {
         if (this.shouldSend(resultData)) {
             await this.setHeadInfo(resultData);
-            await this.setFileInfo(resultData);
+            // Commenting this out until we get a better workflow for retrieving file data consistently
+            // await this.setFileInfo(resultData);
             try {
                 this.ws.send(JSON.stringify(resultData));
                 this.sentLinks.push(resultData.file.data);
