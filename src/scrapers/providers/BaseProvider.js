@@ -3,6 +3,8 @@ const querystring = require('querystring');
 const Promise = require('bluebird');
 const RequestPromise = require('request-promise');
 const resolve = require('../resolvers/resolve');
+const logger = require('../../utils/logger');
+const randomUseragent = require('random-useragent');
 
 function _implementMe(functionName) {
     throw new Error(`Must implement ${functionName}()`);
@@ -16,6 +18,9 @@ function _implementMe(functionName) {
  */
 const BaseProvider = class BaseProvider {
     constructor() {
+        this.logger = logger;
+        this.userAgent = randomUseragent.getRandom();
+
         if (new.target === BaseProvider) {
             throw new TypeError("Cannot construct BaseProvider instances directly");
         }
@@ -41,11 +46,11 @@ const BaseProvider = class BaseProvider {
      * Scrape the URL
      * @param url
      * @param req
-     * @param sse
+     * @param ws
      *
      * @return Promise Usually.
      */
-    scrape(url, req, sse) {
+    scrape(url, req, ws) {
         _implementMe('scrape');
     }
 
@@ -54,30 +59,44 @@ const BaseProvider = class BaseProvider {
      * Should be called by the `scrape` function when it finds a link that needs resolving.
      *
      * @param link
-     * @param sse
+     * @param ws
      * @param jar
      * @param headers
      * @param quality
      * @return {Promise<undefined|*|void>}
      */
-    resolveLink(link, sse, jar, headers, quality = '') {
-        return resolve(sse, link, this.getProviderId(), jar, headers, quality);
+    resolveLink(link, ws, jar, headers, quality = '') {
+        return resolve(ws, link, this.getProviderId(), jar, headers, quality);
     }
 
     /**
      * Resolve requests.
      * @param req
-     * @param sse
+     * @param ws
      * @return {Array}
      */
-    resolveRequests(req, sse) {
-        const promises = [];
+    resolveRequests(req, ws) {
+        // Set instance variables that depend on `req` or `ws`
+        this._setInstanceVariables(req, ws);
+
         // Asynchronously start all the scrapers for each url
+        const promises = [];
         this.getUrls().forEach((url) => {
-                promises.push(this.scrape(url, req, sse));
+                promises.push(this.scrape(url, req, ws));
         });
 
         return Promise.all(promises);
+    }
+
+    /**
+     * Set variables on each Provider to be re-used throughout the providers logic
+     * @param req
+     * @param ws
+     * @returns void
+     */
+    _setInstanceVariables(req, ws) {
+        this.clientIp = this._getClientIp(req);
+        this.rp = this._getRequest(req, ws);
     }
 
     /**
@@ -93,12 +112,12 @@ const BaseProvider = class BaseProvider {
      * Return the default request promise object to use for all requests.
      *
      * @param req
-     * @param sse
+     * @param ws
      * @return Function
      */
-    _getRequest(req, sse) {
+    _getRequest(req, ws) {
         return RequestPromise.defaults(target => {
-            if (sse.stopExecution) {
+            if (ws.stopExecution) {
                 return null;
             }
 
@@ -174,7 +193,7 @@ const BaseProvider = class BaseProvider {
                 options: e.options,
             }
         }
-        console.error(`${this.getProviderId()}: An unexpected error occurred:`, e);
+        this.logger.error(`${this.getProviderId()}: An unexpected error occurred:`, e);
     }
 };
 
