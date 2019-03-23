@@ -1,5 +1,7 @@
 const createEvent = require('../../utils/createEvent');
+const logger = require('../../utils/logger');
 const rp = require('request-promise');
+const randomUseragent = require('random-useragent');
 
 function _implementMe(functionName) {
     throw new Error(`Must implement ${functionName}()`);
@@ -70,6 +72,18 @@ const BaseResolver = class BaseResolver {
     }
 
     /**
+     * Return the user agent to use for requests.
+     * @return String
+     */
+    getDefaultUserAgent() {
+        return process['CLAWS_DEFAULT_UA'] || randomUseragent.getRandom((ua) => {
+            // don't include questionable user-agents.
+            let excludeGroups = /Spider|Legacy|Console|Miscellaneous/;
+            return !excludeGroups.test(ua.folder);
+        });
+    }
+
+    /**
      * Resolve a URI.
      * @param {Object} meta The meta data for resolving requests.
      * @param {Object} meta.ws server-side emitter/websocket agent.
@@ -85,8 +99,15 @@ const BaseResolver = class BaseResolver {
         if (this.hasIpLocking() && this.scrapeFromClientResponse()) {
             return this.createScrapeEvent(uri, meta);
         }
-        const responseHtml = await this.createRequest(this.normalizeUri(uri), jar, headers);
-        return this.resolveHtml(meta, responseHtml, jar, headers);
+        try {
+            const responseHtml = await this.createRequest(this.normalizeUri(uri), jar, headers, {
+                clawsOriginalUri: uri,
+            });
+            return this.resolveHtml(meta, responseHtml, jar, headers);
+        } catch (e) {
+            this._onErrorOccurred(e);
+            return null;
+        }
     }
 
     /**
@@ -110,16 +131,20 @@ const BaseResolver = class BaseResolver {
      * @param uri
      * @param jar
      * @param headers
+     * @param extraOptions
      *
      * @return Promise
      */
-    createRequest(uri, jar, headers) {
+    createRequest(uri, jar, headers, extraOptions = {}) {
+        headers = this._preprocessRequest(uri, jar, headers, extraOptions);
+
         return rp({
             uri,
             headers,
             jar,
             followAllRedirects: true,
-            timeout: 5000
+            timeout: 5000,
+            ...extraOptions,
         });
     }
 
@@ -151,7 +176,11 @@ const BaseResolver = class BaseResolver {
             // Returning links directly from HTMl.
             const dataList = [];
             links.forEach(dataObject => {
-                dataList.push(this.createEvent(dataObject.data, false, {}, {quality: dataObject.meta.quality || metaData.quality}));
+                let quality = metaData.quality;
+                if (dataObject.meta && dataObject.meta.quality) {
+                    quality = dataObject.meta.quality;
+                }
+                dataList.push(this.createEvent(dataObject.data, false, {}, {quality: quality}));
             });
             return dataList;
         }
@@ -193,6 +222,28 @@ const BaseResolver = class BaseResolver {
      */
     scrapeFromClientResponse() {
         return process.env.CLAWS_ENV === 'server';
+    }
+
+    _preprocessRequest(uri, jar, headers) {
+        if (!headers) {
+            headers = {};
+        }
+        if (!headers['user-agent'] || !headers['User-Agent']) {
+            headers['user-agent'] = this.getDefaultUserAgent();
+        }
+
+        return headers;
+    }
+
+    _onErrorOccurred(e) {
+        if (e.name === 'StatusCodeError') {
+            e = {
+                name: e.name,
+                statusCode: e.statusCode,
+                options: e.options,
+            }
+        }
+        logger.error(`${this.getResolverId()}: An unexpected error occurred:`, e);
     }
 
     /**
