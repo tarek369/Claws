@@ -141,10 +141,35 @@ module.exports = class Afdah extends BaseProvider {
                     }
                 );
 
-            const providerUrl = `https://oload.cloud/embed/${openloadData.id}`;
+                if (openloadData) {
+                    let providerUrl;
 
-            resolvePromises.push(this.resolveLink(providerUrl, ws, jar, headers));
-        }
+                    if (openloadData.id) {
+                        providerUrl = `https://oload.cloud/embed/${openloadData.id}`;
+                    } else {
+                        let jwPlayerConfig = {};
+                        let jQuery = this._getJqueryShim($);
+                        const sandbox = {
+                            ser1: ()=>{}
+                        };
+                        sandbox['ser2'] = sandbox['ser1'];
+                        sandbox['config'] = jwPlayerConfig;
+                        sandbox['jwplayer'] = () => {
+
+                        };
+                        vm.createContext(sandbox); // Contextify the sandbox.
+                        vm.runInContext(script, sandbox);
+
+                        if (jwPlayerConfig.file) {
+                            providerUrl = this._absoluteUrl(videoStreamUrl, jwPlayerConfig.file);
+                        }
+                    }
+
+                    if (providerUrl) {
+                        resolvePromises.push(this.resolveLink(providerUrl, ws, jar, headers));
+                    }
+                }
+            }
         }
     catch(err) {
         this._onErrorOccurred(err)
