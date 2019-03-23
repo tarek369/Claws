@@ -63,10 +63,11 @@ const BaseProvider = class BaseProvider {
      * @param jar
      * @param headers
      * @param quality
+     * @param meta
      * @return {Promise<undefined|*|void>}
      */
-    resolveLink(link, ws, jar, headers, quality = '') {
-        return resolve(ws, link, this.getProviderId(), jar, headers, quality);
+    resolveLink(link, ws, jar, headers, quality = '', meta = {}) {
+        return resolve(ws, link, this.getProviderId(), jar, headers, quality, meta);
     }
 
     /**
@@ -186,7 +187,7 @@ const BaseProvider = class BaseProvider {
     }
 
     _onErrorOccurred(e) {
-        if(e.name === 'StatusCodeError') {
+        if (e.name === 'StatusCodeError') {
             e = {
                 name: e.name,
                 statusCode: e.statusCode,

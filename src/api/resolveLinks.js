@@ -37,12 +37,6 @@ const resolveLinks = async (data, ws, req) => {
     // Get available providers.
     let availableProviders = [...providers[type], ...providers.universal];
 
-    // Add anime providers if Anime tag sent from client.
-    // TODO: Add and send this tag from the client
-    if (type === 'anime') {
-        availableProviders.push([...providers.anime]);
-    }
-
     availableProviders.forEach((provider) => promises.push(provider.resolveRequests(req, wsWrapper)));
 
     await Promise.all(promises);
