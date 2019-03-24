@@ -20,6 +20,7 @@ const StreamM4u = require('./StreamM4u');
 const {GoogleDrive, getGoogleDriveScrapeUrl} = require('./GoogleDrive');
 const MovieFiles = require('./MovieFiles');
 const EnterVideo = require('./EnterVideo');
+const DLFilm = require('./DLFilm');
 const FardaDownload = require('./FardaDownload');
 const logger = require('../../utils/logger');
 
@@ -277,6 +278,10 @@ async function resolve(ws, uri, provider, jar, headers, quality = '') {
             const data = await EnterVideo(uri, jar, headers);
             const event = createEvent(data, false, undefined, {quality, provider: 'EnterVideo', source});
             sse.send(event, event.event);*/
+        } else if (uri.includes('dlfilm.net')) {
+            const data = await DLFilm(uri, jar, headers);
+            const event = createEvent(data, false, undefined, {quality, source: 'DLFilm', provider});
+            await ws.send(event, event.event);
         } else if (uri.includes('updlf.com') || uri.includes('upload8.net')) {
             const data = await FardaDownload(uri, jar, headers);
             const event = createEvent(data, false, undefined, {quality, source: 'FardaDownload', provider});
