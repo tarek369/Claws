@@ -7,11 +7,10 @@ module.exports = class AnimePahe extends BaseProvider {
     }
 
     /** @inheritdoc */
-    async scrape(url, req, sse) {
+    async scrape(url, req, ws) {
         const title = req.query.title;
         const season = req.query.season;
         const episode = parseInt(req.query.episode);
-        const type = req.query.type;
 
         const resolvePromises = [];
 
@@ -22,7 +21,7 @@ module.exports = class AnimePahe extends BaseProvider {
                 'q': title,
             });
 
-            const rp = this._getRequest(req, sse);
+            const rp = this._getRequest(req, ws);
             let response = await this._createRequest(rp, searchUrl);
             let data = JSON.parse(response);
             let animes = data.data;
@@ -67,7 +66,7 @@ module.exports = class AnimePahe extends BaseProvider {
                                     if (response && response['data'] && response['data']) {
                                         for (const [episodeId, qualities] of Object.entries(response['data'])) {
                                             for (const [quality, data] of Object.entries(qualities)) {
-                                                resolvePromises.push(this.resolveLink(data.url, sse, null, null, quality, {
+                                                resolvePromises.push(this.resolveLink(data.url, ws, null, null, quality, {
                                                     filesize: data.filesize, // The file size.
                                                     fansub: data.fansub,
                                                     disc: data.disc,

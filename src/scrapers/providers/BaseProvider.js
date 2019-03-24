@@ -68,6 +68,10 @@ const BaseProvider = class BaseProvider {
      * @return {Promise<undefined|*|void>}
      */
     resolveLink(link, ws, jar, headers, quality = '', meta = {}) {
+        if (process.env['CLAWS_TESTING'] || process.env['CLAWS_DONT_RESOLVE_PROVIDERS']) {
+            // Don't attempt to resolve links.
+            return link;
+        }
         return resolve(ws, link, this.getProviderId(), jar, headers, quality, meta);
     }
 
