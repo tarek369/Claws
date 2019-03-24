@@ -13,12 +13,12 @@ module.exports = exports = {
         new (require('./tv/GoWatchSeries'))(),
         new (require('./tv/SwatchSeries'))(),
         //require('./tv/AfdahTV'),
-        new (require('./tv/series8'))()
     ],
     anime: [],
     universal: [
         new (require('./universal/123movie'))(),
         new (require('./universal/ODB'))(),
+        new (require('./universal/Series8'))(),
         //require('./universal/5movies')
         new (require('./universal/FardaDownload'))()
     ]
