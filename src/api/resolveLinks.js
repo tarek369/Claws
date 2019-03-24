@@ -3,8 +3,7 @@
 // Load providers
 const providers = require('../scrapers/providers');
 
-const BaseProvider = require('../scrapers/providers/BaseProvider');
-
+const logger = require('../utils/logger');
 const WsWrapper = require('../utils/WsWrapper');
 
 /**
@@ -41,7 +40,11 @@ const resolveLinks = async (data, ws, req) => {
 
     await Promise.all(promises);
 
-    ws.send(JSON.stringify({event: 'done'}));
+    if (ws.isAlive) {
+        ws.send(JSON.stringify({event: 'done'}));
+    } else {
+        logger.debug('done event not sent since the websocket is dead.')
+    }
 };
 
 module.exports = resolveLinks;
