@@ -59,22 +59,24 @@ module.exports = class FardaDownload extends BaseProvider {
                 }).nextUntil('div.title-season', 'div').toArray();
                 for (const section of matchedSection) {
                     const folderLink = $(section).find('a.downloadf').attr('href');
-                    const folderHTML = await this._createRequest(rp, folderLink, jar, headers);
+                    if (folderLink.includes('http://') || folderLink.includes('https://')) {
+                        const folderHTML = await this._createRequest(rp, folderLink, jar, headers);
 
-                    $ = cheerio.load(folderHTML);
+                        $ = cheerio.load(folderHTML);
 
-                    const paddedSeason = `${season}`.padStart(2, '0');
-                    const paddedEpisode = `${episode}`.padStart(2, '0');
-                    const formattedEpisode = `s${paddedSeason}e${paddedEpisode}`;
+                        const paddedSeason = `${season}`.padStart(2, '0');
+                        const paddedEpisode = `${episode}`.padStart(2, '0');
+                        const formattedEpisode = `s${paddedSeason}e${paddedEpisode}`;
 
-                    $('a').toArray().forEach(element => {
-                        const fileName = $(element).text();
-                        if (fileName.toLowerCase().includes(formattedEpisode)) {
-                            const filePath = $(element).attr('href');
-                            const directLink = this._absoluteUrl(folderLink, filePath);
-                            resolvePromises.push(this.resolveLink(directLink, ws, jar, headers));
-                        }
-                    });
+                        $('a').toArray().forEach(element => {
+                            const fileName = $(element).text();
+                            if (fileName.toLowerCase().includes(formattedEpisode)) {
+                                const filePath = $(element).attr('href');
+                                const directLink = this._absoluteUrl(folderLink, filePath);
+                                resolvePromises.push(this.resolveLink(directLink, ws, jar, headers));
+                            }
+                        });
+                    }
                 }
             } else {
                 $('a.dl_bx_mv').toArray().forEach(element => {
