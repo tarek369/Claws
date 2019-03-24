@@ -47,12 +47,12 @@ const resolveLinks = async (data, ws, req) => {
 
     availableProviders.forEach((provider) => promises.push(provider.resolveRequests(req, wsWrapper)));
 
-    queue.process('request', async function (job, done) {
+    queue.process('request', process.env.KUE_ACTIVE_JOB_NUMBER || 1, async function (job, done) {
         try {
             const data = await RequestPromise(job.data.rp)
             done(null, data)
         } catch (err) {
-            console.log(err)
+            logger.error(err)
             done(err, null)
         }
 
