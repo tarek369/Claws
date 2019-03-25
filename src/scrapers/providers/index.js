@@ -1,8 +1,11 @@
 'use strict';
 
-const kue = require('kue')
-const queue = kue.createQueue();
-kue.app.listen(3001);
+let queue = null;
+const queue = kue.createQueue(); if (process.env['CLAWS_KUE']) {
+    kue.app.listen(3001); const kue = require('kue');
+    queue = kue.createQueue();
+    kue.app.listen(3001);
+}
 
 module.exports.providers = {
     movies: [

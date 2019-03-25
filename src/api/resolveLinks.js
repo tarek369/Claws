@@ -1,7 +1,7 @@
 'use strict';
 
 // Load providers
-const {providers, queue} = require('../scrapers/providers');
+const { providers, queue } = require('../scrapers/providers');
 const RequestPromise = require('request-promise');
 var events = require('kue/lib/queue/events');
 
@@ -12,7 +12,7 @@ const WsWrapper = require('../utils/WsWrapper');
 /**
  * Sends the current time in milliseconds.
  */
-const sendInitialStatus = (ws) => ws.send(JSON.stringify({data: [`${new Date().getTime()}`], event: 'status'}));
+const sendInitialStatus = (ws) => ws.send(JSON.stringify({ data: [`${new Date().getTime()}`], event: 'status' }));
 
 /**
  * Return request handler for certain media types.
@@ -47,20 +47,25 @@ const resolveLinks = async (data, ws, req) => {
 
     availableProviders.forEach((provider) => promises.push(provider.resolveRequests(req, wsWrapper)));
 
-    queue.process('request', process.env.KUE_ACTIVE_JOB_NUMBER || 1, async function (job, done) {
-        try {
-            const data = await RequestPromise(job.data.rp)
-            done(null, data)
-        } catch (err) {
-            logger.error(err)
-            done(err, null)
-        }
-
-    })
+    if (queue) {
+        queue.process('request', process.env.KUE_ACTIVE_JOB_NUMBER || 1, async function (job, done) {
+            try {
+                const data = await RequestPromise(job.data.rp)
+                done(null, data)
+            } catch (err) {
+                logger.error(err)
+                done(err, null)
+            }
+        });
+    }
 
     await Promise.all(promises);
-    logger.debug('Scraping complete: sending `Done` event')
-    ws.send(JSON.stringify({event: 'done'}));
+    if (ws.isAlive) {
+        logger.debug('Scraping complete: sending `Done` event');
+        ws.send(JSON.stringify({ event: 'done' }));
+    } else {
+        logger.debug('Scraping complete: `Done` event ready, but websocket is dead.');
+    }
 };
 
 module.exports = resolveLinks;
