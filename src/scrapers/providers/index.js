@@ -1,11 +1,12 @@
 'use strict';
 
 let queue = null;
-const queue = kue.createQueue(); if (process.env['CLAWS_KUE']) {
-    kue.app.listen(3001); const kue = require('kue');
+if (process.env.ENABLE_KUE) {
+    const kue = require('kue');
     queue = kue.createQueue();
     kue.app.listen(3001);
 }
+
 
 module.exports.providers = {
     movies: [
@@ -13,20 +14,22 @@ module.exports.providers = {
         new (require('./movies/AZMovies'))(queue),
         new (require('./movies/bfmovies'))(queue),
         new (require('./movies/StreamM4u'))(queue),
-        // require('./movies/MovieFiles'),
+        //require('./movies/MovieFiles'),
+        new (require('./movies/DLFilm'))(queue)
     ],
     tv: [
         new (require('./tv/SeriesFree'))(queue),
         new (require('./tv/GoWatchSeries'))(queue),
         new (require('./tv/SwatchSeries'))(queue),
-        // require('./tv/AfdahTV'),
-        new (require('./tv/series8'))(queue)
+        //require('./tv/AfdahTV'),
     ],
     anime: [],
     universal: [
         new (require('./universal/123movie'))(queue),
-        new (require('./universal/ODB'))(queue)
+        new (require('./universal/ODB'))(queue),
+        new (require('./universal/Series8'))(queue),
         //require('./universal/5movies')
+        new (require('./universal/FardaDownload'))(queue)
     ]
 };
 

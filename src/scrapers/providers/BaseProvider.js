@@ -156,11 +156,9 @@ const BaseProvider = class BaseProvider {
 
                 job
                     .on('complete', function (result) {
-                        console.log('Job', job.id, 'is  done');
                         resolve(result);
                     })
                     .on('failed', function () {
-                        console.log('Job', job.id, 'with name', job.data.name, 'has  failed');
                         reject(job.data);
                     });
                 job.save();

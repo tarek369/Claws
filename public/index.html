@@ -204,6 +204,31 @@
             font-size: 14px;
             font-weight: 500;
         }
+
+        .search-result {
+            width: 100%;
+            height: 100%;
+            max-width: 162px;
+            display: flex;
+            align-items: flex-end;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .search-result.no-image {
+            background-color: #696969;
+            /* tee hee*/
+        }
+
+        .search-result.no-image:before {
+            content: "NO IMAGE";
+            position: absolute;
+            top: 77px;
+            font-weight: bold;
+            width: 100%;
+            text-align: center;
+            color: #c7c5c5;
+        }
     </style>
 </head>
 
@@ -429,14 +454,17 @@
             results = responseJSON.results;
             for (let result of results) {
                 const resultContainer = document.createElement('div');
-                resultContainer.style.background = `url('https://image.tmdb.org/t/p/w200${result.poster_path}') center / cover`;
                 resultContainer.classList.add('search-result');
+                if (result.poster_path) {
+                    resultContainer.style.background = `url('https://image.tmdb.org/t/p/w200${result.poster_path}') center / cover`;
+                } else {
+                    resultContainer.classList.add('no-image');
+                }
                 const titleContainer = document.createElement('div');
                 titleContainer.classList.add('search-result-title-container');
                 const title = document.createElement('span');
                 title.classList.add('search-result-title');
                 title.innerText = `${result.title || result.name}${result.release_date ? ` (${(new Date(result.release_date)).getFullYear()})` : ''}`;
-
                 titleContainer.appendChild(title);
                 resultContainer.appendChild(titleContainer);
                 if (result.media_type === 'movie') {
