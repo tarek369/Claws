@@ -1,7 +1,7 @@
 const createEvent = require('../../utils/createEvent');
 const logger = require('../../utils/logger');
-const JavascriptEval = require('../../service/javascriptEval');
-const useragent = require('../../service/useragent');
+const JavascriptEval = require('../../utils/javascriptEval');
+const useragent = require('../../utils/useragent');
 const rp = require('request-promise');
 
 function _implementMe(functionName) {

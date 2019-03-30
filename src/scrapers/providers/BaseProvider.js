@@ -4,8 +4,8 @@ const Promise = require('bluebird');
 const RequestPromise = require('request-promise');
 const resolve = require('../resolvers/resolve');
 const logger = require('../../utils/logger');
-const javascriptEval = require('../../service/javascriptEval');
-const useragent = require('../../service/useragent');
+const javascriptEval = require('../../utils/javascriptEval');
+const useragent = require('../../utils/useragent');
 
 function _implementMe(functionName) {
     throw new Error(`Must implement ${functionName}()`);

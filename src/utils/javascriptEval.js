@@ -1,7 +1,5 @@
 /**
- * Helper service for javascript evaluations.
- *
- * @type {JavascriptEval}
+ * Helper util for javascript evaluations.
  */
 
 /**
