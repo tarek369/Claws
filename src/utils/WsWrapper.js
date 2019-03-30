@@ -28,8 +28,14 @@ class WsWrapper {
             // await this.setFileInfo(resultData);
             try {
                 this.ws.send(JSON.stringify(resultData));
-                this.sentLinks.push(resultData.file.data);
+                if (resultData.event === 'result') {
+                    this.sentLinks.push(resultData.file.data);
+                } else {
+                    this.sentLinks.push(resultData.target);
+                }
             } catch (err) {
+                console.log('_____________')
+                console.log(err);
                 logger.debug("WS client disconnected, can't send data");
             }
         }

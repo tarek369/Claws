@@ -14,6 +14,7 @@ module.exports.providers = {
         new (require('./tv/SeriesFree'))(queue),
         new (require('./tv/GoWatchSeries'))(queue),
         new (require('./tv/SwatchSeries'))(queue),
+        new (require('./tv/ProjectFreeTV'))(queue)
         //require('./tv/AfdahTV'),
     ],
     anime: [],
