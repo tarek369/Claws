@@ -147,24 +147,16 @@ const BaseProvider = class BaseProvider {
             timeout: 10000,
             ...extraOptions,
         };
-
-        if (process.env.ENABLE_KUE) {
+        if (this.queue.isEnabled) {
             return new Promise((resolve, reject) => {
-                var job = this.queue.create('request', {
-                    rp: rp(options)
-                }).attempts(process.env.KUE_MAX_RETRIES || 3).backoff(true).removeOnComplete(true);
-
-                job
-                    .on('complete', function (result) {
-                        resolve(result);
-                    })
-                    .on('failed', function () {
-                        reject(job.data);
-                    });
-                job.save();
-
+                let job = this.queue.submit({ name: 'request', job: { request: rp(options) } })
+                job.on('complete', function (result) {
+                    resolve(result);
+                }).on('failed', function () {
+                    reject(job.data);
+                });
             });
-        };
+        }
         return rp(options);
     }
 

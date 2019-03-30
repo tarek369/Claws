@@ -1,12 +1,5 @@
 'use strict';
-
-let queue = null;
-if (process.env.ENABLE_KUE) {
-    const kue = require('kue');
-    queue = kue.createQueue();
-    kue.app.listen(3001);
-}
-
+const { queue } = require('../../utils/queue');
 
 module.exports.providers = {
     movies: [
