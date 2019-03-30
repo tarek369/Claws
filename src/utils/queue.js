@@ -6,8 +6,8 @@ const logger = require('./logger');
 class Queue {
     constructor() {
         this.isEnabled = false;
-        
-        if (process.env.ENABLE_KUE === 'true') {
+
+        if (process.env.ENABLE_QUEUE === 'true') {
             logger.debug('Kue enabled - Using queue to resolve requests')
             this.queue = kue.createQueue();
             this.isEnabled = true;
@@ -19,7 +19,7 @@ class Queue {
 
     process() {
         logger.debug(`Queue Processing Started`)
-        this.queue.process('request', process.env.KUE_ACTIVE_JOB_NUMBER || 1, async function (job, done) {
+        this.queue.process('request', process.env.QUEUE_ACTIVE_JOB_NUMBER || 1, async function (job, done) {
             try {
                 const data = await RequestPromise(job.data)
                 done(null, data)
@@ -32,7 +32,7 @@ class Queue {
 
     submit(jobDetails) {
         let job = this.queue.create(jobDetails.name, jobDetails.job.request)
-            .attempts(process.env.KUE_MAX_RETRIES || 3)
+            .attempts(process.env.QUEUE_MAX_RETRIES || 3)
             .backoff(true).removeOnComplete(true);
         job.save();
         return job;
