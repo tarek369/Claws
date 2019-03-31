@@ -28,7 +28,11 @@ class WsWrapper {
             // await this.setFileInfo(resultData);
             try {
                 this.ws.send(JSON.stringify(resultData));
-                this.sentLinks.push(resultData.file.data);
+                if (resultData.event === 'result') {
+                    this.sentLinks.push(resultData.file.data);
+                } else {
+                    this.sentLinks.push(resultData.target);
+                }
             } catch (err) {
                 logger.debug("WS client disconnected, can't send data");
             }
@@ -67,9 +71,12 @@ class WsWrapper {
                     timeout: 5000
                 });
 
-                resultData.file.fileSize = Number(response.headers['content-length']);
-                resultData.file.contentType = response.headers['content-type'];
-                resultData.metadata.isStreamable = response.headers['accept-ranges'] === 'bytes';
+                if (response) {
+                    // Response can be null if stopExecution is true.
+                    resultData.file.fileSize = Number(response.headers['content-length']);
+                    resultData.file.contentType = response.headers['content-type'];
+                    resultData.metadata.isStreamable = response.headers['accept-ranges'] === 'bytes';
+                }
             } catch(err) {
                 logger.error(err);
             }

@@ -1,14 +1,15 @@
+
 const rp = require('request-promise');
 const cheerio = require('cheerio');
 const vm = require('vm');
-const {timeout} = require('../../utils');
+const { timeout } = require('../../utils');
 const logger = require('../../utils/logger');
 
-async function VidTodo(uri, jar, {'user-agent': userAgent}) {
+async function VidTodo(uri, jar, { 'user-agent': userAgent }) {
     try {
         let videoSourceHtml = '';
         let attempt = 0;
-        while(attempt < 5 && !videoSourceHtml) {
+        while (attempt < 5 && !videoSourceHtml) {
             try {
                 videoSourceHtml = await rp({
                     uri,
@@ -21,15 +22,19 @@ async function VidTodo(uri, jar, {'user-agent': userAgent}) {
                 });
             } catch (err) {
                 await timeout(3000);
-                attempt++;
             }
+            attempt++;
         }
-        const videoSourcesString = /(?:sources:\s)(\[.*\])/g.exec(videoSourceHtml)[1];
-        const sandbox = {};
-        vm.createContext(sandbox); // Contextify the sandbox.
-        return vm.runInContext(videoSourcesString, sandbox);
+        let sources = /(?:sources:\s)(\[.*\])/g.exec(videoSourceHtml);
+        if (sources) {
+            const videoSourcesString = sources[1];
+            const sandbox = {};
+            vm.createContext(sandbox); // Contextify the sandbox.
+            return vm.runInContext(videoSourcesString, sandbox);
+        }
+        return [];
     } catch (err) {
-        logger.error(err)
+        logger.error(err);
     }
 }
 
