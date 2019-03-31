@@ -364,7 +364,8 @@
                             results: { scrape: scrapes, results: resultsCount },
                             provider: resultCountObject
                         });
-                        console.log('Results per site (aggregated): ', aggregatedDebugInfo)
+                        console.log('Results per site (aggregated): ');
+                        console.log(aggregatedDebugInfo);
                         console.table(resultTable);
                         resultCountObject = { providers: {}, resolvers: {} };
                         scrapes = 0;
@@ -431,7 +432,8 @@
                             })
                             scrapes = 0;
                             resultsCount = 0;
-                            console.log('Results per site (aggregated): ', aggregatedDebugInfo)
+                            console.log('Results per site (aggregated): ');
+                            console.log(aggregatedDebugInfo);
                             console.table(resultTable);
                             resultCountObject = { providers: {}, resolvers: {} };
                         }
