@@ -260,15 +260,21 @@
         let scrapes = 0;
         let resultsCount = 0;
         let resultTable = [];
-        let resultCountObject = {};
+        let resultCountObject = { providers: {}, resolvers: {} };
         let aggregatedDebugInfo = [];
 
         document.getElementById('searchText').onkeydown = searchByEnter;
-        function updateresultCountObject(obj, provider) {
-            if (!obj[provider]) {
-                obj[provider] = 0;
+        function updateresultCountObject(obj, provider, resolver) {
+            if (!obj.providers[provider]) {
+                obj.providers[provider] = 0;
             }
-            obj[provider] += 1;
+            obj.providers[provider] += 1;
+
+            if (!obj.resolvers[resolver]) {
+                obj.resolvers[resolver] = 0;
+            }
+            obj.resolvers[resolver] += 1;
+
             return obj;
         }
 
@@ -333,33 +339,36 @@
                     const data = JSON.parse(e.data)
                     console.log(data);
                     if (data.event === 'scrape') {
-                        provider = data.source;
+                        provider = data.provider;
+                        resolver = data.resolver
                         scrapes = scrapes + 1;
-                        provider = data.source;
                     }
                     if (data.event === 'result') {
+                        resolver = data.metadata.source;
+                        provider = data.metadata.provider;
                         resultsCount = resultsCount + 1;
-                        provider = data.metadata.source;
+
                     }
                     if (data.event === 'scrape' || data.event === 'result') {
-                        resultObject = updateresultCountObject(resultCountObject, provider);
+                        resultCountObject = updateresultCountObject(resultCountObject, provider, resolver);
                     }
                     if (data.event === 'done') {
                         console.log('There should be no more events after this one. Comment out the `close` line to see if there are any events leaking.');
                         console.log('scrapes: ', scrapes);
                         console.log('results: ', resultsCount);
                         resultTable.push({ 'Details': debugData.title, 'Scrape': scrapes, 'Result': resultsCount })
-                        scrapes = 0;
-                        resultsCount = 0;
-                        resultCountObject = {};
-                        console.log('Results per provider: ', resultCountObject);
+
+                        console.log('Results per site (this search): ', resultCountObject);
                         aggregatedDebugInfo.push({
                             search: debugData.title,
                             results: { scrape: scrapes, results: resultsCount },
                             provider: resultCountObject
                         });
-                        console.log(aggregatedDebugInfo)
+                        console.log('Results per site (aggregated): ', aggregatedDebugInfo)
                         console.table(resultTable);
+                        resultCountObject = { providers: {}, resolvers: {} };
+                        scrapes = 0;
+                        resultsCount = 0;
                         // ws.close()
                     }
                 } catch (err) {
@@ -396,15 +405,17 @@
                         const data = JSON.parse(e.data)
                         console.log(data);
                         if (data.event === 'scrape') {
+                            provider = data.provider;
+                            resolver = data.resolver
                             scrapes = scrapes + 1;
-                            provider = data.source;
                         }
                         if (data.event === 'result') {
                             resultsCount = resultsCount + 1;
-                            provider = data.metadata.source;
+                            resolver = data.metadata.source;
+                            provider = data.metadata.provider;
                         }
                         if (data.event === 'scrape' || data.event === 'result') {
-                            resultCountObject = updateresultCountObject(resultCountObject, provider);
+                            resultCountObject = updateresultCountObject(resultCountObject, provider, resolver);
                         }
                         if (data.event === 'done') {
                             console.log('There should be no more events after this one. Comment out the `close` line to see if there are any events leaking.');
@@ -412,7 +423,7 @@
                             console.log('scrapes: ', scrapes);
                             console.log('results: ', resultsCount);
                             resultTable.push({ 'Details': `${debugData.name}, S${debugData.season}E${debugData.episode}`, 'Scrape': scrapes, 'Result': resultsCount })
-                            console.log('Results per provider: ', resultCountObject);
+                            console.log('Results per site (this search): ', resultCountObject);
                             aggregatedDebugInfo.push({
                                 search: `${debugData.name}, S${debugData.season}E${debugData.episode}`,
                                 results: { scrape: scrapes, results: resultsCount },
@@ -420,9 +431,9 @@
                             })
                             scrapes = 0;
                             resultsCount = 0;
-                            resultCountObject = {};
-                            console.log(aggregatedDebugInfo)
+                            console.log('Results per site (aggregated): ', aggregatedDebugInfo)
                             console.table(resultTable);
+                            resultCountObject = { providers: {}, resolvers: {} };
                         }
                     } catch (err) {
                         console.error(e.data);
@@ -448,7 +459,7 @@
         async function search() {
             scrapes = 0;
             resultsCount = 0;
-            resultCountObject = {}
+            resultCountObject = { providers: {}, resolvers: {} };
             document.getElementById('results').innerHTML = '';
             const response = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&language=en-US&query=${document.getElementById('searchText').value}&page=1&include_adult=false`)
             const responseJSON = await response.json();
