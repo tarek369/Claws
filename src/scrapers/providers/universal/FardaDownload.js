@@ -57,24 +57,28 @@ module.exports = class FardaDownload extends BaseProvider {
                     return $(this).text() == seasonHeader;
                 }).nextUntil('div.title-season', 'div').toArray();
                 for (const section of matchedSection) {
-                    const folderLink = $(section).find('a.downloadf').attr('href');
-                    if (folderLink.includes('http://') || folderLink.includes('https://')) {
-                        const folderHTML = await this._createRequest(rp, folderLink, jar, headers);
+                    const folderOrEpisodeLink = $(section).find('a.downloadf').attr('href');
+                    const paddedSeason = `${season}`.padStart(2, '0');
+                    const paddedEpisode = `${episode}`.padStart(2, '0');
+                    const formattedEpisode = `s${paddedSeason}e${paddedEpisode}`;
+                    // Link is a link to a folder (older seasons / episodes)
+                    if ((folderOrEpisodeLink.includes('http://') || folderOrEpisodeLink.includes('https://')) && folderOrEpisodeLink.endsWith(`/`)) {
+                        const folderHTML = await this._createRequest(rp, folderOrEpisodeLink, jar, headers);
 
                         $ = cheerio.load(folderHTML);
-
-                        const paddedSeason = `${season}`.padStart(2, '0');
-                        const paddedEpisode = `${episode}`.padStart(2, '0');
-                        const formattedEpisode = `s${paddedSeason}e${paddedEpisode}`;
-
                         $('a').toArray().forEach(element => {
                             const fileName = $(element).text();
                             if (fileName.toLowerCase().includes(formattedEpisode)) {
                                 const filePath = $(element).attr('href');
-                                const directLink = this._absoluteUrl(folderLink, filePath);
+                                const directLink = this._absoluteUrl(folderOrEpisodeLink, filePath);
                                 resolvePromises.push(this.resolveLink(directLink, ws, jar, headers));
                             }
                         });
+                    } else {
+                        // Link is a to the episode (newer seasons / episodes)
+                        if (folderOrEpisodeLink.toLowerCase().includes(formattedEpisode)) {
+                            resolvePromises.push(this.resolveLink(folderOrEpisodeLink, ws, jar, headers));
+                        };
                     }
                 }
             } else {
