@@ -12,7 +12,6 @@ module.exports.providers = {
     ],
     tv: [
         new (require('./tv/SeriesFree'))(queue),
-        new (require('./tv/GoWatchSeries'))(queue),
         new (require('./tv/SwatchSeries'))(queue),
         new (require('./tv/ProjectFreeTV'))(queue)
         //require('./tv/AfdahTV'),
@@ -25,7 +24,8 @@ module.exports.providers = {
         new (require('./universal/ODB'))(queue),
         new (require('./universal/Series8'))(queue),
         //require('./universal/5movies')
-        new (require('./universal/FardaDownload'))(queue)
+        new (require('./universal/FardaDownload'))(queue),
+        new (require('./universal/GoWatchSeries'))(queue)
     ]
 };
 
