@@ -322,7 +322,7 @@ async function resolve(ws, uri, provider, jar, headers, quality = '', meta = {})
             const event = createEvent(data, false, undefined, {quality, source: 'FardaDownload', provider});
             await ws.send(event, event.event);
          } else {
-            logger.warn({source, providerUrl: uri, warning: 'Missing resolver'});
+            logger.warn({provider, providerUrl: uri, warning: 'Missing resolver'});
         }
     } catch(err) {
         logger.error({provider, providerUrl: uri, error: (err.message || err.toString()).substring(0, 100) + '...'});
