@@ -5,6 +5,7 @@ const Salsa20 = require('js-salsa20')
 const {TextEncoder, TextDecoder} = require('util');
 const jwt = require('jsonwebtoken');
 const {RateLimiterCluster, RateLimiterMemory} = require('rate-limiter-flexible');
+const sntp = require('sntp');
 
 // Define constants
 const authDelay = 10;
@@ -40,8 +41,10 @@ async function login(req, res) {
         const message = decoder.decode(messageBytes);
 
         let clientIsValid = false;
-        const now = Math.floor((new Date()).valueOf() / 1000);
-
+        await sntp.start();
+        const now = Math.floor(sntp.now() / 1000);
+        sntp.stop();
+        
         for (let time = now; time >= now - authDelay && !clientIsValid; time--) {
             clientIsValid = message === `${time}|${process.env.SECRET_CLIENT_ID}`
         }
