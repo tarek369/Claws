@@ -20,6 +20,7 @@ module.exports.providers = {
         new (require('./anime/AnimePahe'))(),
     ],
     universal: [
+        new (require('./universal/SolarMovie'))(queue),
         new (require('./universal/123movie'))(queue),
         new (require('./universal/ODB'))(queue),
         new (require('./universal/Series8'))(queue),
