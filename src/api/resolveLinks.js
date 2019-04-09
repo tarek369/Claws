@@ -7,6 +7,7 @@ const RequestPromise = require('request-promise');
 
 const logger = require('../utils/logger');
 const WsWrapper = require('../utils/WsWrapper');
+const resolveHtml = require('../scrapers/resolvers/resolveHtml');
 
 /**
  * Sends the current time in milliseconds.
@@ -21,15 +22,29 @@ const sendInitialStatus = (ws) => ws.send(JSON.stringify({ data: [`${new Date().
  * @return {Function}
  */
 const resolveLinks = async (data, ws, req) => {
-    const type = data.type;
-
-    sendInitialStatus(ws);
-
     const wsWrapper = new WsWrapper(ws, data.options);
-
     ws.on('close', () => {
         wsWrapper.stopExecution = true;
     });
+
+    const type = data.type;
+
+    if (type === 'resolveHtml') {
+        try {
+            const results = await resolveHtml(data);
+            for (const result of results) {
+                await wsWrapper.send(result)
+            }
+        } catch (err) {
+            ws.send(`{"event": "result", "error": "${(err.message || err.toString()).substring(0, 100) + '...'}", "isResultOfScrape": true}`);
+            logger.error(err);
+        } finally {
+            ws.send(`{"event": "scrapeEnd", "scrapeId": "${data.scrapeId}"}`);
+        }
+        return;
+    }
+
+    sendInitialStatus(ws);
 
     const promises = [];
 

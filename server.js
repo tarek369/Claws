@@ -20,19 +20,21 @@ app.set('view engine', 'html');
 // Load external ExpressJS middleware
 const compression = require('compression');
 
-app.use(require('body-parser').json({limit: '10mb'}));
-app.use(compression({filter: (req, res) => {
-    if (req.headers['x-no-compression'] || req.headers['accept'] === 'text/event-stream') {
-        // don't compress responses with this request header
-        return false;
-    }
+app.use(require('body-parser').json({ limit: '10mb' }));
+app.use(compression({
+    filter: (req, res) => {
+        if (req.headers['x-no-compression'] || req.headers['accept'] === 'text/event-stream') {
+            // don't compress responses with this request header
+            return false;
+        }
 
-    // fallback to standard filter function
-    return compression.filter(req, res)
-}}));
+        // fallback to standard filter function
+        return compression.filter(req, res)
+    }
+}));
 
 // Middleware: Initialise logging.
-app.use(require('morgan')('tiny', {stream: logger.stream}));
+app.use(require('morgan')('tiny', { stream: logger.stream }));
 
 // Middlware: Add headers to API.
 app.use(function (req, res, next) {
@@ -43,13 +45,13 @@ app.use(function (req, res, next) {
 
 
 /** RENDERED ROUTES **/
-app.get('/', function(req, res) {
+app.get('/', function (req, res) {
     if (process.env.NODE_ENV === 'production') {
         // When in production, redirect to the main site.
         res.redirect("https://apollotv.xyz/");
     } else {
         // Otherwise, render the index file with the secret client id set.
-        res.render('index', {secret_client_id: process.env.SECRET_CLIENT_ID, tmdb_api_key: process.env.TMDB_API_KEY});
+        res.render('index', { secret_client_id: process.env.SECRET_CLIENT_ID, tmdb_api_key: process.env.TMDB_API_KEY });
     }
 });
 app.get('/salsa20.min.js', (req, res) => res.sendFile(`${pathToApp}/public/salsa20.min.js`));
@@ -68,21 +70,21 @@ app.use('/api/v1', authRoutes);
 const http = require('http');
 const WebSocket = require('ws');
 const URL = require('url');
-const {verifyToken} = require('./src/utils');
+const { verifyToken } = require('./src/utils');
 const resolveLinks = require('./src/api/resolveLinks');
 const resolveHtml = require('./src/scrapers/resolvers/resolveHtml');
 
 //initialize a simple http server
 const server = http.createServer(app);
 
-async function verifyClient({req}) {
+async function verifyClient({ req }) {
     const token = URL.parse(req.url, true).query.token;
-    const {auth} = await verifyToken(token);
+    const { auth } = await verifyToken(token);
     return auth;
 }
 
 //initialize the WebSocket server instance
-const wss = new WebSocket.Server({server, verifyClient});
+const wss = new WebSocket.Server({ server, verifyClient });
 
 wss.on('connection', async (ws, req) => {
     ws.isAlive = true;
@@ -102,17 +104,8 @@ wss.on('connection', async (ws, req) => {
             return;
         }
 
-        if (data.type == 'resolveHtml') {
-            try {
-                const results = await resolveHtml(Buffer.from(data.html, 'base64').toString(), data.resolver, data.headers, data.cookie);
-                ws.send(JSON.stringify({event: 'scrapeResults', results}));
-            } catch(err) {
-                ws.send(`{"event": "scrapeResults", "error": "${(err.message || err.toString()).substring(0, 100) + '...'}"}`);
-                logger.error(err);
-            }
-        } else {
-            resolveLinks(data, ws, req);
-        }
+        resolveLinks(data, ws, req);
+        
     });
 });
 
