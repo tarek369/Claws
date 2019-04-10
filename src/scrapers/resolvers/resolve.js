@@ -96,10 +96,13 @@ async function resolve(ws, uri, provider, jar, headers, quality = '', meta = {})
             await ws.send(event, event.event);
 
         } else if (uri.includes('rapidvideo.com')) {
-            const data = await RapidVideo(uri, jar);
-            const event = createEvent(data, false, undefined, {quality, source: 'RapidVideo', provider});
-            await ws.send(event, event.event);
-
+            const dataList = await RapidVideo(uri, jar);
+            if (dataList) {
+                for (const data of dataList) {
+                    const event = createEvent(data, false, undefined, {quality, source: 'RapidVideo', provider});
+                    await ws.send(event, event.event);
+                }
+            }
         } else if (uri.includes('azmovies.co') || uri.includes('azmovies.ws')) {
             const file = await AZMovies(uri, jar, headers);
             const event = createEvent(file, false, undefined, {quality, source: 'AZMovies', provider});
