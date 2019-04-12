@@ -26,7 +26,8 @@ module.exports.providers = {
         new (require('./universal/Series8'))(queue),
         //require('./universal/5movies')
         new (require('./universal/FardaDownload'))(queue),
-        new (require('./universal/GoWatchSeries'))(queue)
+        new (require('./universal/GoWatchSeries'))(queue),
+        new (require('./universal/Series9'))(queue)
     ]
 };
 
