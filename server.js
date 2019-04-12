@@ -68,7 +68,7 @@ app.get('/', function (req, res) {
 if (process.env.SHOW_DEBUG_INTERFACE) {
     app.get('/ui', function(req, res) {
         // Render the index file with the secret client id set.
-        res.render('index', { secret_client_id: process.env.SECRET_CLIENT_ID, tmdb_api_key: process.env.TMDB_API_KEY });
+        res.render('ui/index', { secret_client_id: process.env.SECRET_CLIENT_ID, tmdb_api_key: process.env.TMDB_API_KEY });
     });
 }
 
