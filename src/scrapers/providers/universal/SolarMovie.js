@@ -7,7 +7,7 @@ module.exports = class SolarMovie extends BaseProvider {
     /** @inheritdoc */
     getUrls() {
         // Removing 5Movies (http://5movies.fm) because of access ban
-        return ['http://www1.solarmovie.net',];
+        return ['http://www1.solarmovie.net'];
     }
 
     /** @inheritdoc */
