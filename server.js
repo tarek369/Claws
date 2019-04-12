@@ -46,14 +46,16 @@ app.use(function (req, res, next) {
 
 /** RENDERED ROUTES **/
 app.get('/', function (req, res) {
-    if (!process.env.SHOW_BETA_INTERFACE) {
-        // When in production, redirect to the main site.
-        if(!process.env.ROOT_REDIRECT) {
-            res.redirect(rootRedirect);
+    // Do not show the debug interface if it is not desired.
+    if (!process.env.SHOW_DEBUG_INTERFACE) {
+        // Redirect the user to the default site if ROOT_REDIRECT is not specified...
+        if(!process.env.ROOT_REDIRECT || process.env.ROOT_REDIRECT !== '') {
+            res.redirect("https://apollotv.xyz/");
             return;
         }
         
-        res.redirect("https://apollotv.xyz/");
+        // Otherwise, redirect them to the specified root.
+        res.redirect(rootRedirect);
     } else {
         // Otherwise, render the index file with the secret client id set.
         res.render('index', { secret_client_id: process.env.SECRET_CLIENT_ID, tmdb_api_key: process.env.TMDB_API_KEY });
