@@ -2,10 +2,10 @@
   "name": "claws",
   "version": "0.0.1",
   "scripts": {
-    "start": "pm2-runtime ecosystem.config.js",
-    "pm2-docker-dev": "npm run build-dev-dependencies && pm2-runtime ecosystem.config.js --env development",
-    "pm2-local-prod": "pm2 start ./ecosystem.config.js",
+    "start": "pm2 start ./ecosystem.config.js",
+    "pm2-local-prod": "echo The command pm2-local-prod is deprecated. Use 'npm start' instead.",
     "pm2-local-dev": "npm run build-dev-dependencies && pm2 start ./ecosystem.config.js --env development",
+    "pm2-docker-dev": "npm run build-dev-dependencies && pm2-runtime ecosystem.config.js --env development",
     "stop": "pm2 stop ./ecosystem.config.js",
     "reload": "pm2 reload ./ecosystem.config.js",
     "status": "pm2 list",
