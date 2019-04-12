@@ -46,21 +46,32 @@ app.use(function (req, res, next) {
 
 /** RENDERED ROUTES **/
 app.get('/', function (req, res) {
-    // Do not show the debug interface if it is not desired.
-    if (!process.env.SHOW_DEBUG_INTERFACE) {
-        // Redirect the user to the default site if ROOT_REDIRECT is not specified...
-        if(!process.env.ROOT_REDIRECT || process.env.ROOT_REDIRECT !== '') {
-            res.redirect("https://apollotv.xyz/");
-            return;
-        }
-        
-        // Otherwise, redirect them to the specified root.
-        res.redirect(rootRedirect);
-    } else {
-        // Otherwise, render the index file with the secret client id set.
-        res.render('index', { secret_client_id: process.env.SECRET_CLIENT_ID, tmdb_api_key: process.env.TMDB_API_KEY });
+    // If the debug interface is meant to be shown, redirect to it.
+    if (process.env.SHOW_DEBUG_INTERFACE === "true") {
+        res.redirect("/ui");
+        return;
     }
+    
+    // -- If the debug interface is not meant to be shown: --
+    // Redirect the user to the default site if ROOT_REDIRECT is not specified...
+    if(!process.env.ROOT_REDIRECT || process.env.ROOT_REDIRECT === '') {
+        res.redirect("https://apollotv.xyz/");
+        return;
+    }
+        
+    // Otherwise, redirect them to the specified root.
+    res.redirect(rootRedirect);
 });
+
+// If the debug interface is not meant to be shown, let's not even
+// set up the UI endpoint.
+if (process.env.SHOW_DEBUG_INTERFACE === "true") {
+    app.get('/ui', function(req, res) {
+        // Render the index file with the secret client id set.
+        res.render('ui/index', { secret_client_id: process.env.SECRET_CLIENT_ID, tmdb_api_key: process.env.TMDB_API_KEY });
+    });
+}
+
 app.get('/salsa20.min.js', (req, res) => res.sendFile(`${pathToApp}/public/salsa20.min.js`));
 /** ./RENDERED ROUTES **/
 
