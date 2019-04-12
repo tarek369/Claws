@@ -46,8 +46,13 @@ app.use(function (req, res, next) {
 
 /** RENDERED ROUTES **/
 app.get('/', function (req, res) {
-    if (process.env.NODE_ENV === 'production') {
+    if (!process.env.SHOW_BETA_INTERFACE) {
         // When in production, redirect to the main site.
+        if(!process.env.ROOT_REDIRECT) {
+            res.redirect(rootRedirect);
+            return;
+        }
+        
         res.redirect("https://apollotv.xyz/");
     } else {
         // Otherwise, render the index file with the secret client id set.
