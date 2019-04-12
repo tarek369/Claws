@@ -1,7 +1,7 @@
 const cheerio = require('cheerio');
 const BaseProvider = require('../BaseProvider');
 
-module.exports = class bfmovies extends BaseProvider {
+module.exports = class BFMovies extends BaseProvider {
     /** @inheritdoc */
     getUrls() {
         return ['https://bfmovies.net'];

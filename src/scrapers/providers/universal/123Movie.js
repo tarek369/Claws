@@ -2,7 +2,7 @@ const cheerio = require('cheerio');
 const randomUseragent = require('random-useragent');
 const BaseProvider = require('../BaseProvider');
 
-module.exports = class _123movie extends BaseProvider {
+module.exports = class _123Movie extends BaseProvider {
     /** @inheritdoc */
     getUrls() {
         return ["https://www6.123movie.cc"];
