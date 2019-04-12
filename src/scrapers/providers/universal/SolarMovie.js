@@ -6,7 +6,8 @@ const atob = require('atob');
 module.exports = class SolarMovie extends BaseProvider {
     /** @inheritdoc */
     getUrls() {
-        return ['http://www1.solarmovie.net', 'http://5movies.fm'];
+        // Removing 5Movies (http://5movies.fm) because of access ban
+        return ['http://www1.solarmovie.net',];
     }
 
     /** @inheritdoc */
