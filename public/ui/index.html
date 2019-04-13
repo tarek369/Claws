@@ -298,7 +298,10 @@
             const keyBytes = encoder.encode(SECRET_CLIENT_ID.substring(0, 32));
             const ivBytes = crypto.getRandomValues(new Uint8Array(8));
 
-            const messageBytes = encoder.encode(`${Math.floor((new Date()).valueOf() / 1000)}|${SECRET_CLIENT_ID}`);
+            const ntpTime = await fetch('/api/v1/ntp');
+            const ntpTimeJSON = await ntpTime.json();
+
+            const messageBytes = encoder.encode(`${ntpTimeJSON.now}|${SECRET_CLIENT_ID}`);
 
             const encrypter = new Salsa20(keyBytes, ivBytes);
             const encryptedMessageBytes = encrypter.encrypt(messageBytes);
