@@ -124,8 +124,11 @@ class WsWrapper {
     
     setQualityInfo(resultData) {
         var filename = path.parse(resultData.file.data).base.toLowerCase();
-
-        if (filename.includes('2160')) {
+        
+        if (resultData.metadata.quality) {
+            // Quality info already exists
+            return resultData;
+        } else if (filename.includes('2160')) {
             resultData.metadata.quality = '4K';
         } else if (filename.includes('1080')) {
             resultData.metadata.quality = '1080p';

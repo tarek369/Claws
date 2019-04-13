@@ -99,7 +99,7 @@ async function resolve(ws, uri, provider, jar, headers, quality = '', meta = {})
             const dataList = await RapidVideo(uri, jar);
             if (dataList) {
                 for (const data of dataList) {
-                    const event = createEvent(data, false, undefined, {quality, source: 'RapidVideo', provider});
+                    const event = createEvent(data.resolvedLink, false, undefined, {quality: data.quality, source: 'RapidVideo', provider});
                     await ws.send(event, event.event);
                 }
             }

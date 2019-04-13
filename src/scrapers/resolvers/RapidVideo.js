@@ -13,15 +13,19 @@ async function RapidVideo(uri, jar) {
             return returnArray;
         }, []);
 
-        let resolvedLinks = [];
+        let resolvedData = [];
         for (let videoLink of videoLinks) {
+            let splitComponents = videoLink.split('q=');
+            let quality = splitComponents[splitComponents.length - 1];
+
             let videoPageHTML = await rp({ uri: videoLink, jar, timeout: 5000 });
             $ = cheerio.load(videoPageHTML)
             let resolvedLink = $('video source').attr('src');
-            resolvedLinks.push(resolvedLink);
+
+            resolvedData.push({ resolvedLink, quality });
         }
 
-        return resolvedLinks;
+        return resolvedData;
     } catch (err) {
         logger.error(err)
     }
