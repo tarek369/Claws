@@ -95,7 +95,7 @@ if (process.env.RATE_LIMITER === 'true') {
     authRoutes.post('/login', login);
 }
 
-authRoutes.get('/ntp', (req, res) => {
+authRoutes.get('/ntp', async (req, res) => {
     await sntp.start();
     const now = Math.floor(sntp.now() / 1000);
     sntp.stop();
