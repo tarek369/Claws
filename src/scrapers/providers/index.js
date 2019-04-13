@@ -25,7 +25,8 @@ module.exports.providers = {
         new (require('./universal/Onmovies'))(queue),
         new (require('./universal/Series8'))(queue),
         new (require('./universal/Series9'))(queue),
-        new (require('./universal/SolarMovie'))(queue)
+        new (require('./universal/SolarMovie'))(queue),
+        new (require('./universal/SockShare'))(queue)
     ]
 };
 
