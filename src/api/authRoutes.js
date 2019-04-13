@@ -100,7 +100,7 @@ authRoutes.get('/ntp', async (req, res) => {
     const now = Math.floor(sntp.now() / 1000);
     sntp.stop();
     
-    res.send(now);
+    res.json({now: now});
 });
 
 module.exports = authRoutes;
