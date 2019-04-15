@@ -4,11 +4,13 @@ const ffprobe = require('./ffprobe');
 const ffprobeStatic = require('ffprobe-static');
 const logger = require('./logger');
 const path = require('path');
+const { saveToCache } = require('../cache/CacheService')
 
 class WsWrapper {
-    constructor(ws, options) {
+    constructor(ws, options, req) {
         this.ws = ws;
         this.options = options;
+        this.req = req;
 
         this.stopExecution = false
         this.rp = RequestPromise.defaults(target => {
@@ -24,6 +26,7 @@ class WsWrapper {
 
     async send(resultData) {
         if (this.shouldSend(resultData)) {
+            await saveToCache(this.req, resultData)
             // Commenting this out until we get a better workflow for retrieving file data consistently
             // await this.setFileInfo(resultData);
             try {

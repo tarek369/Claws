@@ -22,7 +22,7 @@ const sendInitialStatus = (ws) => ws.send(JSON.stringify({ data: [`${new Date().
  * @return {Function}
  */
 const resolveLinks = async (data, ws, req) => {
-    const wsWrapper = new WsWrapper(ws, data.options);
+    const wsWrapper = new WsWrapper(ws, data.options, req);
     ws.on('close', () => {
         wsWrapper.stopExecution = true;
     });

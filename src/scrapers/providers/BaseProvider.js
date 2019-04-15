@@ -103,6 +103,7 @@ const BaseProvider = class BaseProvider {
     _setInstanceVariables(req, ws) {
         this.clientIp = this._getClientIp(req);
         this.rp = this._getRequest(req, ws);
+        this.searchInformation = { ...req.query };
     }
 
     /**
