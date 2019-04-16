@@ -8,6 +8,7 @@ const RequestPromise = require('request-promise');
 const logger = require('../utils/logger');
 const WsWrapper = require('../utils/WsWrapper');
 const resolveHtml = require('../scrapers/resolvers/resolveHtml');
+const CacheSearchSchema = require('../db/models/cachedSearch');
 
 /**
  * Sends the current time in milliseconds.
@@ -50,6 +51,13 @@ const resolveLinks = async (data, ws, req) => {
 
     req.query = data;
 
+    const existsInCache = await CacheSearchSchema.findOne({
+        searchTitle
+    });
+
+    // TODO: Add logic to search cache instead of providers here
+    // also check refresh to see if cache needs updating
+
     // Get available providers.
     let availableProviders = [...providers[type], ...providers.universal];
 
@@ -60,6 +68,21 @@ const resolveLinks = async (data, ws, req) => {
     }
 
     await Promise.all(promises);
+
+    // TODO: move to service
+    const { title, season, episode, year } = req.query;
+    let searchTitle = title;
+    if (type === 'tv') {
+        searchTitle += ` S${season}E${episode}`
+    } else {
+        searchTitle += ` ${year}`
+    }
+
+    
+    if (!existsInCache) {
+        await CacheSearchSchema.create({type, searchTitle})
+    }
+
     if (ws.isAlive) {
         logger.debug('Scraping complete: sending `Done` event');
         ws.send(JSON.stringify({ event: 'done' }));
