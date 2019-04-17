@@ -22,6 +22,7 @@ const MovieFiles = require('./MovieFiles');
 const EnterVideo = require('./EnterVideo');
 const DLFilm = require('./DLFilm');
 const FardaDownload = require('./FardaDownload');
+const MeliMedia = require('./MeliMedia');
 const logger = require('../../utils/logger');
 
 const Mp4Upload = require('./Mp4Upload');
@@ -323,6 +324,10 @@ async function resolve(ws, uri, provider, jar, headers, quality = '', meta = {})
         } else if (uri.includes('updlf.com') || uri.includes('upload8.net')) {
             const data = await FardaDownload(uri, jar, headers);
             const event = createEvent(data, false, undefined, {quality, source: 'FardaDownload', provider});
+            await ws.send(event, event.event);
+         }  else if (uri.includes('meliupload.com')) {
+            const data = await MeliMedia(uri, jar, headers);
+            const event = createEvent(data, false, undefined, {quality, source: 'MeliMedia', provider});
             await ws.send(event, event.event);
          } else {
             logger.warn({provider, providerUrl: uri, warning: 'Missing resolver'});
