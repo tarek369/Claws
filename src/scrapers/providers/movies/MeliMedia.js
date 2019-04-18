@@ -48,7 +48,7 @@ module.exports = class MeliMedia extends BaseProvider {
                 const directLink = $(element).attr('href');
                 const audioRegex = /(.[0-9]{4})(.*)(.Sound)([0-9]*)/;
                 if (!audioRegex.test(directLink)) {
-                    resolvePromises.push(this.resolveLink(directLink, ws, jar, headers));
+                    resolvePromises.push(this.resolveLink(directLink, ws, jar, headers, '', { isDDL: true }));
                 }
             });
         } catch (err) {

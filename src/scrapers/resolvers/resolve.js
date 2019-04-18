@@ -20,9 +20,7 @@ const StreamM4u = require('./StreamM4u');
 const {GoogleDrive, getGoogleDriveScrapeUrl} = require('./GoogleDrive');
 const MovieFiles = require('./MovieFiles');
 const EnterVideo = require('./EnterVideo');
-const DLFilm = require('./DLFilm');
-const FardaDownload = require('./FardaDownload');
-const MeliMedia = require('./MeliMedia');
+const DDLResolver = require('./DDLResolver');
 const logger = require('../../utils/logger');
 
 const Mp4Upload = require('./Mp4Upload');
@@ -48,7 +46,7 @@ const resolvers = [
     new FlashX(),
 ];
 
-async function resolve(ws, uri, provider, jar, headers, quality = '', meta = {}) {
+async function resolve(ws, uri, provider, jar, headers, quality = '', meta = { isDDL: false }) {
     if (ws.stopExecution) {
         logger.debug('Skip resolve due to disconnect');
         return;
@@ -317,17 +315,9 @@ async function resolve(ws, uri, provider, jar, headers, quality = '', meta = {})
             const data = await EnterVideo(uri, jar, headers);
             const event = createEvent(data, false, undefined, {quality, provider: 'EnterVideo', source});
             sse.send(event, event.event);*/
-        } else if (uri.includes('dlfilm.net')) {
-            const data = await DLFilm(uri, jar, headers);
-            const event = createEvent(data, false, undefined, {quality, source: 'DLFilm', provider});
-            await ws.send(event, event.event);
-        } else if (uri.includes('updlf.com') || uri.includes('upload8.net')) {
-            const data = await FardaDownload(uri, jar, headers);
-            const event = createEvent(data, false, undefined, {quality, source: 'FardaDownload', provider});
-            await ws.send(event, event.event);
-         }  else if (uri.includes('meliupload.com')) {
-            const data = await MeliMedia(uri, jar, headers);
-            const event = createEvent(data, false, undefined, {quality, source: 'MeliMedia', provider});
+        } else if (meta.isDDL == true) {
+            const data = await DDLResolver(uri, jar, headers);
+            const event = createEvent(data, false, undefined, {quality, source: provider, provider});
             await ws.send(event, event.event);
          } else {
             logger.warn({provider, providerUrl: uri, warning: 'Missing resolver'});
