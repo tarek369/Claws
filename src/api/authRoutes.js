@@ -46,7 +46,7 @@ async function login(req, res) {
         sntp.stop();
         
         for (let time = now; time >= now - authDelay && !clientIsValid; time--) {
-            clientIsValid = message === `${time}|${process.env.SECRET_CLIENT_ID}`
+            clientIsValid = message === `${time}|${process.env.SECRET_CLIENT_ID.substring(0, 32)}`
         }
 
         if (!clientIsValid) {
