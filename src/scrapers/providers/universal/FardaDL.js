@@ -1,10 +1,10 @@
 const cheerio = require('cheerio');
 const BaseProvider = require('../BaseProvider');
 
-module.exports = class FardaDownload extends BaseProvider {
+module.exports = class FardaDL extends BaseProvider {
     /** @inheritdoc */
     getUrls() {
-        return ['https://fardadownload.org', 'https://1fardadl.com'];
+        return ['https://fardadownload.org', 'https://1fardadl.com', 'https://www1.farda-dl.net/'];
     }
 
     /** @inheritdoc */

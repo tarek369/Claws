@@ -21,14 +21,14 @@ module.exports.providers = {
     ],
     universal: [
         new (require('./universal/123Movie'))(queue),
-        new (require('./universal/FardaDownload'))(queue),
+        new (require('./universal/FardaDL'))(queue),
         new (require('./universal/GoWatchSeries'))(queue),
         new (require('./universal/ODB'))(queue),
         new (require('./universal/Onmovies'))(queue),
         new (require('./universal/Series8'))(queue),
         new (require('./universal/Series9'))(queue),
-        new (require('./universal/SolarMovie'))(queue),
-        new (require('./universal/SockShare'))(queue)
+        new (require('./universal/SockShare'))(queue),
+        new (require('./universal/SolarMovie'))(queue)
     ]
 };
 
