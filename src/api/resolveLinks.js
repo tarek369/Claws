@@ -23,12 +23,33 @@ const sendInitialStatus = (ws) => ws.send(JSON.stringify({ data: [`${new Date().
  * @return {Function}
  */
 const resolveLinks = async (data, ws, req) => {
+    req.query = data;
+    const type = data.type;
+
+    // TODO: Move to Cache service
+    const { title, season, episode, year } = req.query;
+    let searchTitle = title;
+    if (type === 'tv') {
+        searchTitle += ` S${season}E${episode}`
+    } else {
+        searchTitle += ` ${year}`
+    }
+    const existsInCache = await CacheSearchSchema.findOne({
+        searchTitle
+    });
+    console.log('\n\nExists in Cache : ' + !!existsInCache + '\n\n')
+
+    if (!data.options) {
+        data.options = {}
+    }
+    
+    data.options.existsInCache = !!existsInCache
+
     const wsWrapper = new WsWrapper(ws, data.options, req);
     ws.on('close', () => {
         wsWrapper.stopExecution = true;
     });
 
-    const type = data.type;
 
     if (type === 'resolveHtml') {
         try {
@@ -49,18 +70,16 @@ const resolveLinks = async (data, ws, req) => {
 
     const promises = [];
 
-    req.query = data;
-
-    const existsInCache = await CacheSearchSchema.findOne({
-        searchTitle
-    });
-
-    // TODO: Add logic to search cache instead of providers here
-    // also check refresh to see if cache needs updating
+    // TODO: also check link refresh to see if cache needs updating
+    let availableProviders
+    if(existsInCache) {
+        logger.debug(`Cache exits for this search and will be used to resolve links`);
+        availableProviders = [...providers.cache];
+    } else {
+        availableProviders = [...providers[type], ...providers.universal];
+    }
 
     // Get available providers.
-    let availableProviders = [...providers[type], ...providers.universal];
-
     availableProviders.forEach((provider) => promises.push(provider.resolveRequests(req, wsWrapper)));
 
     if (queue.isEnabled) {
@@ -69,18 +88,9 @@ const resolveLinks = async (data, ws, req) => {
 
     await Promise.all(promises);
 
-    // TODO: move to service
-    const { title, season, episode, year } = req.query;
-    let searchTitle = title;
-    if (type === 'tv') {
-        searchTitle += ` S${season}E${episode}`
-    } else {
-        searchTitle += ` ${year}`
-    }
-
-    
+    // TODO: move to cache service
     if (!existsInCache) {
-        await CacheSearchSchema.create({type, searchTitle})
+        await CacheSearchSchema.create({ type, searchTitle })
     }
 
     if (ws.isAlive) {

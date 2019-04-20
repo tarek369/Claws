@@ -1,8 +1,8 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
 
-async function DLFilm(uri, jar) {
+async function DDLResolver(uri, jar) {
     return uri;
 }
 
-module.exports = exports = DLFilm;
+module.exports = exports = DDLResolver;

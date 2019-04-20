@@ -26,7 +26,9 @@ class WsWrapper {
 
     async send(resultData) {
         if (this.shouldSend(resultData)) {
-            await saveToCache(this.req, resultData)
+            if (!resultData.isResultOfScrape && !this.options.existsInCache) {
+                await saveToCache(this.req, resultData)
+            }
             // Commenting this out until we get a better workflow for retrieving file data consistently
             // await this.setFileInfo(resultData);
             try {
@@ -53,7 +55,7 @@ class WsWrapper {
     }
 
     async setHeadInfo(resultData) {
-        if (resultData.event === 'result') {
+        if (resultData.isResultOfScrape != true) {
             const jar = this.rp.jar();
             const headers = resultData.headers || {};
 

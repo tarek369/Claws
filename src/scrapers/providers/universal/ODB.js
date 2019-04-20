@@ -11,7 +11,7 @@ module.exports = class ODB extends BaseProvider {
 
     /** @inheritdoc */
     async scrape(url, req, ws) {
-        const title = req.query.title.toLowerCase();
+        const imdb_id = req.query.imdb_id;
         const year = req.query.year;
         const season = req.query.season;
         const episode = req.query.episode;
@@ -23,7 +23,7 @@ module.exports = class ODB extends BaseProvider {
             const rp = this._getRequest(req, ws);
             const jar = rp.jar();
             let searchUrl = this._generateUrl(`${url}/embed`, {
-                title: title,
+                imdb_id: imdb_id,
                 year: year
             });
             if (type == 'tv') {

@@ -1,42 +1,41 @@
 const cheerio = require('cheerio');
 const BaseProvider = require('../BaseProvider');
 
-module.exports = class DLFilm extends BaseProvider {
+module.exports = class MeliMedia extends BaseProvider {
     /** @inheritdoc */
     getUrls() {
-        return ['http://dlfilm.net'];
+        return ['http://melimedia.net'];
     }
 
     /** @inheritdoc */
     async scrape(url, req, ws) {
         const title = req.query.title.toLowerCase();
         const year = req.query.year;
+        const season = req.query.season;
+        const episode = req.query.episode;
+        const type = req.query.type;
         const resolvePromises = [];
         let headers = {};
-    
+
         try {
-            const searchTitle = `${title} ${year}`;
-            let searchUrl = this._generateUrl(`${url}/`, {
-                s: searchTitle
-            });
+            let searchTitle = `${title} ${year}`;
+            let searchUrl = this._generateUrl(url, { s: searchTitle });
             const rp = this._getRequest(req, ws);
             const jar = rp.jar();
             const response = await this._createRequest(rp, searchUrl, jar, headers);
-            
-            let $ = cheerio.load(response);
-            
-            let videoPage = '';
-            $('.posts').toArray().forEach(element => {
-                let linkElement = $(element).find('.top a');
 
-                let contentTitle = $(linkElement).attr('title').toLowerCase();
-                let contentPage = $(linkElement).attr('href');
+            let $ = cheerio.load(response);
+
+            let videoPage = '';
+            $('.-title a').toArray().forEach(element => {
+                // Replace is used because MeliMedia uses a different apostrophe character...
+                let contentTitle = $(element).text().toLowerCase().replace('’', '\'');
+                let contentPage = $(element).attr('href');
 
                 if (contentTitle.includes(searchTitle)) {
                     videoPage = contentPage;
                 }
             });
-
             if (!videoPage) {
                 return Promise.resolve();
             }
@@ -45,9 +44,12 @@ module.exports = class DLFilm extends BaseProvider {
 
             $ = cheerio.load(videoPageHTML);
 
-            $('.link_dl').toArray().forEach(element => {
-                let videoLink = $(element).attr('href');
-                resolvePromises.push(this.resolveLink(videoLink, ws, jar, headers, '', { isDDL: true }));
+            $('p a').toArray().forEach(element => {
+                const directLink = $(element).attr('href');
+                const audioRegex = /(.[0-9]{4})(.*)(.Sound)([0-9]*)/;
+                if (!audioRegex.test(directLink)) {
+                    resolvePromises.push(this.resolveLink(directLink, ws, jar, headers, '', { isDDL: true }));
+                }
             });
         } catch (err) {
             this._onErrorOccurred(err)

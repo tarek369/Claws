@@ -1,10 +1,10 @@
 const cheerio = require('cheerio');
 const BaseProvider = require('../BaseProvider');
 
-module.exports = class FardaDownload extends BaseProvider {
+module.exports = class FardaDL extends BaseProvider {
     /** @inheritdoc */
     getUrls() {
-        return ['https://fardadownload.org', 'https://1fardadl.com'];
+        return ['https://fardadownload.org', 'https://1fardadl.com', 'https://www1.farda-dl.net/'];
     }
 
     /** @inheritdoc */
@@ -71,20 +71,20 @@ module.exports = class FardaDownload extends BaseProvider {
                             if (fileName.toLowerCase().includes(formattedEpisode)) {
                                 const filePath = $(element).attr('href');
                                 const directLink = this._absoluteUrl(folderOrEpisodeLink, filePath);
-                                resolvePromises.push(this.resolveLink(directLink, ws, jar, headers));
+                                resolvePromises.push(this.resolveLink(directLink, ws, jar, headers, '', { isDDL: true }));
                             }
                         });
                     } else {
                         // Link is a to the episode (newer seasons / episodes)
                         if (folderOrEpisodeLink.toLowerCase().includes(formattedEpisode)) {
-                            resolvePromises.push(this.resolveLink(folderOrEpisodeLink, ws, jar, headers));
+                            resolvePromises.push(this.resolveLink(folderOrEpisodeLink, ws, jar, headers, '', { isDDL: true }));
                         };
                     }
                 }
             } else {
                 $('a.dl_bx_mv').toArray().forEach(element => {
                     const directLink = $(element).attr('href');
-                    resolvePromises.push(this.resolveLink(directLink, ws, jar, headers));
+                    resolvePromises.push(this.resolveLink(directLink, ws, jar, headers, '', { isDDL: true }));
                 });
             }
         } catch (err) {

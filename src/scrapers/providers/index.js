@@ -10,16 +10,18 @@ module.exports.providers = {
         new (require('./movies/AZMovies'))(queue),
         new (require('./movies/BFMovies'))(queue),
         new (require('./movies/DLFilm'))(queue),
+        new (require('./movies/MeliMedia'))(queue),
         new (require('./movies/StreamM4u'))(queue)
     ],
     tv: [
+        new (require('./tv/MoviesWeb'))(queue),
         new (require('./tv/ProjectFreeTV'))(queue),
         new (require('./tv/SeriesFree'))(queue),
         new (require('./tv/SwatchSeries'))(queue)
     ],
     universal: [
         new (require('./universal/123Movie'))(queue),
-        new (require('./universal/FardaDownload'))(queue),
+        new (require('./universal/FardaDL'))(queue),
         new (require('./universal/GoWatchSeries'))(queue),
         new (require('./universal/ODB'))(queue),
         new (require('./universal/Onmovies'))(queue),
@@ -27,6 +29,9 @@ module.exports.providers = {
         new (require('./universal/Series9'))(queue),
         new (require('./universal/SolarMovie'))(queue),
         new (require('./universal/SockShare'))(queue)
+    ],
+    cache: [
+        new (require('../../cache/CacheProvider'))(queue)
     ]
 };
 

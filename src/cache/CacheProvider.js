@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const CacheSchema = require('./db/models/cache');
+const CacheSchema = require('../db/models/cache');
 const BaseProvider = require('../scrapers/providers/BaseProvider');
 
 module.exports = class Cache extends BaseProvider {
@@ -25,8 +25,9 @@ module.exports = class Cache extends BaseProvider {
             query['resultData.season'] = season;
         }
         const results = await CacheSchema.find({ ...query })
+        this.logger.debug(`Found ${results.length} results in Cache`);
         results.forEach((link) => {
-            resolvePromises.push(this.resolveLink(link.uri, ws, this.rp.jar(), headers));
+            resolvePromises.push(this.resolveLink(link.uri, ws, this.rp.jar(), headers, '', {isFromCache: true, eventType: link.metadata.eventType}));
         })
         return Promise.all(resolvePromises)
     }

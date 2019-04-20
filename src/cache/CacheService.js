@@ -28,9 +28,9 @@ module.exports.saveToCache = async (req, data) => {
                 resultData,
                 metadata: {
                     eventType: 'result',
-                    provider: data.provider,
-                    resolver: data.resolver,
-                    headers: data.headers,
+                    provider: data.metadata.provider,
+                    resolver: data.metadata.source,
+                    headers: data.metadata.headers,
                 }
             }
         }
