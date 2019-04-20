@@ -23,6 +23,7 @@ module.exports.providers = {
         new (require('./universal/123Movie'))(queue),
         new (require('./universal/FardaDL'))(queue),
         new (require('./universal/GoWatchSeries'))(queue),
+        new (require('./universal/HeyDL'))(queue),
         new (require('./universal/ODB'))(queue),
         new (require('./universal/Onmovies'))(queue),
         new (require('./universal/Series8'))(queue),
