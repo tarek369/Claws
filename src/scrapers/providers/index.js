@@ -21,6 +21,7 @@ module.exports.providers = {
     ],
     universal: [
         new (require('./universal/123Movie'))(queue),
+        // new (require('./universal/DebugDummy'))(queue),
         new (require('./universal/FardaDL'))(queue),
         new (require('./universal/GoWatchSeries'))(queue),
         new (require('./universal/HeyDL'))(queue),
