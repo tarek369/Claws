@@ -28,6 +28,7 @@ module.exports.formatSave = (searchData, data) => {
                     provider: data.metadata.provider,
                     source: data.metadata.source,
                     headers: data.metadata.headers,
+                    quality: data.metadata.quality
                 }
             }
         }

@@ -22,7 +22,8 @@ let cacheSchema = new mongoose.Schema({
             isStreamable: Boolean,
             headers: String,
             cookie: String,
-            source: String
+            source: String,
+            quality: String
         }
     }
 })
