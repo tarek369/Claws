@@ -9,6 +9,7 @@ const logger = require('../utils/logger');
 const WsWrapper = require('../utils/WsWrapper');
 const resolveHtml = require('../scrapers/resolvers/resolveHtml');
 const CacheSearchSchema = require('../db/models/cachedSearch');
+const CacheService = require('../cache/CacheService');
 
 /**
  * Sends the current time in milliseconds.
@@ -25,25 +26,15 @@ const sendInitialStatus = (ws) => ws.send(JSON.stringify({ data: [`${new Date().
 const resolveLinks = async (data, ws, req) => {
     req.query = data;
     const type = data.type;
+    const cacheService = new CacheService(req);
 
-    // TODO: Move to Cache service
-    const { title, season, episode, year } = req.query;
-    let searchTitle = title;
-    if (type === 'tv') {
-        searchTitle += ` S${season}E${episode}`
-    } else {
-        searchTitle += ` ${year}`
-    }
-    const existsInCache = await CacheSearchSchema.findOne({
-        searchTitle
-    });
-    console.log('\n\nExists in Cache : ' + !!existsInCache + '\n\n')
+    const existsInCache = await cacheService.checkExists();
 
     if (!data.options) {
         data.options = {}
     }
     
-    data.options.existsInCache = !!existsInCache
+    data.options.existsInCache = !!existsInCache;
 
     const wsWrapper = new WsWrapper(ws, data.options, req);
     ws.on('close', () => {
@@ -87,11 +78,6 @@ const resolveLinks = async (data, ws, req) => {
     }
 
     await Promise.all(promises);
-
-    // TODO: move to cache service
-    if (!existsInCache) {
-        await CacheSearchSchema.create({ type, searchTitle })
-    }
 
     if (ws.isAlive) {
         logger.debug('Scraping complete: sending `Done` event');

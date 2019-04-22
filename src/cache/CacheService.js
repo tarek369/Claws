@@ -1,43 +1,52 @@
 const CacheSchema = require('../db/models/cache');
+const CacheSearchSchema = require('../db/models/cachedSearch');
+const {formatSave} = require('./CacheUtils');
+const logger = require('../utils/logger');
+const CacheService = class CacheService {
+    constructor(req) {
+        this.req = req;
+    }
 
-module.exports.saveToCache = async (req, data) => {
-    if (data) {
-        let link;
-        const resultData = {
-            title: req.query.title,
-            year: req.query.year,
-            episode: req.query.episode,
-            season: req.query.season,
-        }
-
-        if (data.event === 'scrape') {
-            link = {
-                uri: data.target,
-                type: req.query.type,
-                resultData,
-                metadata: {
-                    eventType: 'scrape',
-                    provider: data.provider,
-                    resolver: data.resolver,
-                }
+    async save(data) {
+        if (data) {
+            let linkData;
+            const resultData = {
+                title: this.req.query.title,
+                type: this.req.query.type,
+                year: this.req.query.year,
+                episode: this.req.query.episode,
+                season: this.req.query.season,
             }
+
+            linkData = formatSave(resultData, data);
+
+            const linkExists = CacheSchema.findOne({
+                uri: data.link
+            }).then(linkExists => {
+                return linkExists || CacheSchema.create(linkData)
+            });
+        }
+    }
+
+    async checkExists() {
+        const { title, season, episode, year, type } = this.req.query;
+        let searchTitle = title;
+        if (type === 'tv') {
+            searchTitle += ` S${season}E${episode}`
         } else {
-            link = {
-                uri: data.file.data,
-                type: req.query.type,
-                resultData,
-                metadata: {
-                    eventType: 'result',
-                    provider: data.metadata.provider,
-                    resolver: data.metadata.source,
-                    headers: data.metadata.headers,
-                }
-            }
+            searchTitle += ` ${year}`
         }
-        const linkExists = CacheSchema.findOne({
-            uri: data.link
-        }).then(linkExists => {
-            return linkExists || CacheSchema.create(link)
+        const existsInCache = await CacheSearchSchema.findOne({
+            searchTitle
         });
+        logger.debug(`${searchTitle} ${!!existsInCache ? 'exists' : 'does not exist'} in Cache`);
+        
+        if (!existsInCache) {
+            await CacheSearchSchema.create({ type, searchTitle })
+        }
+        
+        return existsInCache;
     }
 }
+
+module.exports = CacheService;
