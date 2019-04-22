@@ -24,23 +24,30 @@ const sendInitialStatus = (ws) => ws.send(JSON.stringify({ data: [`${new Date().
  * @return {Function}
  */
 const resolveLinks = async (data, ws, req) => {
-    req.query = data;
-    const type = data.type;
-    const cacheService = new CacheService(req);
-
-    const existsInCache = await cacheService.checkExists();
-
-    if (!data.options) {
-        data.options = {}
+    if (!req.query) {
+        req.query = data;
     }
+    const type = data.type;
+    let existsInCache = false;
     
-    data.options.existsInCache = !!existsInCache;
-
+    if (process.env.ENABLE_CACHE === 'true') {
+        const cacheService = new CacheService(req);   
+        
+        if (type !== 'resolveHtml') {
+            existsInCache = !!await cacheService.checkExists();
+    
+            if (!data.options) {
+                data.options = {}
+            }
+    
+            data.options.existsInCache = existsInCache;
+        }
+    }    
+    
     const wsWrapper = new WsWrapper(ws, data.options, req);
     ws.on('close', () => {
         wsWrapper.stopExecution = true;
     });
-
 
     if (type === 'resolveHtml') {
         try {
@@ -56,15 +63,14 @@ const resolveLinks = async (data, ws, req) => {
         }
         return;
     }
-
+    
     sendInitialStatus(ws);
-
     const promises = [];
 
     // TODO: also check link refresh to see if cache needs updating
     let availableProviders
-    if(existsInCache) {
-        logger.debug(`Cache exits for this search and will be used to resolve links`);
+    if (process.env.ENABLE_CACHE === 'true' && existsInCache) {
+        logger.debug(`Cache exists for this search and will be used to resolve links`);
         availableProviders = [...providers.cache];
     } else {
         availableProviders = [...providers[type], ...providers.universal];

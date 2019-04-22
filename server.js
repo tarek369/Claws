@@ -11,8 +11,12 @@ const pathToApp = __dirname;
 
 // Initialize express
 let app = express();
-const db = require('./src/db/db')
-db.connect();
+
+if (process.env.ENABLE_CACHE === 'true') {
+    const db = require('./src/db/db')
+    db.connect();
+}
+
 // Add renderer.
 app.engine('html', require('ejs').__express);
 app.set('views', 'public'); // render from the public directory.

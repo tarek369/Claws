@@ -73,12 +73,6 @@ async function resolve(ws, uri, provider, jar, headers, quality = '', meta = { i
         // TODO move all the resolvers below into their own subclawss for better code maintenance.
         // Same logic should apply to resolveHtml.js.
 
-        if (meta.isFromCache && meta.eventType === 'result') {
-            const event = createEvent(uri, false, undefined, { quality, source: 'FardaDownload', provider });
-            await ws.send(event, event.event);
-            return;
-        }
-
         if (uri.includes('openload.co') || uri.includes('oload.cloud')) {
             const path = uri.split('/');
             const videoId = path[4];

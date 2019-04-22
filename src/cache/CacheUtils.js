@@ -1,4 +1,5 @@
 const uuid = require('uuid/v4');
+const logger = require('../utils/logger');
 
 module.exports.formatSave = (searchData, data) => {
     if (data.event === 'scrape') {
@@ -24,6 +25,7 @@ module.exports.formatSave = (searchData, data) => {
                 file: {
                     data: data.file.data
                 },
+                isResultOfScrape: data.isResultOfScrape,
                 metadata: {
                     provider: data.metadata.provider,
                     source: data.metadata.source,
@@ -36,6 +38,7 @@ module.exports.formatSave = (searchData, data) => {
 }
 
 module.exports.resolveCachedLink = async(cacheData, ws, metadata) => {
+    delete cacheData.eventData.$init;
     if (cacheData.event === 'scrape') {
         cacheData.eventData.scrapeId = uuid();
         delete cacheData.eventData.file;

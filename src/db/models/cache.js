@@ -13,6 +13,8 @@ let cacheSchema = new mongoose.Schema({
         provider: String,
         resolver: String,
         target: String,
+        isResultOfScrape: Boolean,
+        cookieRequired: String,        
         file: {
             data: String
         },
@@ -21,7 +23,6 @@ let cacheSchema = new mongoose.Schema({
             source: String,
             isStreamable: Boolean,
             headers: String,
-            cookie: String,
             source: String,
             quality: String
         }

@@ -27,12 +27,13 @@ class WsWrapper {
 
     async send(resultData) {
         if (this.shouldSend(resultData)) {
-            if (!resultData.isResultOfScrape && !this.options.existsInCache) {
-                await this.cacheService.save(resultData)
-            }
             // Commenting this out until we get a better workflow for retrieving file data consistently
             // await this.setFileInfo(resultData);
             try {
+                if (resultData.isResultOfScrape === false) {
+                    await this.cacheService.save(resultData)
+                }
+
                 if (resultData.event === 'result') {
                     this.sentLinks.push(resultData.file.data);
                     this.setQualityInfo(resultData);

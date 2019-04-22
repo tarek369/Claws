@@ -1,17 +1,19 @@
 let mongoose = require('mongoose');
-const server = '127.0.0.1:27017'; // REPLACE WITH YOUR DB SERVER
-const database = 'claws';      // REPLACE WITH YOUR DB NAME
+const logger = require('../utils/logger');
+
+const mongoUrl = process.env.MONGODB_URL
+const collection = process.env.MONGODB_COLLECTION
 class Database {
     constructor() {
 
     }
     async connect() {
-        await mongoose.connect(`mongodb://${server}/${database}`)
+        await mongoose.connect(`mongodb://${mongoUrl}/${collection}`)
             .then(() => {
-                console.log('Database connection successful')
+                logger.info(`DB connection successful - ${mongoUrl}/${collection}`)
             })
             .catch(err => {
-                console.error('Database connection error')
+                logger.error('Database connection error')
             })
         return mongoose.connection;
     }

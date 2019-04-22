@@ -16,7 +16,6 @@ const HtmlResolver = class HtmlResolver {
     }
 
     createWsEvent(dataObjects) {
-        console.log(dataObjects)
         return dataObjects.map((data) => {
             return createEvent(data, false, {}, { provider: this.event.provider, source: this.event.resolver, cookie: this.event.cookie, isResultOfScrape: true })
         })

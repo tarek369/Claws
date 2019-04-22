@@ -10,6 +10,7 @@ function createEvent(data, ipLocked, pairing, { quality, provider, source, isRes
             provider,
             resolver: source,
             cookieRequired,
+            isResultOfScrape,
             scrapeId: uuid()
         }
     }

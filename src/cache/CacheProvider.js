@@ -26,7 +26,8 @@ module.exports = class Cache extends BaseProvider {
             query['searchData.season'] = season;
         }
         const results = await CacheSchema.find({ ...query })
-        console.log(`Found ${results.length} results in Cache`);
+        this.logger.debug(`Found ${results.length} results in Cache`);
+
         results.forEach((link) => {
             resolvePromises.push(this.resolveLink(link, ws, {isFromCache: true}));
         })
