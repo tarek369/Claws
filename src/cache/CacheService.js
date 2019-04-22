@@ -10,7 +10,7 @@ const CacheService = class CacheService {
     async save(data) {
         if (data) {
             let linkData;
-            const resultData = {
+            const searchData = {
                 title: this.req.query.title,
                 type: this.req.query.type,
                 year: this.req.query.year,
@@ -18,10 +18,10 @@ const CacheService = class CacheService {
                 season: this.req.query.season,
             }
 
-            linkData = formatSave(resultData, data);
+            linkData = formatSave(searchData, data);
 
             const linkExists = CacheSchema.findOne({
-                uri: data.link
+                uri: data.file ? data.file.data : data.target
             }).then(linkExists => {
                 return linkExists || CacheSchema.create(linkData)
             });

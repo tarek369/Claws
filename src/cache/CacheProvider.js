@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const CacheSchema = require('../db/models/cache');
 const BaseProvider = require('../scrapers/providers/BaseProvider');
+const {resolveCachedLink} = require('./CacheUtils');
 
 module.exports = class Cache extends BaseProvider {
     getUrls() {
@@ -16,19 +17,23 @@ module.exports = class Cache extends BaseProvider {
             'x-forwarded-for': req.client.remoteAddress
         };
         let query = {
-            'resultData.title': title,
-            'resultData.year': year,
+            'searchData.title': title,
+            'searchData.year': year,
         }
 
         if (type === 'tv') {
-            query['resultData.episode'] = episode;
-            query['resultData.season'] = season;
+            query['searchData.episode'] = episode;
+            query['searchData.season'] = season;
         }
         const results = await CacheSchema.find({ ...query })
-        this.logger.debug(`Found ${results.length} results in Cache`);
+        console.log(`Found ${results.length} results in Cache`);
         results.forEach((link) => {
-            resolvePromises.push(this.resolveLink(link.uri, ws, this.rp.jar(), headers, '', {isFromCache: true, eventType: link.metadata.eventType}));
+            resolvePromises.push(this.resolveLink(link, ws, {isFromCache: true}));
         })
         return Promise.all(resolvePromises)
+    }
+
+    resolveLink(link, ws, metadata) {
+        return resolveCachedLink(link, ws, metadata);
     }
 }

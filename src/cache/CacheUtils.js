@@ -1,26 +1,44 @@
-module.exports.formatSave = (resultData, data) => {
+const uuid = require('uuid/v4');
+
+module.exports.formatSave = (searchData, data) => {
     if (data.event === 'scrape') {
         return {
+            event: 'scrape',
             uri: data.target,
-            type: resultData.type,
-            resultData,
-            metadata: {
-                eventType: 'scrape',
+            type: searchData.type,
+            searchData,
+            eventData: {
                 provider: data.provider,
                 resolver: data.resolver,
+                target: data.target,
+                cookieRequired: data.cookieRequired
             }
         }
     } else {
         return {
+            event: 'result',
             uri: data.file.data,
-            type: resultData.type,
-            resultData,
-            metadata: {
-                eventType: 'result',
-                provider: data.metadata.provider,
-                resolver: data.metadata.source,
-                headers: data.metadata.headers,
+            type: searchData.type,
+            searchData,
+            eventData: {
+                file: {
+                    data: data.file.data
+                },
+                metadata: {
+                    provider: data.metadata.provider,
+                    source: data.metadata.source,
+                    headers: data.metadata.headers,
+                }
             }
         }
     }
+}
+
+module.exports.resolveCachedLink = async(cacheData, ws, metadata) => {
+    if (cacheData.event === 'scrape') {
+        cacheData.eventData.scrapeId = uuid();
+        delete cacheData.eventData.file;
+        delete cacheData.eventData.metadata;
+    }
+    await ws.send({event: cacheData.event, ...cacheData.eventData});
 }

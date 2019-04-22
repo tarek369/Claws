@@ -2,20 +2,28 @@ let mongoose = require('mongoose')
 let cacheSchema = new mongoose.Schema({
     uri: String,
     type: String,
-    resultData: {
+    event: String,
+    searchData: {
         title: String,
         season: String,
         episode: String,
         year: String,
     },
-    metadata: {
-        eventType: String,
+    eventData: {
         provider: String,
         resolver: String,
-        quality: String,
-        headers: {},
-        ttl: { type: Date, default: Date.now, expires: 24 * 3600 * 30 }, // 24hrs * 3600s (1hr) * 30 (days) = 2592000s
-        searched: { type: Date, default: Date.now },
+        target: String,
+        file: {
+            data: String
+        },
+        metadata: {
+            provider: String,
+            source: String,
+            isStreamable: Boolean,
+            headers: String,
+            cookie: String,
+            source: String
+        }
     }
 })
 
