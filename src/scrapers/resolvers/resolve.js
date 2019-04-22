@@ -317,7 +317,7 @@ async function resolve(ws, uri, provider, jar, headers, quality = '', meta = { i
             sse.send(event, event.event);*/
         } else if (meta.isDDL == true) {
             const data = await DDLResolver(uri, jar, headers);
-            const event = createEvent(data, false, undefined, {quality, source: 'DDL', provider, isDDL: true});
+            const event = createEvent(data.resolvedLink, false, undefined, {quality: data.quality, source: 'DDL', provider, isDDL: true});
             await ws.send(event, event.event);
          } else {
             logger.warn({provider, providerUrl: uri, warning: 'Missing resolver'});
