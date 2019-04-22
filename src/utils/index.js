@@ -122,24 +122,24 @@ module.exports = {
      */
     getQualityInfo: (filename) => {
         filename = filename.toLowerCase();
-        if (['camrip', 'tsrip', 'hdcam', 'hdts', 'dvdcam', 'dvdts', 'cam', 'telesync', 'ts'].some(element => filename.includes(element))) {
-            return 'CAM';
-        } else if (['dvdscr', 'r5', 'r6'].some(element => filename.includes(element))) {
-            return 'SCR';
-        } else if (filename.includes('.hd.')) {
-            return '720p';
-        } else if (filename.includes('brrip')) {
-            return '720p';
-        } else if (filename.includes('360')) {
-            return '360p';
-        } else if (filename.includes('480')) {
-            return '480p';
-        } else if (filename.includes('720')) {
-            return '720p';
+        if (filename.includes('2160')) {
+            return '4K';
         } else if (filename.includes('1080')) {
             return '1080p';
-        } else if (filename.includes('2160')) {
-            return '4K';
+        } else if (filename.includes('720')) {
+            return '720p';
+        } else if (filename.includes('480')) {
+            return '480p';
+        } else if (filename.includes('360')) {
+            return '360p';
+        } else if (filename.includes('brrip')) {
+            return '720p';
+        } else if (filename.includes('.hd.')) {
+            return '720p';
+        } else if (['dvdscr', 'r5', 'r6'].some(element => filename.includes(element))) {
+            return 'SCR';
+        } else if (['camrip', 'tsrip', 'hdcam', 'hdts', 'dvdcam', 'dvdts', 'cam', 'telesync', 'ts'].some(element => filename.includes(element))) {
+            return 'CAM';
         } else {
             return 'HQ';
         }
