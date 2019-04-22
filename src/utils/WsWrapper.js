@@ -4,6 +4,7 @@ const ffprobe = require('./ffprobe');
 const ffprobeStatic = require('ffprobe-static');
 const logger = require('./logger');
 const path = require('path');
+const Utils = require('./index');
 
 class WsWrapper {
     constructor(ws, options) {
@@ -43,7 +44,9 @@ class WsWrapper {
 
     shouldSend(resultData) {
         if (resultData.event === 'result') {
-            return !this.sentLinks.includes(resultData.file.data);
+            if (!resultData.metadata.isDDL || Utils.hasValidExtension(resultData.file.data)) {
+                return !this.sentLinks.includes(resultData.file.data);
+            }
         } else {
             return !this.sentLinks.includes(resultData.target);
         }

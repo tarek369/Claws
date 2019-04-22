@@ -8,6 +8,9 @@ let escapeRegExp = (string) => {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 };
 
+// Valid file extensions for DDL providers
+const validExtensions = [ 'mkv', 'mp4', 'avi' ];
+
 module.exports = {
     /**
      * Used to pad the series and episode numbers.
@@ -97,5 +100,19 @@ module.exports = {
      */
     removeYearFromTitle: (title) => {
         return title.replace(/\s\([0-9]{4}\)$/, "");
+    },
+
+    /**
+     * Checks if DDL link/file has a valid video extension
+     * @param file DDL file/link.
+     */
+    hasValidExtension: (file) => {
+        const splitString = file.split('.');
+        const extension = splitString[splitString.length - 1].toLowerCase();
+        if (validExtensions.includes(extension)){
+            return true;
+        } else {
+            return false;
+        }
     }
 };
