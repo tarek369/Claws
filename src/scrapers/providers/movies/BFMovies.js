@@ -11,6 +11,7 @@ module.exports = class BFMovies extends BaseProvider {
     async scrape(url, req, ws) {
         const title = req.query.title.toLowerCase();
         const year = req.query.year;
+        const hasRD = req.query.hasRD;
         const resolvePromises = [];
         let headers = {};
 
@@ -52,7 +53,7 @@ module.exports = class BFMovies extends BaseProvider {
 
             let openloadURL = cheerio.load(openloadHTML)('meta[name="og:url"]').attr('content');
             if (openloadURL) {
-                resolvePromises.push(this.resolveLink(openloadURL, ws, jar, headers));
+                resolvePromises.push(this.resolveLink(openloadURL, ws, jar, headers, '', { isDDL: false}, hasRD));
             } else {
                 return Promise.resolve();
             }

@@ -17,6 +17,7 @@ module.exports = class Series8 extends BaseProvider {
         const season = req.query.season;
         const episode = req.query.episode;
         const type = req.query.type;
+        const hasRD = req.query.hasRD;
         const resolvePromises = [];
         const headers = {};
 
@@ -53,7 +54,7 @@ module.exports = class Series8 extends BaseProvider {
             $('.btn-eps').toArray().forEach(element => {
                 if ((type == 'tv' && $(element).attr('episode-data') == episode) || type == 'movies') {
                     const providerLink = $(element).attr('player-data');
-                    resolvePromises.push(this.resolveLink(providerLink, ws, jar, headers));
+                    resolvePromises.push(this.resolveLink(providerLink, ws, jar, headers, '', { isDDL: false}, hasRD));
                 }
             });
         } catch (err) {

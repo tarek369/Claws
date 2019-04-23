@@ -1,7 +1,16 @@
 const URL = require('url');
 const uuid = require('uuid/v4');
 
-function createEvent(data, ipLocked, pairing, { quality, provider, source, isResultOfScrape = false, cookieRequired = '', cookie = '', isDDL = false }, headers) {
+function createEvent(data, ipLocked, pairing, { quality, provider, source, isResultOfScrape = false, cookieRequired = '', cookie = '', isDDL = false, hasRD = false }, headers) {
+    if (hasRD) {
+        return {
+            event: 'RDScrape',
+            target: data,
+            provider,
+            resolver: source
+        };
+    }
+    
     if (ipLocked) {
         return {
             event: 'scrape',

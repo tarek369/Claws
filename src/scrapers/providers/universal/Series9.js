@@ -16,6 +16,7 @@ module.exports = class Series9 extends BaseProvider {
         const season = req.query.season;
         const episode = req.query.episode;
         const type = req.query.type;
+        const hasRD = req.query.hasRD;
         const resolvePromises = [];
         const headers = {};
 
@@ -60,7 +61,7 @@ module.exports = class Series9 extends BaseProvider {
                 let episodeData = $(element).attr('episode-data');
                 if (episodeInfo == episodeData) {
                     let videoLink = utils.normalizeUrl($(element).attr('player-data'));
-                    resolvePromises.push(this.resolveLink(videoLink, ws, jar, headers));
+                    resolvePromises.push(this.resolveLink(videoLink, ws, jar, headers, '', { isDDL: false}, hasRD));
                 }
             });
         } catch (err) {

@@ -4,6 +4,7 @@
 const { providers } = require('../scrapers/providers');
 const { queue } = require('../utils/queue');
 const RequestPromise = require('request-promise');
+const { rd } = require('../utils/rd');
 
 const logger = require('../utils/logger');
 const WsWrapper = require('../utils/WsWrapper');
@@ -49,6 +50,11 @@ const resolveLinks = async (data, ws, req) => {
     const promises = [];
 
     req.query = data;
+
+    // Initialize RD regex list
+    if (data.hasRD) {
+        await rd.getRDRegexList();
+    }
 
     // Get available providers.
     let availableProviders = [...providers[type], ...providers.universal];

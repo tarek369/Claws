@@ -14,6 +14,7 @@ module.exports = class ProjectFreeTV extends BaseProvider {
         const year = req.query.year;
         const season = req.query.season;
         const episode = req.query.episode;
+        const hasRD = req.query.hasRD;
         const resolvePromises = [];
         let headers = {};
 
@@ -71,7 +72,7 @@ module.exports = class ProjectFreeTV extends BaseProvider {
 
             $('.table.table-striped .tblimg').toArray().forEach(element => {
                 const videoLink = $(element).attr('href');
-                resolvePromises.push(this.resolveLink(videoLink, ws, jar, headers));
+                resolvePromises.push(this.resolveLink(videoLink, ws, jar, headers, '', { isDDL: false}, hasRD));
             });
         } catch (err) {
             this._onErrorOccurred(err);

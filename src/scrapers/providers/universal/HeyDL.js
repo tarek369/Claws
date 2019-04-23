@@ -14,6 +14,7 @@ module.exports = class HeyDL extends BaseProvider {
         const season = req.query.season;
         const episode = req.query.episode;
         const type = req.query.type;
+        const hasRD = req.query.hasRD;
         const resolvePromises = [];
         let headers = {};
 
@@ -85,13 +86,13 @@ module.exports = class HeyDL extends BaseProvider {
                             if (fileName.toLowerCase().includes(formattedEpisode)) {
                                 const directLink = this._absoluteUrl(foundLink, fileName);
                                 if (!audioRegex.test(directLink)) {
-                                    resolvePromises.push(this.resolveLink(directLink, ws, jar, headers, '', { isDDL: true }));
+                                    resolvePromises.push(this.resolveLink(directLink, ws, jar, headers, '', { isDDL: true }, hasRD));
                                 }
                             }
                         });
                     } else {
                         if (foundLink.toLowerCase().includes(formattedEpisode) && !audioRegex.test(foundLink)) {
-                            resolvePromises.push(this.resolveLink(foundLink, ws, jar, headers, '', { isDDL: true }));
+                            resolvePromises.push(this.resolveLink(foundLink, ws, jar, headers, '', { isDDL: true }, hasRD));
                         }
                     }
                 }
@@ -99,7 +100,7 @@ module.exports = class HeyDL extends BaseProvider {
                 $('.download a').toArray().forEach(element => {
                     const directLink = $(element).attr('href');
                     if (!audioRegex.test(directLink)) {
-                        resolvePromises.push(this.resolveLink(directLink, ws, jar, headers, '', { isDDL: true }));
+                        resolvePromises.push(this.resolveLink(directLink, ws, jar, headers, '', { isDDL: true }, hasRD));
                     }
                 });
             }
