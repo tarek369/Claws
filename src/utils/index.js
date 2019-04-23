@@ -8,6 +8,9 @@ let escapeRegExp = (string) => {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 };
 
+// Valid file extensions for DDL providers
+const validExtensions = [ 'mkv', 'mp4', 'avi' ];
+
 module.exports = {
     /**
      * Used to pad the series and episode numbers.
@@ -97,5 +100,48 @@ module.exports = {
      */
     removeYearFromTitle: (title) => {
         return title.replace(/\s\([0-9]{4}\)$/, "");
+    },
+
+    /**
+     * Checks if DDL link/file has a valid video extension
+     * @param file DDL file/link.
+     */
+    hasValidExtension: (file) => {
+        const splitString = file.split('.');
+        const extension = splitString[splitString.length - 1].toLowerCase();
+        if (validExtensions.includes(extension)){
+            return true;
+        } else {
+            return false;
+        }
+    },
+
+    /**
+     * Tries to extract quality information from a given filename
+     * @param filename The name of the file.
+     */
+    getQualityInfo: (filename) => {
+        filename = filename.toLowerCase();
+        if (filename.includes('2160')) {
+            return '4K';
+        } else if (filename.includes('1080')) {
+            return '1080p';
+        } else if (filename.includes('720')) {
+            return '720p';
+        } else if (filename.includes('480')) {
+            return '480p';
+        } else if (filename.includes('360')) {
+            return '360p';
+        } else if (filename.includes('brrip')) {
+            return '720p';
+        } else if (filename.includes('.hd.')) {
+            return '720p';
+        } else if (['dvdscr', 'r5', 'r6'].some(element => filename.includes(element))) {
+            return 'SCR';
+        } else if (['camrip', 'tsrip', 'hdcam', 'hdts', 'dvdcam', 'dvdts', 'cam', 'telesync', 'ts'].some(element => filename.includes(element))) {
+            return 'CAM';
+        } else {
+            return 'HQ';
+        }
     }
 };

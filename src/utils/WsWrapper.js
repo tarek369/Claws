@@ -5,7 +5,7 @@ const ffprobeStatic = require('ffprobe-static');
 const logger = require('./logger');
 const path = require('path');
 const CacheService = require('../cache/CacheService');
-
+const Utils = require('./index');
 
 class WsWrapper {
     constructor(ws, options, req) {
@@ -36,7 +36,9 @@ class WsWrapper {
 
                 if (resultData.event === 'result') {
                     this.sentLinks.push(resultData.file.data);
-                    this.setQualityInfo(resultData);
+                    if (!resultData.metadata.quality) {
+                        resultData.metadata.quality = Utils.getQualityInfo(resultData.file.data);
+                    }
                     await this.setHeadInfo(resultData);
                 } else {
                     this.sentLinks.push(resultData.target);
@@ -50,7 +52,9 @@ class WsWrapper {
 
     shouldSend(resultData) {
         if (resultData.event === 'result') {
-            return !this.sentLinks.includes(resultData.file.data);
+            if (!resultData.metadata.isDDL || Utils.hasValidExtension(resultData.file.data)) {
+                return !this.sentLinks.includes(resultData.file.data);
+            }
         } else {
             return !this.sentLinks.includes(resultData.target);
         }
@@ -126,37 +130,6 @@ class WsWrapper {
                 logger.error(err);
             }
         }
-        return resultData;
-    }
-    
-    setQualityInfo(resultData) {
-        var filename = path.parse(resultData.file.data).base.toLowerCase();
-        
-        if (resultData.metadata.quality) {
-            // Quality info already exists
-            return resultData;
-        } else if (filename.includes('2160')) {
-            resultData.metadata.quality = '4K';
-        } else if (filename.includes('1080')) {
-            resultData.metadata.quality = '1080p';
-        } else if (filename.includes('720')) {
-            resultData.metadata.quality = '720p';
-        } else if (filename.includes('480')) {
-            resultData.metadata.quality = '480p';
-        } else if (filename.includes('360')) {
-            resultData.metadata.quality = '360p';
-        } else if (filename.includes('brrip')) {
-            resultData.metadata.quality = '720p';
-        } else if (filename.includes('.hd.')) {
-            resultData.metadata.quality = '720p';
-        } else if (['dvdscr', 'r5', 'r6'].indexOf(filename) >= 0) {
-            resultData.metadata.quality = 'SCR';
-        } else if (['camrip', 'tsrip', 'hdcam', 'hdts', 'dvdcam', 'dvdts', 'cam', 'telesync', 'ts'].indexOf(filename) >= 0) {
-            resultData.metadata.quality = 'CAM';
-        } else {
-            resultData.metadata.quality = 'HQ';
-        }
-
         return resultData;
     }
 }
