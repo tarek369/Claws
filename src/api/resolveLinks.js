@@ -75,8 +75,9 @@ const resolveLinks = async (data, ws, req) => {
         logger.debug(`Cache exists for this search and will be used to resolve links`);
         availableProviders.push(...providers.cache);
     } else {
-        availableProviders.push([...providers[type], ...providers.universal]);
+        availableProviders.push(...providers[type], ...providers.universal);
     }
+    console.log(availableProviders)
 
     // Initialize RD regex list
     if (data.hasRD) {
