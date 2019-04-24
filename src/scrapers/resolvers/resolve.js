@@ -80,7 +80,7 @@ async function resolve(ws, uri, provider, jar, headers, quality = '', meta = { i
         }
         
         if (supportedHost) {
-            const event = createEvent(uri, ipLocked, null, { source: 'RD', provider, hasRD });
+            const event = createEvent(uri, ipLocked, null, { quality, source: 'RD', provider, hasRD });
             await ws.send(event, event.event);
         } else if (uri.includes('openload.co') || uri.includes('oload.cloud')) {
             const path = uri.split('/');

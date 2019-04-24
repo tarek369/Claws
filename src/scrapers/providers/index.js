@@ -31,7 +31,18 @@ module.exports.providers = {
         new (require('./universal/Series9'))(queue),
         new (require('./universal/SockShare'))(queue),
         new (require('./universal/SolarMovie'))(queue)
-    ]
+    ],
+    rd: {
+        movies: [
+
+        ],
+        tv: [
+
+        ],
+        universal: [
+            new (require('./rd/universal/TwoDDL'))(queue)
+        ]
+    }
 };
 
 module.exports.queue = queue;

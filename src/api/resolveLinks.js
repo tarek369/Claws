@@ -51,13 +51,14 @@ const resolveLinks = async (data, ws, req) => {
 
     req.query = data;
 
+    // Get available providers.
+    let availableProviders = [...providers[type], ...providers.universal];
+
     // Initialize RD regex list
     if (data.hasRD) {
         await rd.getRDRegexList();
+        availableProviders.push(...providers.rd[type], ...providers.rd.universal);
     }
-
-    // Get available providers.
-    let availableProviders = [...providers[type], ...providers.universal];
 
     availableProviders.forEach((provider) => promises.push(provider.resolveRequests(req, wsWrapper)));
 

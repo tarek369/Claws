@@ -7,7 +7,8 @@ function createEvent(data, ipLocked, pairing, { quality, provider, source, isRes
             event: 'RDScrape',
             target: data,
             provider,
-            resolver: source
+            resolver: source,
+            quality
         };
     }
     
