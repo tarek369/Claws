@@ -5,7 +5,6 @@ const ffprobeStatic = require('ffprobe-static');
 const logger = require('./logger');
 const path = require('path');
 const CacheService = require('../cache/CacheService');
-
 const Utils = require('./index');
 
 class WsWrapper {
