@@ -14,6 +14,7 @@ module.exports = class AZMovies extends BaseProvider {
         const clientIp = this._getClientIp(req);
         const movieTitle = req.query.title;
         const year = req.query.year;
+        const hasRD = req.query.hasRD;
         const resolvePromises = [];
 
         try {
@@ -74,7 +75,7 @@ module.exports = class AZMovies extends BaseProvider {
 
             $('#serverul li a').toArray().forEach((element) => {
                 const providerUrl = this._absoluteUrl(movieUrl, $(element).attr('href'));
-                resolvePromises.push(this.resolveLink(providerUrl, ws, jar, headers));
+                resolvePromises.push(this.resolveLink(providerUrl, ws, jar, headers, '', { isDDL: false}, hasRD));
             });
         }
         catch (err) {

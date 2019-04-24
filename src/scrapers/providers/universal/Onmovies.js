@@ -16,6 +16,7 @@ module.exports = class Onmovies extends BaseProvider {
         const season = req.query.season;
         const episode = req.query.episode;
         const type = req.query.type;
+        const hasRD = req.query.hasRD;
         const resolvePromises = [];
         const headers = {};
 
@@ -75,7 +76,7 @@ module.exports = class Onmovies extends BaseProvider {
                 let infoUrl = `https://onmovies.se/ajax/movie_embed.php?mid=${contentId}&epNr=${episodeNumber}&type=${contentType}&server=${server}&epIndex=0&so=5`;
                 let infoResponse = JSON.parse(await this._createRequest(rp, infoUrl, jar, headers));
                 if (infoResponse.status == 1) {
-                    resolvePromises.push(this.resolveLink(infoResponse.src, ws, jar, headers));
+                    resolvePromises.push(this.resolveLink(infoResponse.src, ws, jar, headers, '', { isDDL: false}, hasRD));
                 }
             }
         } catch (err) {

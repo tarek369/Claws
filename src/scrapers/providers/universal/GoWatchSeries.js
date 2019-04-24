@@ -17,6 +17,7 @@ module.exports = class GoWatchSeries extends BaseProvider {
         const season = req.query.season;
         const episode = req.query.episode;
         const type = req.query.type;
+        const hasRD = req.query.hasRD;
         const resolvePromises = [];
         const headers = {};
 
@@ -73,7 +74,7 @@ module.exports = class GoWatchSeries extends BaseProvider {
 
             $('.anime_muti_link ul li').toArray().forEach(element => {
                 const providerLink = utils.normalizeUrl($(element).attr('data-video'));
-                resolvePromises.push(this.resolveLink(providerLink, ws, jar, headers));
+                resolvePromises.push(this.resolveLink(providerLink, ws, jar, headers, '', { isDDL: false}, hasRD));
             });
         } catch (err) {
             this._onErrorOccurred(err);

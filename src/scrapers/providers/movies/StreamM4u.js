@@ -13,6 +13,7 @@ module.exports = class StreamM4u extends BaseProvider {
     async scrape(url, req, ws) {
         const movieTitle = req.query.title;
         const year = req.query.year;
+        const hasRD = req.query.hasRD;
         const resolvePromises = [];
 
         try {
@@ -51,7 +52,7 @@ module.exports = class StreamM4u extends BaseProvider {
 
             $('.le-server span').toArray().forEach((element) => {
                 const videoId = $(element).attr('data');
-                resolvePromises.push(this.scrapeHarder(rp, ws, url, _token, videoId, headers, jar, req.query.title));
+                resolvePromises.push(this.scrapeHarder(rp, ws, url, _token, videoId, headers, jar, req.query.title, hasRD));
             });
         } catch (err) {
             this._onErrorOccurred(err);
@@ -59,7 +60,7 @@ module.exports = class StreamM4u extends BaseProvider {
         return Promise.all(resolvePromises);
     }
 
-    async scrapeHarder(rp, ws, url, _token, videoId, headers, jar, title) {
+    async scrapeHarder(rp, ws, url, _token, videoId, headers, jar, title, hasRD) {
         const resolveSourcesPromises = [];
 
         try {
@@ -81,7 +82,7 @@ module.exports = class StreamM4u extends BaseProvider {
 
                 }
             }
-            return this.resolveLink(providerUrl, ws, jar, headers)
+            return this.resolveLink(providerUrl, ws, jar, headers, '', { isDDL: false}, hasRD)
         } catch (err) {
             this._onErrorOccurred(err)
         }

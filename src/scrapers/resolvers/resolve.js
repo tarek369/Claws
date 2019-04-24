@@ -33,6 +33,7 @@ const VidStreaming = require('./VidStreaming');
 const XStreamCDN = require('./XStreamCDN');
 
 const createEvent = require('../../utils/createEvent');
+const { rd } = require('../../utils/rd');
 
 /** @type {BaseResolver[]} */
 const resolvers = [
@@ -46,7 +47,7 @@ const resolvers = [
     new FlashX(),
 ];
 
-async function resolve(ws, uri, provider, jar, headers, quality = '', meta = { isDDL: false }) {
+async function resolve(ws, uri, provider, jar, headers, quality = '', meta = { isDDL: false }, hasRD = false) {
     if (ws.stopExecution) {
         logger.debug('Skip resolve due to disconnect');
         return;
@@ -73,7 +74,15 @@ async function resolve(ws, uri, provider, jar, headers, quality = '', meta = { i
         // TODO move all the resolvers below into their own subclawss for better code maintenance.
         // Same logic should apply to resolveHtml.js.
 
-        if (uri.includes('openload.co') || uri.includes('oload.cloud')) {
+        let supportedHost = false;
+        if (hasRD) {
+            supportedHost = rd.isSupportedByRD(uri);
+        }
+        
+        if (supportedHost) {
+            const event = createEvent(uri, ipLocked, null, { quality, source: 'RD', provider, hasRD });
+            await ws.send(event, event.event);
+        } else if (uri.includes('openload.co') || uri.includes('oload.cloud')) {
             const path = uri.split('/');
             const videoId = path[4];
             if (!uri.includes('embed')) {
@@ -317,7 +326,7 @@ async function resolve(ws, uri, provider, jar, headers, quality = '', meta = { i
             sse.send(event, event.event);*/
         } else if (meta.isDDL == true) {
             const data = await DDLResolver(uri, jar, headers);
-            const event = createEvent(data, false, undefined, {quality, source: 'DDL', provider});
+            const event = createEvent(data.resolvedLink, false, undefined, {quality: data.quality, source: 'DDL', provider, isDDL: true});
             await ws.send(event, event.event);
          } else {
             logger.warn({provider, providerUrl: uri, warning: 'Missing resolver'});

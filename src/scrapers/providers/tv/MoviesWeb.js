@@ -12,6 +12,7 @@ module.exports = class MoviesWeb extends BaseProvider {
         const title = req.query.title.toLowerCase();
         const season = req.query.season;
         const episode = req.query.episode;
+        const hasRD = req.query.hasRD;
         const resolvePromises = [];
         let headers = {};
 
@@ -47,7 +48,7 @@ module.exports = class MoviesWeb extends BaseProvider {
 
             $(`[href*='${formattedEpisode}' i]`).toArray().forEach(element => {
                 const directLink = $(element).attr('href');
-                resolvePromises.push(this.resolveLink(directLink, ws, jar, headers, '', { isDDL: true }));
+                resolvePromises.push(this.resolveLink(directLink, ws, jar, headers, '', { isDDL: true }, hasRD));
             });
         } catch (err) {
             this._onErrorOccurred(err)

@@ -15,6 +15,7 @@ module.exports = class SeriesFree extends BaseProvider {
         const showTitle = req.query.title;
         const { season, episode, year } = req.query;
         const userAgent = randomUseragent.getRandom();
+        const hasRD = req.query.hasRD;
         const resolvePromises = [];
 
         try {
@@ -58,7 +59,7 @@ module.exports = class SeriesFree extends BaseProvider {
 
             const videoUrls = $('.watch-btn').toArray().map(element => `${url}${$(element).attr('href')}`);
             videoUrls.forEach((videoUrl) => {
-                resolvePromises.push(this.scrapeHarder(rp, videoUrl, userAgent, clientIp, ws, jar));
+                resolvePromises.push(this.scrapeHarder(rp, videoUrl, userAgent, clientIp, ws, jar, hasRD));
             });
         } catch (err) {
             this._onErrorOccurred(err);
@@ -66,7 +67,7 @@ module.exports = class SeriesFree extends BaseProvider {
         return Promise.all(resolvePromises);
     }
 
-    async scrapeHarder(rp, videoUrl, userAgent, clientIp, ws, jar) {
+    async scrapeHarder(rp, videoUrl, userAgent, clientIp, ws, jar, hasRD) {
         try {
             const videoPageHtml = await this._createRequest(rp, videoUrl, jar, { 'user-agent': userAgent })
             const $ = cheerio.load(videoPageHtml);
@@ -77,7 +78,7 @@ module.exports = class SeriesFree extends BaseProvider {
                 'x-forwarded-for': clientIp
             };
 
-            return this.resolveLink(providerUrl, ws, jar, headers)
+            return this.resolveLink(providerUrl, ws, jar, headers, '', { isDDL: false}, hasRD)
         } catch (err) {
             this._onErrorOccurred(err)
         }

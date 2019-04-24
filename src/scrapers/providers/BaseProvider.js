@@ -67,12 +67,12 @@ const BaseProvider = class BaseProvider {
      * @param meta
      * @return {Promise<undefined|*|void>}
      */
-    resolveLink(link, ws, jar, headers, quality = '', meta = { isDDL: false }) {
+    resolveLink(link, ws, jar, headers, quality = '', meta = { isDDL: false }, hasRD = false) {
         if (process.env['CLAWS_TESTING'] === 'true' || process.env['CLAWS_DONT_RESOLVE_PROVIDERS'] === 'true') {
             // Don't attempt to resolve links.
             return link;
         }
-        return resolve(ws, link, this.getProviderId(), jar, headers, quality, meta);
+        return resolve(ws, link, this.getProviderId(), jar, headers, quality, meta, hasRD);
     }
 
     /**

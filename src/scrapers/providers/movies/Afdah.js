@@ -14,6 +14,7 @@ module.exports = class Afdah extends BaseProvider {
         const clientIp = this._getClientIp(req);
         const movieTitle = req.query.title.toLowerCase();
         const year = req.query.year;
+        const hasRD = req.query.hasRD;
         const resolvePromises = [];
         let headers = {};
 
@@ -168,7 +169,7 @@ module.exports = class Afdah extends BaseProvider {
                     }
 
                     if (providerUrl) {
-                        resolvePromises.push(this.resolveLink(providerUrl, ws, jar, headers));
+                        resolvePromises.push(this.resolveLink(providerUrl, ws, jar, headers, '', { isDDL: false }, hasRD));
                     }
                 }
             }

@@ -11,6 +11,7 @@ module.exports = class DLFilm extends BaseProvider {
     async scrape(url, req, ws) {
         const title = req.query.title.toLowerCase();
         const year = req.query.year;
+        const hasRD = req.query.hasRD;
         const resolvePromises = [];
         let headers = {};
     
@@ -47,7 +48,7 @@ module.exports = class DLFilm extends BaseProvider {
 
             $('.link_dl').toArray().forEach(element => {
                 let videoLink = $(element).attr('href');
-                resolvePromises.push(this.resolveLink(videoLink, ws, jar, headers, '', { isDDL: true }));
+                resolvePromises.push(this.resolveLink(videoLink, ws, jar, headers, '', { isDDL: false}, hasRD));
             });
         } catch (err) {
             this._onErrorOccurred(err)

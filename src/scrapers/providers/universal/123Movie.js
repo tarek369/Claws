@@ -16,6 +16,7 @@ module.exports = class _123Movie extends BaseProvider {
         const season = req.query.season;
         const episode = req.query.episode;
         const type = req.query.type;
+        const hasRD = req.query.hasRD;
         const resolvePromises = [];
         const headers = {
             'referer': url
@@ -69,7 +70,7 @@ module.exports = class _123Movie extends BaseProvider {
             let outputPageURL = cheerio.load(targetPageHTML)('iframe').attr('src');
             let outputPageHTML = await this._createRequest(rp, outputPageURL, jar, headers);
             let openloadVideoURL = cheerio.load(outputPageHTML)('meta[name="og:url"]').attr('content');
-            resolvePromises.push(this.resolveLink(openloadVideoURL, ws, jar, headers));
+            resolvePromises.push(this.resolveLink(openloadVideoURL, ws, jar, headers, '', { isDDL: false}, hasRD));
         }
         catch (err) {
             this._onErrorOccurred(err)

@@ -4,6 +4,7 @@
 const { providers } = require('../scrapers/providers');
 const { queue } = require('../utils/queue');
 const RequestPromise = require('request-promise');
+const { rd } = require('../utils/rd');
 
 const logger = require('../utils/logger');
 const WsWrapper = require('../utils/WsWrapper');
@@ -68,15 +69,21 @@ const resolveLinks = async (data, ws, req) => {
     const promises = [];
 
     // TODO: also check link refresh to see if cache needs updating
-    let availableProviders
+    // Get available providers.
+    let availableProviders = [];
     if (process.env.ENABLE_CACHE === 'true' && existsInCache) {
         logger.debug(`Cache exists for this search and will be used to resolve links`);
-        availableProviders = [...providers.cache];
+        availableProviders.push(...providers.cache);
     } else {
-        availableProviders = [...providers[type], ...providers.universal];
+        availableProviders.push([...providers[type], ...providers.universal]);
     }
 
-    // Get available providers.
+    // Initialize RD regex list
+    if (data.hasRD) {
+        await rd.getRDRegexList();
+        availableProviders.push(...providers.rd[type], ...providers.rd.universal);
+    }
+
     availableProviders.forEach((provider) => promises.push(provider.resolveRequests(req, wsWrapper)));
 
     if (queue.isEnabled) {

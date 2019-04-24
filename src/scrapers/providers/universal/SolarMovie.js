@@ -17,6 +17,7 @@ module.exports = class SolarMovie extends BaseProvider {
         const season = req.query.season;
         const episode = req.query.episode;
         const type = req.query.type;
+        const hasRD = req.query.hasRD;
         const resolvePromises = [];
         let headers = {
             'user-agent': randomUseragent.getRandom(),
@@ -112,7 +113,7 @@ module.exports = class SolarMovie extends BaseProvider {
                         $ = cheerio.load(decodedFrame);
 
                         const videoUrl = $('iframe').attr('src');
-                        resolvePromises.push(this.resolveLink(videoUrl, ws, jar, headers));
+                        resolvePromises.push(this.resolveLink(videoUrl, ws, jar, headers, '', { isDDL: false}, hasRD));
                     }
 
                     hostCount++;

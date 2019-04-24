@@ -22,6 +22,7 @@ module.exports = class SwatchSeries extends BaseProvider {
         const searchUrl = `${url}/search/${searchTitle}`;
         const rp = this._getRequest(req, ws);
         const jar = rp.jar();
+        const hasRD = req.query.hasRD;
         const resolvePromises = [];
         const clientIp = this._getClientIp(req);
 
@@ -81,7 +82,7 @@ module.exports = class SwatchSeries extends BaseProvider {
                     'x-real-ip': clientIp,
                     'x-forwarded-for': clientIp
                 };
-                resolvePromises.push(this.resolveLink(link, ws, jar, headers));
+                resolvePromises.push(this.resolveLink(link, ws, jar, headers, '', { isDDL: false}, hasRD));
             });
         } catch (err) {
             this._onErrorOccurred(err);

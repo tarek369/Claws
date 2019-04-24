@@ -14,6 +14,7 @@ module.exports = class MeliMedia extends BaseProvider {
         const season = req.query.season;
         const episode = req.query.episode;
         const type = req.query.type;
+        const hasRD = req.query.hasRD;
         const resolvePromises = [];
         let headers = {};
 
@@ -48,7 +49,7 @@ module.exports = class MeliMedia extends BaseProvider {
                 const directLink = $(element).attr('href');
                 const audioRegex = /(.[0-9]{4})(.*)(.Sound)([0-9]*)/;
                 if (!audioRegex.test(directLink)) {
-                    resolvePromises.push(this.resolveLink(directLink, ws, jar, headers, '', { isDDL: true }));
+                    resolvePromises.push(this.resolveLink(directLink, ws, jar, headers, '', { isDDL: false}, hasRD));
                 }
             });
         } catch (err) {

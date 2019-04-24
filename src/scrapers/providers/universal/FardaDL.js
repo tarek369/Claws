@@ -14,6 +14,7 @@ module.exports = class FardaDL extends BaseProvider {
         const season = req.query.season;
         const episode = req.query.episode;
         const type = req.query.type;
+        const hasRD = req.query.hasRD;
         const resolvePromises = [];
         let headers = {};
 
@@ -71,20 +72,20 @@ module.exports = class FardaDL extends BaseProvider {
                             if (fileName.toLowerCase().includes(formattedEpisode)) {
                                 const filePath = $(element).attr('href');
                                 const directLink = this._absoluteUrl(folderOrEpisodeLink, filePath);
-                                resolvePromises.push(this.resolveLink(directLink, ws, jar, headers, '', { isDDL: true }));
+                                resolvePromises.push(this.resolveLink(directLink, ws, jar, headers, '', { isDDL: true }, hasRD));
                             }
                         });
                     } else {
                         // Link is a to the episode (newer seasons / episodes)
                         if (folderOrEpisodeLink.toLowerCase().includes(formattedEpisode)) {
-                            resolvePromises.push(this.resolveLink(folderOrEpisodeLink, ws, jar, headers, '', { isDDL: true }));
+                            resolvePromises.push(this.resolveLink(folderOrEpisodeLink, ws, jar, headers, '', { isDDL: true }, hasRD));
                         };
                     }
                 }
             } else {
                 $('a.dl_bx_mv').toArray().forEach(element => {
                     const directLink = $(element).attr('href');
-                    resolvePromises.push(this.resolveLink(directLink, ws, jar, headers, '', { isDDL: true }));
+                    resolvePromises.push(this.resolveLink(directLink, ws, jar, headers, '', { isDDL: true }, hasRD));
                 });
             }
         } catch (err) {
