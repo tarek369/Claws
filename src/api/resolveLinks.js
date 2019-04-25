@@ -70,21 +70,20 @@ const resolveLinks = async (data, ws, req) => {
 
     // TODO: also check link refresh to see if cache needs updating
     // Get available providers.
-    let availableProviders = [];
+    let availableProviders;
     if (process.env.ENABLE_CACHE === 'true' && existsInCache) {
         logger.debug(`Cache exists for this search and will be used to resolve links`);
-        availableProviders.push(...providers.cache);
+        availableProviders = [...providers.cache]
     } else {
-        availableProviders.push(...providers[type], ...providers.universal);
+        availableProviders = [...providers[type], ...providers.universal];
     }
-    console.log(availableProviders)
 
     // Initialize RD regex list
     if (data.hasRD) {
         await rd.getRDRegexList();
         availableProviders.push(...providers.rd[type], ...providers.rd.universal);
     }
-
+    console.log(availableProviders);
     availableProviders.forEach((provider) => promises.push(provider.resolveRequests(req, wsWrapper)));
 
     if (queue.isEnabled) {

@@ -15,6 +15,19 @@ module.exports.formatSave = (searchData, data) => {
                 cookieRequired: data.cookieRequired
             }
         }
+    } else if (data.event === 'RDScrape') {
+        return {
+            event: 'RDScrape',
+            uri: data.target,
+            type: searchData.type,
+            searchData,
+            eventData: {
+                provider: data.provider,
+                resolver: data.resolver,
+                target: data.target,
+                quality: data.quality
+            }
+        }
     } else {
         return {
             event: 'result',

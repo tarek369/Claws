@@ -30,7 +30,7 @@ class WsWrapper {
             // Commenting this out until we get a better workflow for retrieving file data consistently
             // await this.setFileInfo(resultData);
             try {
-                if (resultData.isResultOfScrape === false) {
+                if (!resultData.isResultOfScrape) {
                     await this.cacheService.save(resultData)
                 }
 
