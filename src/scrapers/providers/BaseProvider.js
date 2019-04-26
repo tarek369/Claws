@@ -6,6 +6,7 @@ const resolve = require('../resolvers/resolve');
 const logger = require('../../utils/logger');
 const javascriptEval = require('../../utils/javascriptEval');
 const useragent = require('../../utils/useragent');
+const { generateFriendlyName } = require('../../utils');
 
 function _implementMe(functionName) {
     throw new Error(`Must implement ${functionName}()`);
@@ -103,6 +104,7 @@ const BaseProvider = class BaseProvider {
     _setInstanceVariables(req, ws) {
         this.clientIp = this._getClientIp(req);
         this.rp = this._getRequest(req, ws);
+        this.searchInformation = { ...req.query };
     }
 
     /**
@@ -155,7 +157,12 @@ const BaseProvider = class BaseProvider {
         };
         if (this.queue.isEnabled) {
             return new Promise((resolve, reject) => {
-                let job = this.queue.submit({ name: 'request', job: { request: rp(options) } });
+                let job = this.queue.submit({
+                    name: 'request',
+                    job: { request: rp(options) },
+                    title: `${generateFriendlyName(this.searchInformation)} - ${uri}`
+                });
+
                 job.on('complete', function (result) {
                     resolve(result);
                 }).on('failed', function () {

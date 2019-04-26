@@ -21,7 +21,7 @@ class Queue {
         logger.debug(`Queue Processing Started`)
         this.queue.process('request', process.env.QUEUE_ACTIVE_JOB_NUMBER || 1, async function (job, done) {
             try {
-                const data = await RequestPromise(job.data)
+                const data = await RequestPromise(job.data.request)
                 done(null, data)
             } catch (err) {
                 logger.error(err)
@@ -31,9 +31,11 @@ class Queue {
     }
 
     submit(jobDetails) {
-        let job = this.queue.create(jobDetails.name, jobDetails.job.request)
+        let job = this.queue.create(jobDetails.name, { request: jobDetails.job.request, title: jobDetails.title })
             .attempts(process.env.QUEUE_MAX_RETRIES || 3)
-            .backoff(true).removeOnComplete(true);
+            .removeOnComplete(true)
+            .backoff(true)
+            .ttl(process.env.KUE_JOB_TTL);
         job.save();
         return job;
     }
