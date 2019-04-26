@@ -129,7 +129,7 @@ module.exports = {
             return 2160;
         } else if (/([^a-zA-Z0-9])(1080p?)([^a-zA-Z0-9])/g.test(filename)) {
             return 1080;
-        } else if (/([^a-zA-Z0-9])(720p?|brrip|\.hd\.)([^a-zA-Z0-9])/g.test(filename)) {
+        } else if (/([^a-zA-Z0-9])(720p?|brrip|hd)([^a-zA-Z0-9])/g.test(filename)) {
             return 720;
         } else if (/([^a-zA-Z0-9])(480p?)([^a-zA-Z0-9])/g.test(filename)) {
             return 480;
