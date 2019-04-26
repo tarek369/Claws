@@ -121,27 +121,24 @@ module.exports = {
      * @param filename The name of the file.
      */
     getQualityInfo: (filename) => {
-        filename = filename.toLowerCase();
-        if (filename.includes('2160')) {
-            return '4K';
-        } else if (filename.includes('1080')) {
-            return '1080p';
-        } else if (filename.includes('720')) {
-            return '720p';
-        } else if (filename.includes('480')) {
-            return '480p';
-        } else if (filename.includes('360')) {
-            return '360p';
-        } else if (filename.includes('brrip')) {
-            return '720p';
-        } else if (filename.includes('.hd.')) {
-            return '720p';
-        } else if (['dvdscr', 'r5', 'r6'].some(element => filename.includes(element))) {
-            return 'SCR';
-        } else if (['camrip', 'tsrip', 'hdcam', 'hdts', 'dvdcam', 'dvdts', 'cam', 'telesync', 'ts'].some(element => filename.includes(element))) {
-            return 'CAM';
+        filename = decodeURI(filename.toLowerCase());
+
+        if (/([^a-zA-Z0-9])(2160p?)([^a-zA-Z0-9])/g.test(filename)) {
+            return 2160;
+        } else if (/([^a-zA-Z0-9])(1080p?)([^a-zA-Z0-9])/g.test(filename)) {
+            return 1080;
+        } else if (/([^a-zA-Z0-9])(720p?|brrip|\.hd\.)([^a-zA-Z0-9])/g.test(filename)) {
+            return 720;
+        } else if (/([^a-zA-Z0-9])(480p?)([^a-zA-Z0-9])/g.test(filename)) {
+            return 480;
+        } else if (/([^a-zA-Z0-9])(dvdscr|r5|r6)([^a-zA-Z0-9])/g.test(filename)) {
+            return 450;
+        } else if (/([^a-zA-Z0-9])(360p?)([^a-zA-Z0-9])/g.test(filename)) {
+            return 360;
+        } else if (/([^a-zA-Z0-9])(camrip|tsrip|hdcam|hdts|dvdcam|dvdts|cam|telesync|ts)([^a-zA-Z0-9])/g.test(filename)) {
+            return 300;
         } else {
-            return 'HQ';
+            return 0;
         }
     }
 };
