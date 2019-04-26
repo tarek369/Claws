@@ -48,7 +48,7 @@ module.exports = class DLFilm extends BaseProvider {
 
             $('.link_dl').toArray().forEach(element => {
                 let videoLink = $(element).attr('href');
-                resolvePromises.push(this.resolveLink(videoLink, ws, jar, headers, '', { isDDL: false}, hasRD));
+                resolvePromises.push(this.resolveLink(videoLink, ws, jar, headers, '', { isDDL: true }, hasRD));
             });
         } catch (err) {
             this._onErrorOccurred(err)
