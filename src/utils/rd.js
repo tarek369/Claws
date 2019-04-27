@@ -1,6 +1,5 @@
 
 const RequestPromise = require('request-promise');
-const logger = require('./logger');
 
 class RD {
     constructor() { };
@@ -18,6 +17,20 @@ class RD {
             }
         }
         return false;
+    }
+
+    async getHostList() {
+        this.hostList = JSON.parse(await RequestPromise("https://api.real-debrid.com/rest/1.0/hosts"));
+    }
+
+    getHostName(link) {
+        for (let host in this.hostList) {
+            if (host && link.includes(host)) {
+                const splitNames = this.hostList[host].name.split(' / ');
+                return splitNames[0];
+            }
+        }
+        return 'RD';
     }
 }
 

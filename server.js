@@ -3,6 +3,7 @@
 // Import dependencies
 const express = require('express');
 const logger = require('./src/utils/logger');
+const { rd } = require('./src/utils/rd');
 
 // Load and define application data
 const pkg = require('./package.json');
@@ -145,6 +146,7 @@ setInterval(() => {
 }, 10000);
 
 // Start listening...
-server.listen(process.env.PORT, () => {
+server.listen(process.env.PORT, async () => {
+    await rd.getHostList();
     logger.info(`${pkg.name} v${pkg.version} server listening on: http://127.0.0.1:${process.env.PORT}`);
 });
