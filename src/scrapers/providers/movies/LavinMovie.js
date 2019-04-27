@@ -21,15 +21,7 @@ module.exports = class LavinMovie extends BaseProvider {
             let searchUrl = this._generateUrl(`${url}/advanced-search/`, { search: searchTitle });
             const rp = this._getRequest(req, ws);
             const jar = rp.jar();
-
-            let options = {
-                uri: searchUrl,
-                headers,
-                jar,
-                followAllRedirects: true,
-                timeout: 10000,
-            };
-            const response = await cloudscraper(options);
+            const response = await this._createCloudflareRequest(searchUrl, jar, headers);
             
             let $ = cheerio.load(response);
 
@@ -46,14 +38,7 @@ module.exports = class LavinMovie extends BaseProvider {
                 return Promise.resolve();
             }
 
-            options = {
-                uri: videoPage,
-                headers,
-                jar,
-                followAllRedirects: true,
-                timeout: 10000,
-            };
-            const videoPageHTML = await cloudscraper(options);
+            const videoPageHTML = await this._createCloudflareRequest(videoPage, jar, headers);
 
             $ = cheerio.load(videoPageHTML);
 

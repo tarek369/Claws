@@ -7,6 +7,7 @@ const logger = require('../../utils/logger');
 const javascriptEval = require('../../utils/javascriptEval');
 const useragent = require('../../utils/useragent');
 const { generateFriendlyName } = require('../../utils');
+const cloudscraper = require('cloudscraper');
 
 function _implementMe(functionName) {
     throw new Error(`Must implement ${functionName}()`);
@@ -171,6 +172,22 @@ const BaseProvider = class BaseProvider {
             });
         }
         return rp(options);
+    }
+    
+    /**
+     * Function for creating a new request for Cloudflare protected sites.
+     * Similar to `_createRequest` but uses `cloudscraper` instead of `request-promise`.
+     */
+    _createCloudflareRequest(uri, jar = null, headers = null, extraOptions = {}) {
+        let options = {
+            uri,
+            headers,
+            jar,
+            followAllRedirects: true,
+            timeout: 10000,
+            ...extraOptions,
+        };
+        return cloudscraper(options);
     }
 
     /**
