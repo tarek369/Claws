@@ -1,6 +1,5 @@
 const cheerio = require('cheerio');
 const BaseProvider = require('../BaseProvider');
-const cloudscraper = require('cloudscraper');
 
 module.exports = class LavinMovie extends BaseProvider {
     /** @inheritdoc */
