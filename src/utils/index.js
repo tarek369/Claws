@@ -125,7 +125,7 @@ module.exports = {
     getQualityInfo: (filename) => {
         filename = decodeURI(filename.toLowerCase());
 
-        if (/([^a-zA-Z0-9])(2160p?|4k)([^a-zA-Z0-9])/g.test(filename)) {
+        if (/([^a-zA-Z0-9])(2160p?|4k|uhd)([^a-zA-Z0-9])/g.test(filename)) {
             return 2160;
         } else if (/([^a-zA-Z0-9])(1080p?)([^a-zA-Z0-9])/g.test(filename)) {
             return 1080;
@@ -147,7 +147,7 @@ module.exports = {
     getNumericQuality: (quality) => {
         quality = quality.toLowerCase();
 
-        if (/(2160p?|4k)/g.test(quality)) {
+        if (/(2160p?|4k|uhd)/g.test(quality)) {
             return 2160;
         } else if (/(1080p?)/g.test(quality)) {
             return 1080;
