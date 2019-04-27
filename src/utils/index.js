@@ -125,19 +125,19 @@ module.exports = {
     getQualityInfo: (filename) => {
         filename = decodeURI(filename.toLowerCase());
 
-        if (/([^a-zA-Z0-9])(2160p?|4k|uhd)([^a-zA-Z0-9])/g.test(filename)) {
+        if (/([^a-z0-9])(2160p?|4k|uhd)([^a-z0-9])/g.test(filename)) {
             return 2160;
-        } else if (/([^a-zA-Z0-9])(1080p?)([^a-zA-Z0-9])/g.test(filename)) {
+        } else if (/([^a-z0-9])(1080p?)([^a-z0-9])/g.test(filename)) {
             return 1080;
-        } else if (/([^a-zA-Z0-9])(720p?|brrip|hd)([^a-zA-Z0-9])/g.test(filename)) {
+        } else if (/([^a-z0-9])(720p?|brrip|hd)([^a-z0-9])/g.test(filename)) {
             return 720;
-        } else if (/([^a-zA-Z0-9])(480p?)([^a-zA-Z0-9])/g.test(filename)) {
+        } else if (/([^a-z0-9])(480p?)([^a-z0-9])/g.test(filename)) {
             return 480;
-        } else if (/([^a-zA-Z0-9])(scr|dvdscr|r5|r6)([^a-zA-Z0-9])/g.test(filename)) {
+        } else if (/([^a-z0-9])(scr|dvdscr|r5|r6)([^a-z0-9])/g.test(filename)) {
             return 450;
-        } else if (/([^a-zA-Z0-9])(360p?)([^a-zA-Z0-9])/g.test(filename)) {
+        } else if (/([^a-z0-9])(360p?)([^a-z0-9])/g.test(filename)) {
             return 360;
-        } else if (/([^a-zA-Z0-9])(cam|camrip|tsrip|hdcam|hdts|dvdcam|dvdts|cam|telesync|ts)([^a-zA-Z0-9])/g.test(filename)) {
+        } else if (/([^a-z0-9])(cam|camrip|tsrip|hdcam|hdts|dvdcam|dvdts|cam|telesync|ts)([^a-z0-9])/g.test(filename)) {
             return 300;
         } else {
             return 0;
