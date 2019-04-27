@@ -20,7 +20,7 @@ module.exports = class DDLSpot extends BaseProvider {
         let headers = {};
 
         try {
-            let searchTitle = `${title}`;
+            let searchTitle = title.replace(':', '');
             const paddedSeason = `${season}`.padStart(2, '0');
             const paddedEpisode = `${episode}`.padStart(2, '0');
             const formattedEpisode = `s${paddedSeason}e${paddedEpisode}`;
