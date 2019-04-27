@@ -14,9 +14,7 @@ module.exports = class LavinMovie extends BaseProvider {
         const year = req.query.year;
         const hasRD = req.query.hasRD;
         const resolvePromises = [];
-        let headers = {
-            'Referer': url
-        };
+        let headers = {};
     
         try {
             const searchTitle = `${title} ${year}`;
