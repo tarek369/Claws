@@ -19,9 +19,6 @@ module.exports = class TwoDDL extends BaseProvider {
         const resolvePromises = [];
         let headers = {};
 
-        // Alternate Search Example
-        // https://twoddl.net/all-movies/?search=Aquaman&searchfield=search&search_genre=&search_rating=&search_year=2018
-
         try {
             let searchTitle = `${title}`;
             const paddedSeason = `${season}`.padStart(2, '0');

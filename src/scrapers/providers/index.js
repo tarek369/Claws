@@ -40,6 +40,8 @@ module.exports.providers = {
 
         ],
         universal: [
+            new (require('./rd/universal/DDLSpot'))(queue),
+            new (require('./rd/universal/MyVideoLinks'))(queue),
             new (require('./rd/universal/TwoDDL'))(queue)
         ]
     }
