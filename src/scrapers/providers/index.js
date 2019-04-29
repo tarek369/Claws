@@ -6,12 +6,22 @@ module.exports.providers = {
         // new (require('./anime/AnimePahe'))(),
     ],
     movies: [
+<<<<<<< HEAD
         // new (require('./movies/Afdah'))(queue),
         // new (require('./movies/AZMovies'))(queue),
         // new (require('./movies/BFMovies'))(queue),
         // new (require('./movies/DLFilm'))(queue),
         // new (require('./movies/MeliMedia'))(queue),
         // new (require('./movies/StreamM4u'))(queue)
+=======
+        new (require('./movies/Afdah'))(queue),
+        new (require('./movies/AZMovies'))(queue),
+        new (require('./movies/BFMovies'))(queue),
+        new (require('./movies/DLFilm'))(queue),
+        new (require('./movies/LavinMovie'))(queue),
+        new (require('./movies/MeliMedia'))(queue),
+        new (require('./movies/StreamM4u'))(queue)
+>>>>>>> cf-bypass-test
     ],
     tv: [
         // new (require('./tv/MoviesWeb'))(queue),
@@ -40,7 +50,13 @@ module.exports.providers = {
 
         ],
         universal: [
+<<<<<<< HEAD
             // new (require('./rd/universal/TwoDDL'))(queue)
+=======
+            new (require('./rd/universal/DDLSpot'))(queue),
+            new (require('./rd/universal/MyVideoLinks'))(queue),
+            new (require('./rd/universal/TwoDDL'))(queue)
+>>>>>>> cf-bypass-test
         ]
     }
 };

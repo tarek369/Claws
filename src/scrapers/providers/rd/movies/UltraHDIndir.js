@@ -23,12 +23,12 @@ module.exports = class UltraHDIndir extends BaseProvider {
                 {
                     method: 'POST',
                     formData: {
-                        'do': 'search',
-                        'subaction': 'search',
-                        'search_start': 0,
-                        'full_search': 1,
-                        'result_from': 1,
-                        'story': imdb_id
+                        do: 'search',
+                        subaction: 'search',
+                        search_start: 0,
+                        full_search: 0,
+                        result_from: 1,
+                        story: imdb_id
                     }
                 });
 
@@ -41,7 +41,7 @@ module.exports = class UltraHDIndir extends BaseProvider {
             let moviePageArray = $('.box-out').toArray().reduce((returnArray, element) => {
                 let foundIMDB = $(element).find(`.news-text a[href*='${imdb_id}']`).attr('href');
                 let foundPage = $(element).find('.news-head .news-title a').attr('href');
-
+                
                 if (foundIMDB) {
                     returnArray.push(foundPage);
                 }
