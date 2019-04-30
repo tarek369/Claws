@@ -38,7 +38,7 @@ module.exports.providers = {
             new (require('./rd/movies/300MBDownload'))(queue)
         ],
         tv: [
-
+            new (require('./rd/tv/DirectDownloadTV'))(queue)
         ],
         universal: [
             new (require('./rd/universal/DDLSpot'))(queue),
