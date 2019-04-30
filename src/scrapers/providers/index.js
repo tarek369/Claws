@@ -35,7 +35,7 @@ module.exports.providers = {
     ],
     rd: {
         movies: [
-
+            new (require('./rd/movies/300MBDownload'))(queue)
         ],
         tv: [
 
