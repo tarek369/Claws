@@ -12,7 +12,7 @@ module.exports.providers = {
         new (require('./movies/DLFilm'))(queue),
         new (require('./movies/LavinMovie'))(queue),
         new (require('./movies/MeliMedia'))(queue),
-        new (require('./movies/StreamM4u'))(queue)
+        new (require('./movies/StreamM4U'))(queue)
     ],
     tv: [
         new (require('./tv/MoviesWeb'))(queue),
