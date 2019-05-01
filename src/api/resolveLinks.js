@@ -42,6 +42,7 @@ const resolveLinks = async (data, ws, req) => {
             }
     
             data.options.existsInCache = existsInCache;
+            data.options.hasRD = data.hasRD;
         }
     }    
     

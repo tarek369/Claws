@@ -2,7 +2,7 @@ const uuid = require('uuid/v4');
 const logger = require('../utils/logger');
 
 module.exports.formatSave = (searchData, data) => {
-    if (data.event === 'scrape') {
+    if (data.event === 'scrape' || data.event === 'RDScrape') {
         return {
             event: 'scrape',
             uri: data.target,
@@ -12,20 +12,9 @@ module.exports.formatSave = (searchData, data) => {
                 provider: data.provider,
                 resolver: data.resolver,
                 target: data.target,
-                cookieRequired: data.cookieRequired
-            }
-        }
-    } else if (data.event === 'RDScrape') {
-        return {
-            event: 'RDScrape',
-            uri: data.target,
-            type: searchData.type,
-            searchData,
-            eventData: {
-                provider: data.provider,
-                resolver: data.resolver,
-                target: data.target,
-                quality: data.quality
+                cookieRequired: data.cookieRequired,
+                quality: data.quality,
+                isRDScrape: data.options.hasRD
             }
         }
     } else {
@@ -53,9 +42,21 @@ module.exports.formatSave = (searchData, data) => {
 module.exports.resolveCachedLink = async(cacheData, ws, metadata) => {
     delete cacheData.eventData.$init;
     if (cacheData.event === 'scrape') {
-        cacheData.eventData.scrapeId = uuid();
-        delete cacheData.eventData.file;
         delete cacheData.eventData.metadata;
+        delete cacheData.eventData.file;
+
+        if (cacheData.eventData.isRDScrape) {
+            cacheData.event = 'RDScrape'
+            cacheData.eventData = {
+                event: 'RDScrape',
+                target: cacheData.eventData.target,
+                provider: cacheData.eventData.provider,
+                resolver: cacheData.eventData.resolver,
+                quality: cacheData.eventData.quality
+            }
+        } else {
+            cacheData.eventData.scrapeId = uuid();
+        }
     }
     await ws.send({event: cacheData.event, ...cacheData.eventData});
 }

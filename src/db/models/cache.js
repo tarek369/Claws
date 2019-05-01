@@ -14,6 +14,7 @@ let cacheSchema = new mongoose.Schema({
         resolver: String,
         target: String,
         isResultOfScrape: Boolean,
+        isRDScrape: Boolean,
         cookieRequired: String,        
         file: {
             data: String
@@ -24,7 +25,7 @@ let cacheSchema = new mongoose.Schema({
             isStreamable: Boolean,
             headers: String,
             source: String,
-            quality: String
+            quality: String,
         }
     }
 })

@@ -31,7 +31,7 @@ class WsWrapper {
             // await this.setFileInfo(resultData);
             try {
                 if (!resultData.isResultOfScrape) {
-                    await this.cacheService.save(resultData)
+                    await this.cacheService.save({...resultData, options: this.options})
                 }
 
                 if (resultData.event === 'result') {
