@@ -11,6 +11,8 @@ let escapeRegExp = (string) => {
 // Valid file extensions for DDL providers
 const validExtensions = [ 'mkv', 'mp4', 'avi' ];
 
+const padTvNumber = (value) => Number(value) < 10 ? `0${value}` : value;
+
 module.exports = {
     /**
      * Used to pad the series and episode numbers.
@@ -18,7 +20,7 @@ module.exports = {
      * @param value The number to pad.
      * @returns {string} The padded string.
      */
-    padTvNumber: (value) => Number(value) < 10 ? `0${value}` : value,
+    padTvNumber: padTvNumber,
 
     /**
      * Validates a request token in a WebSocket request.
@@ -143,5 +145,16 @@ module.exports = {
         } else {
             return 'HQ';
         }
+    },
+
+    generateFriendlyName: (searchDetails) => {
+        const { title, season, episode, year, type } = searchDetails;
+        let searchTitle = title;
+        if (type === 'tv') {
+            searchTitle += ` S${padTvNumber(season)}E${padTvNumber(episode)}`
+        } else {
+            searchTitle += ` ${year}`
+        }
+        return searchTitle;
     }
 };

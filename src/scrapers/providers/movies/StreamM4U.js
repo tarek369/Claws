@@ -3,7 +3,7 @@ const cheerio = require('cheerio');
 const randomUseragent = require('random-useragent');
 const BaseProvider = require('../BaseProvider');
 
-module.exports = class StreamM4u extends BaseProvider {
+module.exports = class StreamM4U extends BaseProvider {
     /** @inheritdoc */
     getUrls() {
         return ["http://streamm4u.com"];
@@ -28,7 +28,7 @@ module.exports = class StreamM4u extends BaseProvider {
 
             const searchPageHtml = await this._createRequest(rp,
                 `${url}/search/${movieTitle.replace(/[^a-zA-Z0-9]+/g, '-')}`,
-                jar, headers
+                jar, headers, {}, true
             )
 
             let $ = cheerio.load(searchPageHtml);
@@ -46,7 +46,7 @@ module.exports = class StreamM4u extends BaseProvider {
             const streamPageUrl = searchResult.parent().parent().attr('href');
             const quality = searchResult.parent().find('h4').text().split(' - ');
 
-            const streamPageHtml = await this._createRequest(rp, streamPageUrl, jar, headers)
+            const streamPageHtml = await this._createRequest(rp, streamPageUrl, jar, headers, {}, true)
             $ = cheerio.load(streamPageHtml);
             const _token = $('meta[name="csrf-token"]').attr('content');
 
@@ -71,7 +71,7 @@ module.exports = class StreamM4u extends BaseProvider {
                     _token,
                     m4u: videoId
                 }
-            });
+            }, true);
 
             let $ = cheerio.load(iframePageHtml);
             let providerUrl = $('iframe').attr('src');

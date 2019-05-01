@@ -1,10 +1,10 @@
 const cheerio = require('cheerio');
 const BaseProvider = require('../BaseProvider');
 
-module.exports = class DLFilm extends BaseProvider {
+module.exports = class LavinMovie extends BaseProvider {
     /** @inheritdoc */
     getUrls() {
-        return ['http://dlfilm.net'];
+        return ['http://lavinmovie2.net'];
     }
 
     /** @inheritdoc */
@@ -17,36 +17,31 @@ module.exports = class DLFilm extends BaseProvider {
     
         try {
             const searchTitle = `${title} ${year}`;
-            let searchUrl = this._generateUrl(`${url}/`, {
-                s: searchTitle
-            });
+            let searchUrl = this._generateUrl(`${url}/advanced-search/`, { search: searchTitle });
             const rp = this._getRequest(req, ws);
             const jar = rp.jar();
-            const response = await this._createRequest(rp, searchUrl, jar, headers);
+            const response = await this._createRequest(rp, searchUrl, jar, headers, {}, true);
             
             let $ = cheerio.load(response);
-            
+
             let videoPage = '';
-            $('.posts').toArray().forEach(element => {
-                let linkElement = $(element).find('.top a');
+            $('.main_info_movie .title_post').toArray().forEach(element => {
+                let foundTitle = $(element).find('h2').text().toLowerCase();
+                let foundPage = $(element).attr('href');
 
-                let contentTitle = $(linkElement).attr('title').toLowerCase();
-                let contentPage = $(linkElement).attr('href');
-
-                if (contentTitle.includes(searchTitle)) {
-                    videoPage = contentPage;
+                if (foundTitle.includes(searchTitle)) {
+                    videoPage = foundPage;
                 }
             });
-
             if (!videoPage) {
                 return Promise.resolve();
             }
 
-            const videoPageHTML = await this._createRequest(rp, videoPage, jar, headers);
+            const videoPageHTML = await this._createRequest(rp, videoPage, jar, headers, {}, true);
 
             $ = cheerio.load(videoPageHTML);
 
-            $('.link_dl').toArray().forEach(element => {
+            $('.link_download_a').toArray().forEach(element => {
                 let videoLink = $(element).attr('href');
                 resolvePromises.push(this.resolveLink(videoLink, ws, jar, headers, '', { isDDL: true }, hasRD));
             });

@@ -28,7 +28,7 @@ module.exports = class ProjectFreeTV extends BaseProvider {
                     formData: {
                         searchText: title
                     }
-                });
+                }, true);
 
             let $ = cheerio.load(response);
 
@@ -46,7 +46,7 @@ module.exports = class ProjectFreeTV extends BaseProvider {
                 return Promise.resolve();
             }
 
-            let contentPageHTML = await this._createRequest(rp, contentPage, jar, headers);
+            let contentPageHTML = await this._createRequest(rp, contentPage, jar, headers, {}, true);
 
             $ = cheerio.load(contentPageHTML);
 
@@ -66,7 +66,7 @@ module.exports = class ProjectFreeTV extends BaseProvider {
                 return Promise.resolve();
             }
 
-            let videoPageHTML = await this._createRequest(rp, videoPage, jar, headers);
+            let videoPageHTML = await this._createRequest(rp, videoPage, jar, headers, {}, true);
 
             $ = cheerio.load(videoPageHTML);
 
