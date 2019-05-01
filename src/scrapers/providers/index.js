@@ -35,7 +35,7 @@ module.exports.providers = {
     ],
     rd: {
         movies: [
-            new (require('./rd/movies/UltraHDIndir'))(queue)
+            new (require('./rd/movies/UltraHD'))(queue)
         ],
         tv: [
 
