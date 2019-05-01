@@ -77,14 +77,13 @@ const resolveLinks = async (data, ws, req) => {
         availableProviders = [...providers.cache]
     } else {
         availableProviders = [...providers[type], ...providers.universal];
+        if (data.hasRD) {
+            // Initialize RD regex list
+            await rd.getRDRegexList();
+            availableProviders.push(...providers.rd[type], ...providers.rd.universal);
+        }
     }
-
-    // Initialize RD regex list
-    if (data.hasRD) {
-        await rd.getRDRegexList();
-        availableProviders.push(...providers.rd[type], ...providers.rd.universal);
-    }
-    console.log(availableProviders);
+    
     availableProviders.forEach((provider) => promises.push(provider.resolveRequests(req, wsWrapper)));
 
     if (queue.isEnabled) {
