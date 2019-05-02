@@ -14,6 +14,7 @@ module.exports.providers = {
         new (require('./movies/LavinMovie'))(queue),
         new (require('./movies/MeliMedia'))(queue),
         new (require('./movies/OpenloadMovie'))(queue),
+        new (require('./movies/Putlocker'))(queue),
         new (require('./movies/StreamM4U'))(queue)
     ],
     tv: [
