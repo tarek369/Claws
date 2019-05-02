@@ -45,7 +45,7 @@ module.exports.resolveCachedLink = async(cacheData, ws, metadata) => {
         delete cacheData.eventData.metadata;
         delete cacheData.eventData.file;
 
-        if (cacheData.eventData.isRDScrape) {
+        if (cacheData.eventData.isRDScrape && metadata.hasRD) {
             cacheData.event = 'RDScrape'
             cacheData.eventData = {
                 event: 'RDScrape',

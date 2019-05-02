@@ -29,7 +29,7 @@ module.exports = class Cache extends BaseProvider {
         this.logger.debug(`Found ${results.length} results in Cache`);
 
         results.forEach((link) => {
-            resolvePromises.push(this.resolveLink(link, ws, {isFromCache: true}));
+            resolvePromises.push(this.resolveLink(link, ws, {isFromCache: true, hasRD: req.query.hasRD}));
         })
         return Promise.all(resolvePromises)
     }
