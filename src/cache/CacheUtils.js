@@ -12,7 +12,7 @@ module.exports.formatSave = (searchData, data) => {
                 provider: data.provider,
                 resolver: data.resolver,
                 target: data.target,
-                cookieRequired: data.cookieRequired,
+                cookieRequired: data.cookieRequired|| "",
                 quality: data.quality,
                 isRDScrape: data.options.hasRD
             }
