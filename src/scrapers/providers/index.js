@@ -19,6 +19,7 @@ module.exports.providers = {
         new (require('./movies/StreamM4U'))(queue)
     ],
     tv: [
+        new (require('./tv/GrabTheBeast'))(queue),
         new (require('./tv/MoviesWeb'))(queue),
         new (require('./tv/ProjectFreeTV'))(queue),
         new (require('./tv/SeriesFree'))(queue),
