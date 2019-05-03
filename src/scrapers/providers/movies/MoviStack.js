@@ -44,6 +44,8 @@ module.exports = class MoviStack extends BaseProvider {
             //         movieId = result.id;
             //     }
             // }
+
+            // https://www.movistack.com/api/get-movie/links/299534
         } catch (err) {
             this._onErrorOccurred(err)
         }
