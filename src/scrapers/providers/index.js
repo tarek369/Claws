@@ -23,7 +23,8 @@ module.exports.providers = {
         new (require('./tv/MoviesWeb'))(queue),
         new (require('./tv/ProjectFreeTV'))(queue),
         new (require('./tv/SeriesFree'))(queue),
-        new (require('./tv/SwatchSeries'))(queue)
+        new (require('./tv/SwatchSeries'))(queue),
+        new (require('./tv/ToonGet'))(queue)
     ],
     universal: [
         new (require('./universal/123Movie'))(queue),
