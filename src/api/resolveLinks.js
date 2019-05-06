@@ -3,7 +3,6 @@
 // Load providers
 const { providers } = require('../scrapers/providers');
 const { queue } = require('../utils/queue');
-const RequestPromise = require('request-promise');
 const { rd } = require('../utils/rd');
 
 const logger = require('../utils/logger');
@@ -14,7 +13,6 @@ const resolveHtml = require('../scrapers/resolvers/resolveHtml');
  * Sends the current time in milliseconds.
  */
 const sendInitialStatus = (ws) => ws.send(JSON.stringify({ data: [`${new Date().getTime()}`], event: 'status' }));
-
 /**
  * Return request handler for certain media types.
  * @param data media query
@@ -51,8 +49,8 @@ const resolveLinks = async (data, ws, req) => {
 
     req.query = data;
 
-    // Get available providers.
-    let availableProviders = [...providers[type], ...providers.universal];
+    let availableProviders = [...providers.standard[type], ...providers.standard.universal];
+    let excludedProviders = data.excludedProviders ||  [];
 
     // Initialize RD regex list
     if (data.hasRD) {
@@ -60,7 +58,16 @@ const resolveLinks = async (data, ws, req) => {
         availableProviders.push(...providers.rd[type], ...providers.rd.universal);
     }
 
-    availableProviders.forEach((provider) => promises.push(provider.resolveRequests(req, wsWrapper)));
+    // Apply provider filtering
+    let providersInUse = availableProviders.reduce((acc, cur) => {
+        if (!excludedProviders.includes(cur.getProviderId())) {
+            acc.push(cur);
+        }
+        return acc;
+    }, []);
+
+
+    providersInUse.forEach((provider) => promises.push(provider.resolveRequests(req, wsWrapper)));
 
     if (queue.isEnabled) {
         queue.process()

@@ -2,6 +2,7 @@
 
 const os = require('os-utils');
 const generalRoutes = require('express').Router();
+const { providerList } = require('../scrapers/providers/index');
 
 generalRoutes.get('/status', async (req, res) => {
   os.cpuUsage((usage) => {
@@ -11,5 +12,9 @@ generalRoutes.get('/status', async (req, res) => {
     });
   });
 });
+
+generalRoutes.get('/providers', (req, res) => {
+  res.json(providerList)
+})
 
 module.exports = generalRoutes;
