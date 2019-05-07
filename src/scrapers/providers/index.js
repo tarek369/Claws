@@ -35,6 +35,7 @@ const providers = {
             new (require('./universal/HeyDL'))(queue),
             new (require('./universal/ODB'))(queue),
             new (require('./universal/Onmovies'))(queue),
+            new (require('./universal/PutlockerONL'))(queue),
             new (require('./universal/Series8'))(queue),
             new (require('./universal/Series9'))(queue),
             new (require('./universal/SockShare'))(queue),
