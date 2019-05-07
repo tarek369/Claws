@@ -1,6 +1,6 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
-const logger = require('../../utils/logger');
+const {handleRequestError} = require('../../utils/errors');
 
 async function EStream(uri, jar, clientIp, userAgent) {
     try {
@@ -17,7 +17,7 @@ async function EStream(uri, jar, clientIp, userAgent) {
     
         return $('source').toArray().map((sourceElement) => $(sourceElement).attr('src'));
     } catch(err) {
-        logger.error(err)
+        handleRequestError(err, false, "Resolver - EStream");
     }
 }
 

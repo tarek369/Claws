@@ -1,7 +1,7 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
 const vm = require('vm');
-const logger = require('../../utils/logger');
+const {handleRequestError} = require('../../utils/errors');
 
 async function Openload(uri, jar, headers) {
     try {
@@ -15,7 +15,7 @@ async function Openload(uri, jar, headers) {
     
         return OpenloadHtml(providerPageHtml);
     } catch (err) {
-        logger.error(err)
+        handleRequestError(err, false, "Resolver - OpenLoad");
     }
 }
 

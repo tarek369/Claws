@@ -1,7 +1,7 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
 const vm = require('vm');
-const logger = require('../../utils/logger');
+const {handleRequestError} = require('../../utils/errors');
 
 async function SpeedVid(uri, jar, {'user-agent': userAgent}) {
     try {
@@ -46,7 +46,7 @@ async function SpeedVid(uri, jar, {'user-agent': userAgent}) {
     
         return Object.keys(links);
     } catch (err) {
-        logger.error(err)
+        handleRequestError(err, false, "Resolver - SpeedVid");
     }
 }
 

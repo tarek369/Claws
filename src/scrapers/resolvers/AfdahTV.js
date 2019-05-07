@@ -1,6 +1,6 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
-const logger = require('../../utils/logger');
+const {handleRequestError} = require('../../utils/errors');
 
 async function AfdahTV(uri, jar, headers) {
     try {
@@ -42,7 +42,7 @@ async function AfdahTV(uri, jar, headers) {
         const videoSourceUrl = await Openload(providerUrl, jar);
         await ws.send({ videoSourceUrl, url, provider: 'https://openload.co', ipLocked: true }, 'result');
     } catch (err) {
-        logger.error(err);
+        handleRequestError(err, false, "Resolver - AfdahTV");
     }
 }
 

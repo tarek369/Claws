@@ -1,7 +1,7 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
 const vm = require('vm');
-const logger = require('../../utils/logger');
+const {handleRequestError} = require('../../utils/errors');
 
 // I think there's some throttling going on, but haven't tested enough to find the time span for a "ban" reset
 
@@ -21,7 +21,7 @@ async function GamoVideo(uri, jar, {'user-agent': userAgent}) {
     
         return GamoVideoHtml(videoPageHtml);
     } catch (err) {
-        logger.error(err)
+        handleRequestError(err, false, "Resolver - GamoVideo");
     }
 }
 

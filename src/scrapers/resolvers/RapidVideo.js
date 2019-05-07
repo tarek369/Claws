@@ -3,6 +3,9 @@ const cheerio = require('cheerio');
 const logger = require('../../utils/logger');
 const Utils = require('../../utils/index');
 
+const {handleRequestError} = require('../../utils/errors');
+
+
 async function RapidVideo(uri, jar) {
     try {
         let providerPageHtml = await rp({ uri, jar, timeout: 5000 });
@@ -28,7 +31,7 @@ async function RapidVideo(uri, jar) {
 
         return resolvedData;
     } catch (err) {
-        logger.error(err)
+        handleRequestError(err, false, "Resolver - RapidVideo");
     }
 }
 

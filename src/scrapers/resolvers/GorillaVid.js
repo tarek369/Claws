@@ -1,7 +1,7 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
 const vm = require('vm');
-const logger = require('../../utils/logger');
+const {handleRequestError} = require('../../utils/errors');
 
 async function GorillaVid(uri, jar, {'user-agent': userAgent}) {
     try {
@@ -50,7 +50,7 @@ async function GorillaVid(uri, jar, {'user-agent': userAgent}) {
         vm.runInContext($('script:contains("sources")')[0].children[0].data, sandbox);
         return videoOptions.sources;
     } catch (err) {
-        logger.error(err)
+        handleRequestError(err, false, "Resolver - GorrilaVid");
     }
 }
 

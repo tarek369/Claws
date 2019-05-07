@@ -1,7 +1,8 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
 const vm = require('vm');
-const logger = require('../../utils/logger');
+const {handleRequestError} = require('../../utils/errors');
+
 
 async function ClipWatching(uri, jar, {'user-agent': userAgent}) {
     try {
@@ -23,7 +24,7 @@ async function ClipWatching(uri, jar, {'user-agent': userAgent}) {
     
         return setupObject.sources;
     } catch (err) {
-        logger.error(err)
+        handleRequestError(err, false, "Resolver - ClipWatching");
     }
 }
 

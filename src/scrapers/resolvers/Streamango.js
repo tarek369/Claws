@@ -1,8 +1,8 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
 const vm = require('vm');
-const logger = require('../../utils/logger');
 const normalizeUrl = require('../../utils').normalizeUrl;
+const {handleRequestError} = require('../../utils/errors');
 
 async function Streamango(uri, jar, headers) {
     try {
@@ -15,7 +15,7 @@ async function Streamango(uri, jar, headers) {
 
         return StreamangoHtml(providerPageHtml);
     } catch (err) {
-        logger.error(err)
+        handleRequestError(err, false, "Resolver - Streamango");
     }
 }
 

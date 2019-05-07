@@ -4,10 +4,12 @@ const RequestPromise = require('request-promise');
 const cloudscraper = require('cloudscraper');
 const logger = require('./logger');
 const constants = require('./constants');
+const { handleRequestError } = require('./errors');
 
 class Queue {
     constructor() {
         this.isEnabled = false;
+        this.logger = logger;
 
         if (process.env.ENABLE_QUEUE === 'true') {
             logger.debug('Kue enabled - Using queue to resolve requests')
@@ -26,7 +28,7 @@ class Queue {
                 const data = await cloudscraper(job.data.request)
                 done(null, data)
             } catch (err) {
-                logger.error(err)
+                handleRequestError(err, true, 'queue.js - CF Bypass Request');
                 done(err, null)
             }
         });
@@ -35,7 +37,7 @@ class Queue {
                 const data = await RequestPromise(job.data.request)
                 done(null, data)
             } catch (err) {
-                logger.error(err)
+                handleRequestError(err, true, 'queue.js - Non CF Bypass Request');
                 done(err, null)
             }
         });

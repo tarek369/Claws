@@ -3,6 +3,7 @@ const cheerio = require('cheerio');
 const vm = require('vm');
 const {timeout} = require('../../utils');
 const logger = require('../../utils/logger');
+const {handleRequestError} = require('../../utils/errors');
 
 async function Vidoza(uri, jar, {'user-agent': userAgent}) {
     try {
@@ -25,7 +26,7 @@ async function Vidoza(uri, jar, {'user-agent': userAgent}) {
     
         return VidozaHtml(videoPageHtml);
     } catch (err) {
-        logger.error(err)
+        handleRequestError(err, false, "Resolver - Vidoza");
     }
 }
 

@@ -1,7 +1,7 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
 const vm = require('vm');
-const logger = require('../../utils/logger');
+const { handleRequestError } = require('../../utils/errors');
 
 async function Vidzi(uri, jar, clientIp, userAgent) {
     try {
@@ -23,7 +23,7 @@ async function Vidzi(uri, jar, clientIp, userAgent) {
     
         return setupObject.sources;
     } catch (err) {
-        logger.error(err)
+        handleRequestError(err, false, "Resolver - Vidzi");
     }
 }
 

@@ -1,6 +1,6 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
-const logger = require('../../utils/logger');
+const { handleRequestError } = require('../../utils/errors');
 
 async function VShare(uri, jar, {'user-agent': userAgent}) {
     try {
@@ -15,7 +15,7 @@ async function VShare(uri, jar, {'user-agent': userAgent}) {
     
         return VShareHtml(videoSourceHtml);
     } catch (err) {
-        logger.error(err);
+        handleRequestError(err, false, "Resolver - VShare");
     }
 }
 
