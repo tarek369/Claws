@@ -1,6 +1,6 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
-const logger = require('../../utils/logger');
+const {handleRequestError} = require('../../utils/errors');
 
 async function RapidVideo(uri, jar) {
     try {
@@ -27,7 +27,7 @@ async function RapidVideo(uri, jar) {
 
         return resolvedData;
     } catch (err) {
-        logger.error(err)
+        handleRequestError(err, false, "Resolver - RapidVideo");
     }
 }
 

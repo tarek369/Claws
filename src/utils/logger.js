@@ -37,6 +37,7 @@ if (process.env.NODE_ENV === 'development') {
                 }
 
                 console.log(info[MESSAGE]);
+                console.log()
 
                 if (callback) {
                     callback();

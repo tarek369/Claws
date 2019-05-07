@@ -4,7 +4,7 @@ const cheerio = require('cheerio');
 const vm = require('vm');
 const URL = require('url');
 const m3u8 = require('m3u8-stream-list');
-const logger = require('../../utils/logger');
+const {handleRequestError} = require('../../utils/errors');
 
 async function VidCloud(uri, jar, {'user-agent': userAgent}) {
     try {
@@ -64,7 +64,7 @@ async function VidCloud(uri, jar, {'user-agent': userAgent}) {
     
         return sources;
     } catch (err) {
-        logger.error(err)
+        handleRequestError(err, false, "Resolver - VidCloud");
     }
 }
 

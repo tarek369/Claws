@@ -4,7 +4,7 @@ const cheerio = require('cheerio');
 const vm = require('vm');
 const URL = require('url');
 const m3u8 = require('m3u8-stream-list');
-const logger = require('../../utils/logger');
+const {handleRequestError} = require('../../utils/errors');
 
 async function PowVideo(uri, jar, headers, videoId) {
     try {
@@ -23,7 +23,7 @@ async function PowVideo(uri, jar, headers, videoId) {
     
         return PowVideoHtml(videoSourceHtml, jar, headers);
     } catch (err) {
-        logger.error(err)
+        handleRequestError(err, false, "Resolver - PowVideo");
     }
 }
 

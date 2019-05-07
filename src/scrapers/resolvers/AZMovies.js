@@ -1,6 +1,5 @@
 const rp = require('request-promise');
-const cheerio = require('cheerio');
-const logger = require('../../utils/logger');
+const {handleRequestError} = require('../../utils/errors');
 
 async function AZMovies(uri, jar, headers) {
     try {
@@ -26,7 +25,7 @@ async function AZMovies(uri, jar, headers) {
         return m3u8File;
 
     } catch (err) {
-        logger.error(err)
+        handleRequestError(err, false, "Resolver - AZMovies");
     }
 }
 

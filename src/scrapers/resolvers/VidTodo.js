@@ -1,9 +1,8 @@
 
 const rp = require('request-promise');
-const cheerio = require('cheerio');
 const vm = require('vm');
 const { timeout } = require('../../utils');
-const logger = require('../../utils/logger');
+const {handleRequestError} = require('../../utils/errors');
 
 async function VidTodo(uri, jar, { 'user-agent': userAgent }) {
     try {
@@ -34,7 +33,7 @@ async function VidTodo(uri, jar, { 'user-agent': userAgent }) {
         }
         return [];
     } catch (err) {
-        logger.error(err);
+        handleRequestError(err, false, "Resolver - VidTodo");
     }
 }
 

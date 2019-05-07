@@ -163,7 +163,7 @@ const BaseProvider = class BaseProvider {
         if (this.queue.isEnabled) {
             let jobName = cfEnabled ? constants.QUEUE_JOB_TYPES.CF_BYPASS : constants.QUEUE_JOB_TYPES.NON_CF;
             let jobDetails = {
-                request: cfEnabled ? cloudscraper(options) : rp(options),
+                request: options,
                 cfEnabled
             }
 

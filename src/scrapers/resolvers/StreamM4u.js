@@ -1,5 +1,5 @@
 const rp = require('request-promise');
-const logger = require('../../utils/logger');
+const {handleRequestError} = require('../../utils/errors');
 
 async function StreamM4u(uri, jar, headers) {
     try {
@@ -17,7 +17,7 @@ async function StreamM4u(uri, jar, headers) {
     
         return sourceUrl;
     } catch (err) {
-        logger.error(err)
+        handleRequestError(err, false, "Resolver - Stream4U");
     }
 }
 

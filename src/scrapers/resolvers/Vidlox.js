@@ -1,6 +1,5 @@
 const rp = require('request-promise');
-const cheerio = require('cheerio');
-const logger = require('../../utils/logger');
+const {handleRequestError} = require('../../utils/errors');
 
 async function Vidlox(uri, jar, headers) {
     try {
@@ -15,7 +14,7 @@ async function Vidlox(uri, jar, headers) {
         return result
     }
     catch (err) {
-        logger.error(err)
+        handleRequestError(err, false, "Resolver - Vidlox");
     }
 }
 
