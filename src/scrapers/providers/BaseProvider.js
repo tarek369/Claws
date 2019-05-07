@@ -7,6 +7,8 @@ const logger = require('../../utils/logger');
 const javascriptEval = require('../../utils/javascriptEval');
 const useragent = require('../../utils/useragent');
 const { generateFriendlyName } = require('../../utils');
+const cloudscraper = require('cloudscraper');
+const constants = require('../../utils/constants');
 
 function _implementMe(functionName) {
     throw new Error(`Must implement ${functionName}()`);
@@ -141,9 +143,11 @@ const BaseProvider = class BaseProvider {
      * @param {Object|null} headers
      *
      * @param {Object|null} extraOptions
+     * @param {Boolean} cfEnabled
+     *
      * @return Promise
      */
-    _createRequest(rp, uri, jar = null, headers = null, extraOptions = {}) {
+    _createRequest(rp, uri, jar = null, headers = null, extraOptions = {}, cfEnabled = false) {
         if (typeof jar === 'undefined' && rp.jar) {
             jar = rp.jar();
         }
@@ -155,11 +159,18 @@ const BaseProvider = class BaseProvider {
             timeout: 10000,
             ...extraOptions,
         };
+
         if (this.queue.isEnabled) {
+            let jobName = cfEnabled ? constants.QUEUE_JOB_TYPES.CF_BYPASS : constants.QUEUE_JOB_TYPES.NON_CF;
+            let jobDetails = {
+                request: cfEnabled ? cloudscraper(options) : rp(options),
+                cfEnabled
+            }
+
             return new Promise((resolve, reject) => {
                 let job = this.queue.submit({
-                    name: 'request',
-                    job: { request: rp(options) },
+                    name: jobName,
+                    job: jobDetails,
                     title: `${generateFriendlyName(this.searchInformation)} - ${uri}`
                 });
 
@@ -170,7 +181,7 @@ const BaseProvider = class BaseProvider {
                 });
             });
         }
-        return rp(options);
+        return cfEnabled ? cloudscraper(options) : rp(options);
     }
 
     /**

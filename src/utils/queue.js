@@ -1,7 +1,9 @@
 
 const kue = require('kue');
 const RequestPromise = require('request-promise');
+const cloudscraper = require('cloudscraper');
 const logger = require('./logger');
+const constants = require('./constants');
 
 class Queue {
     constructor() {
@@ -19,7 +21,16 @@ class Queue {
 
     process() {
         logger.debug(`Queue Processing Started`)
-        this.queue.process('request', process.env.QUEUE_ACTIVE_JOB_NUMBER || 1, async function (job, done) {
+        this.queue.process(constants.QUEUE_JOB_TYPES.CF_BYPASS, process.env.QUEUE_ACTIVE_JOB_NUMBER || 1, async function (job, done) {
+            try {
+                const data = await cloudscraper(job.data.request)
+                done(null, data)
+            } catch (err) {
+                logger.error(err)
+                done(err, null)
+            }
+        });
+        this.queue.process(constants.QUEUE_JOB_TYPES.NON_CF, process.env.QUEUE_ACTIVE_JOB_NUMBER || 1, async function (job, done) {
             try {
                 const data = await RequestPromise(job.data.request)
                 done(null, data)

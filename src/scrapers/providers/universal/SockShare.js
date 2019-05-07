@@ -35,7 +35,7 @@ module.exports = class SockShare extends BaseProvider {
             const searchUrl = (`${url}/search-movies/${searchTitle.replace(/ /g, '+')}.html`);
             const rp = this._getRequest(req, ws);
             const jar = rp.jar();
-            const response = await this._createRequest(rp, searchUrl, jar, headers);
+            const response = await this._createRequest(rp, searchUrl, jar, headers, {}, true);
 
             let $ = cheerio.load(response);
 
@@ -52,7 +52,7 @@ module.exports = class SockShare extends BaseProvider {
             }
 
             const contentPageLink = $(contentLink).attr('href');
-            const contentPageHtml = await this._createRequest(rp, contentPageLink, jar, headers);
+            const contentPageHtml = await this._createRequest(rp, contentPageLink, jar, headers, {}, true);
 
             $ = cheerio.load(contentPageHtml);
 
@@ -63,7 +63,7 @@ module.exports = class SockShare extends BaseProvider {
                         episodePageLink = $(episodeLink).attr('href');
                     }
                 });
-                const episodePageHtml = await this._createRequest(rp, episodePageLink, jar, headers);
+                const episodePageHtml = await this._createRequest(rp, episodePageLink, jar, headers, {}, true);
 
                 $ = cheerio.load(episodePageHtml);
             }
@@ -103,7 +103,7 @@ module.exports = class SockShare extends BaseProvider {
 
                 // Select 5 links for each server
                 if (hostCount < 5) {
-                    const mirrorPageHtml = await this._createRequest(rp, mirrorUrls[i], jar, headers);
+                    const mirrorPageHtml = await this._createRequest(rp, mirrorUrls[i], jar, headers, {}, true);
 
                     $ = cheerio.load(mirrorPageHtml);
 
