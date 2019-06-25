@@ -1,6 +1,6 @@
 const Promise = require('bluebird');
 const cheerio = require('cheerio');
-const utils = require('../../../utils/index');
+const utils = require('../../../utils/index')
 const BaseProvider = require('../BaseProvider');
 
 module.exports = class Series9 extends BaseProvider {

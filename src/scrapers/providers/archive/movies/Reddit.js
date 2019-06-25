@@ -26,7 +26,6 @@ module.exports = class Reddit extends BaseProvider {
             const children = json.data.children;
             for (let child of children) {
                 const link = child.data.url;
-                const quality = Utils.getQualityInfo(child.data.title);
                 resolvePromises.push(this.resolveLink(link, ws, jar, headers, quality, { isDDL: false }, hasRD));
             }
         } catch (err) {

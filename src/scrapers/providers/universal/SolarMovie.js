@@ -6,8 +6,7 @@ const atob = require('atob');
 module.exports = class SolarMovie extends BaseProvider {
     /** @inheritdoc */
     getUrls() {
-        // Removing 5Movies (http://5movies.fm) because of access ban
-        return ['http://www1.solarmovie.net'];
+        return ['http://www1.solarmovie.net', 'http://5movies.fm'];
     }
 
     /** @inheritdoc */
@@ -36,7 +35,7 @@ module.exports = class SolarMovie extends BaseProvider {
             const searchUrl = (`${url}/search-movies/${searchTitle.replace(/ /g, '+')}.html`);
             const rp = this._getRequest(req, ws);
             const jar = rp.jar();
-            const response = await this._createRequest(rp, searchUrl, jar, headers);
+            const response = await this._createRequest(rp, searchUrl, jar, headers, {}, true);
 
             let $ = cheerio.load(response);
 
@@ -49,7 +48,7 @@ module.exports = class SolarMovie extends BaseProvider {
             }
 
             const contentPageLink = $(contentLink).attr('href');
-            const contentPageHtml = await this._createRequest(rp, contentPageLink, jar, headers);
+            const contentPageHtml = await this._createRequest(rp, contentPageLink, jar, headers, {}, true);
 
             $ = cheerio.load(contentPageHtml);
 
@@ -60,7 +59,7 @@ module.exports = class SolarMovie extends BaseProvider {
                         episodePageLink = $(episodeLink).attr('href');
                     }
                 });
-                const episodePageHtml = await this._createRequest(rp, episodePageLink, jar, headers);
+                const episodePageHtml = await this._createRequest(rp, episodePageLink, jar, headers, {}, true);
 
                 $ = cheerio.load(episodePageHtml);
             }
@@ -101,7 +100,7 @@ module.exports = class SolarMovie extends BaseProvider {
 
                 // Select 5 links for each server
                 if (hostCount < 5) {
-                    const mirrorPageHtml = await this._createRequest(rp, mirrorUrls[i], jar, headers);
+                    const mirrorPageHtml = await this._createRequest(rp, mirrorUrls[i], jar, headers, {}, true);
 
                     $ = cheerio.load(mirrorPageHtml);
 

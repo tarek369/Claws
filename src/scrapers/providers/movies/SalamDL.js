@@ -1,25 +1,22 @@
 const cheerio = require('cheerio');
 const BaseProvider = require('../BaseProvider');
 
-module.exports = class MeliMedia extends BaseProvider {
+module.exports = class SalamDL extends BaseProvider {
     /** @inheritdoc */
     getUrls() {
-        return ['http://melimedia.net'];
+        return ['https://salamdl.info/'];
     }
 
     /** @inheritdoc */
     async scrape(url, req, ws) {
         const title = req.query.title.toLowerCase();
         const year = req.query.year;
-        const season = req.query.season;
-        const episode = req.query.episode;
-        const type = req.query.type;
         const hasRD = req.query.hasRD;
         const resolvePromises = [];
         let headers = {};
 
         try {
-            let searchTitle = `${title} ${year}`;
+            const searchTitle = `${title} ${year}`;
             let searchUrl = this._generateUrl(url, { s: searchTitle });
             const rp = this._getRequest(req, ws);
             const jar = rp.jar();
@@ -28,9 +25,8 @@ module.exports = class MeliMedia extends BaseProvider {
             let $ = cheerio.load(response);
 
             let videoPage = '';
-            $('.-title a').toArray().forEach(element => {
-                // Replace is used because MeliMedia uses a different apostrophe character...
-                let contentTitle = $(element).text().toLowerCase().replace('’', '\'');
+            $('article h2 a').toArray().forEach(element => {
+                let contentTitle = $(element).attr('title').toLowerCase();
                 let contentPage = $(element).attr('href');
 
                 if (contentTitle.includes(searchTitle)) {
@@ -45,11 +41,11 @@ module.exports = class MeliMedia extends BaseProvider {
 
             $ = cheerio.load(videoPageHTML);
 
-            $('p a').toArray().forEach(element => {
-                const directLink = $(element).attr('href');
-                const audioRegex = /(.[0-9]{4})(.*)(.Sound)([0-9]*)/;
-                if (!audioRegex.test(directLink)) {
-                    resolvePromises.push(this.resolveLink(directLink, ws, jar, headers, '', { isDDL: true }, hasRD));
+            $('#linkbox li a').toArray().forEach(element => {
+                let videoLink = $(element).attr('href');
+                if (!videoLink.toLowerCase().includes('trailer') && !videoLink.toLowerCase().includes('teaser')
+                    && !videoLink.toLowerCase().includes('dubbed')) {
+                    resolvePromises.push(this.resolveLink(videoLink, ws, jar, headers, '', { isDDL: true }, hasRD));
                 }
             });
         } catch (err) {

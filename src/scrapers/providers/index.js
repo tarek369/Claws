@@ -10,14 +10,15 @@ const providers = {
             new (require('./movies/Afdah'))(queue),
             new (require('./movies/AZMovies'))(queue),
             new (require('./movies/BFMovies'))(queue),
+            new (require('./movies/CMoviesHD'))(queue),
             new (require('./movies/DLFilm'))(queue),
             new (require('./movies/FilmXY'))(queue),
             new (require('./movies/LavinMovie'))(queue),
             new (require('./movies/MeliMedia'))(queue),
+            new (require('./movies/MoviStack'))(queue),
             new (require('./movies/OpenloadMovie'))(queue),
             new (require('./movies/Putlocker'))(queue),
-            new (require('./movies/Reddit'))(queue),
-            new (require('./movies/StreamM4U'))(queue)
+            new (require('./movies/SalamDL'))(queue)
         ],
         tv: [
             new (require('./tv/GrabTheBeast'))(queue),
@@ -25,7 +26,8 @@ const providers = {
             new (require('./tv/ProjectFreeTV'))(queue),
             new (require('./tv/SeriesFree'))(queue),
             new (require('./tv/SwatchSeries'))(queue),
-            new (require('./tv/ToonGet'))(queue)
+            new (require('./tv/ToonGet'))(queue),
+            new (require('./tv/WatchSeries'))(queue)
         ],
         universal: [
             new (require('./universal/123Movie'))(queue),
@@ -45,14 +47,18 @@ const providers = {
     rd: {
         movies: [
             new (require('./rd/movies/300MBDownload'))(queue),
-            new (require('./rd/movies/300MBFilms'))(queue)
+            new (require('./rd/movies/300MBFilms'))(queue),
+            new (require('./rd/movies/SceneDDL'))(queue)
         ],
         tv: [
             new (require('./rd/tv/DirectDownloadTV'))(queue)
         ],
         universal: [
             new (require('./rd/universal/DDLSpot'))(queue),
+            new (require('./rd/universal/MaxRelease'))(queue),
             new (require('./rd/universal/MyVideoLinks'))(queue),
+            new (require('./rd/universal/SceneRelease'))(queue),
+            new (require('./rd/universal/SceneSource'))(queue),
             new (require('./rd/universal/TwoDDL'))(queue)
         ]
     }

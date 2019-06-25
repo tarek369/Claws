@@ -1,6 +1,5 @@
 const cheerio = require('cheerio');
 const BaseProvider = require('../BaseProvider');
-const Utils = require('../../../utils/index');
 
 module.exports = class BFMovies extends BaseProvider {
     /** @inheritdoc */
@@ -45,8 +44,6 @@ module.exports = class BFMovies extends BaseProvider {
 
             $ = cheerio.load(videoPageHTML);
 
-            let quality = Utils.getNumericQuality($('.quality span').text());
-
             let openloadPage = $("iframe").attr('src');
             if(!openloadPage.includes("openload")){
                 this.logger.debug("BFMovies does not always use OpenLoad.");
@@ -56,7 +53,7 @@ module.exports = class BFMovies extends BaseProvider {
 
             let openloadURL = cheerio.load(openloadHTML)('meta[name="og:url"]').attr('content');
             if (openloadURL) {
-                resolvePromises.push(this.resolveLink(openloadURL, ws, jar, headers, quality, { isDDL: false}, hasRD));
+                resolvePromises.push(this.resolveLink(openloadURL, ws, jar, headers, '', { isDDL: false}, hasRD));
             } else {
                 return Promise.resolve();
             }

@@ -35,6 +35,7 @@ const GoGoAnime = require('./GoGoAnime');
 
 const createEvent = require('../../utils/createEvent');
 const { rd } = require('../../utils/rd');
+const Utils = require('../../utils/index');
 
 /** @type {BaseResolver[]} */
 const resolvers = [
@@ -83,6 +84,9 @@ async function resolve(ws, uri, provider, jar, headers, quality = '', meta = { i
         
         if (supportedHost) {
             const source = rd.getHostName(uri);
+            if (!quality || quality == 'HQ') {
+                quality = Utils.qualityFromFile(uri);
+            }
             const event = createEvent(uri, ipLocked, null, { quality, source, provider, hasRD });
             await ws.send(event, event.event);
         } else if (uri.includes('openload.co') || uri.includes('oload.cloud')) {
@@ -328,7 +332,7 @@ async function resolve(ws, uri, provider, jar, headers, quality = '', meta = { i
             const event = createEvent(data, false, undefined, {quality, provider: 'EnterVideo', source});
             sse.send(event, event.event);*/
         } else if (meta.isDDL == true) {
-            const data = await DDLResolver(uri, jar, headers);
+            const data = await DDLResolver(uri, quality);
             const event = createEvent(data.resolvedLink, false, undefined, {quality: data.quality, source: 'DDL', provider, isDDL: true});
             await ws.send(event, event.event);
          } else {

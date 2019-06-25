@@ -2,10 +2,10 @@ const cheerio = require('cheerio');
 const BaseProvider = require('../../BaseProvider');
 const Utils = require('../../../../utils/index');
 
-module.exports = class MyVideoLinks extends BaseProvider {
+module.exports = class MaxRelease extends BaseProvider {
     /** @inheritdoc */
     getUrls() {
-        return ['http://myvideolinks.net/abc/'];
+        return ['http://max-rls.com/'];
     }
 
     /** @inheritdoc */
@@ -17,7 +17,7 @@ module.exports = class MyVideoLinks extends BaseProvider {
         const type = req.query.type;
         const hasRD = req.query.hasRD;
         const resolvePromises = [];
-        let headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36' };
+        let headers = {};
 
         try {
             let searchTitle = `${title}`;
@@ -29,36 +29,26 @@ module.exports = class MyVideoLinks extends BaseProvider {
             } else {
                 searchTitle += ` ${year}`;
             }
-            let searchUrl = this._generateUrl(url, { s: searchTitle });
+            let searchUrl = this._generateUrl(url, { s: searchTitle, submit: 'Find' });
             const rp = this._getRequest(req, ws);
             const jar = rp.jar();
             const response = await this._createRequest(rp, searchUrl, jar, headers);
 
             let $ = cheerio.load(response);
 
-            let foundPages = $('.post-info h2 a').toArray().reduce((returnArray, element) => {
-                let foundTitle = $(element).attr('title').toLowerCase();
-                let foundPage = $(element).attr('href');
+            $('#contentArea .post').toArray().forEach(postElement => {
+                const postTitle = $(postElement).find('.postTitle a').text().toLowerCase();
+                const postQuality = Utils.qualityFromFile(postTitle);
 
-                if (foundTitle.includes(searchTitle)) {
-                    returnArray.push(this._absoluteUrl(url, foundPage));
+                if (postTitle.includes(searchTitle)) {
+                    $(postElement).find('.postContent a').toArray().forEach(linkElement => {
+                        const link = $(linkElement).attr('href');
+                        if (!link.includes('youtube.com')) {
+                            resolvePromises.push(this.resolveLink(link, ws, jar, headers, postQuality, { isDDL: false }, hasRD));
+                        }
+                    });
                 }
-
-                return returnArray;
-            }, []);
-
-            for (let page of foundPages) {
-                let pageHTML = await this._createRequest(rp, page, jar, headers);
-
-                $ = cheerio.load(pageHTML);
-
-                let quality = Utils.qualityFromFile($('h4').text());
-
-                $('.post-content ul li a').toArray().forEach(element => {
-                    let link = $(element).attr('href');
-                    resolvePromises.push(this.resolveLink(link, ws, jar, headers, quality, { isDDL: false }, hasRD));
-                });
-            }
+            });
         } catch (err) {
             this._onErrorOccurred(err)
         }

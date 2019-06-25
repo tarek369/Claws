@@ -1,10 +1,6 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
-const logger = require('../../utils/logger');
-const Utils = require('../../utils/index');
-
 const {handleRequestError} = require('../../utils/errors');
-
 
 async function RapidVideo(uri, jar) {
     try {
@@ -20,7 +16,7 @@ async function RapidVideo(uri, jar) {
         let resolvedData = [];
         for (let videoLink of videoLinks) {
             let splitComponents = videoLink.split('q=');
-            let quality = Utils.getNumericQuality(splitComponents[splitComponents.length - 1]);
+            let quality = splitComponents[splitComponents.length - 1];
 
             let videoPageHTML = await rp({ uri: videoLink, jar, timeout: 5000 });
             $ = cheerio.load(videoPageHTML)

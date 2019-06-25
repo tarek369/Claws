@@ -2,7 +2,8 @@ const rp = require('request-promise');
 const cheerio = require('cheerio');
 const vm = require('vm');
 const normalizeUrl = require('../../utils').normalizeUrl;
-const {handleRequestError} = require('../../utils/errors');
+const { handleRequestError } = require('../../utils/errors');
+const Utils = require('../../utils/index');
 
 async function Streamango(uri, jar, headers) {
     try {
@@ -21,6 +22,13 @@ async function Streamango(uri, jar, headers) {
 
 function StreamangoHtml(providerPageHtml) {
     let $ = cheerio.load(providerPageHtml);
+
+    const ogURL = $('meta[name="og:url"]').attr('content');
+    const ogTitle = $('meta[name="og:title"]').attr('content');
+    let quality = Utils.qualityFromFile(ogURL);
+    if (quality == 'HQ') {
+        quality = Utils.qualityFromFile(ogTitle);
+    }
 
     const jQuery = function (selector, anotherArg) {
         return {
@@ -44,7 +52,7 @@ function StreamangoHtml(providerPageHtml) {
     vm.createContext(sandbox); // Contextify the sandbox.
     vm.runInContext($('script:contains(srces)')[0].children[0].data.replace('src:d(', 'src:window.d('), sandbox);
 
-    return normalizeUrl(sandbox.srces[0].src, 'https');
+    return { src: normalizeUrl(sandbox.srces[0].src, 'https'), res: quality };
 
 }
 

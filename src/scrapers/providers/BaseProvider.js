@@ -35,7 +35,7 @@ const BaseProvider = class BaseProvider {
      * @return String
      */
     getProviderId() {
-        return this.constructor.name;
+        return this.constructor.name.replace(/_/g, '');
     }
 
     /**
@@ -147,7 +147,7 @@ const BaseProvider = class BaseProvider {
      *
      * @return Promise
      */
-    _createRequest(rp, uri, jar = null, headers = null, extraOptions = {}, cfEnabled = false) {
+    _createRequest(rp, uri, jar = null, headers = null, extraOptions = {}, cfEnabled = false, skipQueue = false) {
         if (typeof jar === 'undefined' && rp.jar) {
             jar = rp.jar();
         }
@@ -160,7 +160,7 @@ const BaseProvider = class BaseProvider {
             ...extraOptions,
         };
 
-        if (this.queue.isEnabled) {
+        if (this.queue.isEnabled && !skipQueue) {
             let jobName = cfEnabled ? constants.QUEUE_JOB_TYPES.CF_BYPASS : constants.QUEUE_JOB_TYPES.NON_CF;
             let jobDetails = {
                 request: options,

@@ -2,42 +2,31 @@ const cheerio = require('cheerio');
 const BaseProvider = require('../../BaseProvider');
 const Utils = require('../../../../utils/index');
 
-module.exports = class MyVideoLinks extends BaseProvider {
+module.exports = class SceneDDL extends BaseProvider {
     /** @inheritdoc */
     getUrls() {
-        return ['http://myvideolinks.net/abc/'];
+        return ['http://www.sceneddl.me/'];
     }
 
     /** @inheritdoc */
     async scrape(url, req, ws) {
         const title = req.query.title.toLowerCase();
         const year = req.query.year;
-        const season = req.query.season;
-        const episode = req.query.episode;
-        const type = req.query.type;
         const hasRD = req.query.hasRD;
         const resolvePromises = [];
-        let headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36' };
+        let headers = {};
 
         try {
-            let searchTitle = `${title}`;
-            const paddedSeason = `${season}`.padStart(2, '0');
-            const paddedEpisode = `${episode}`.padStart(2, '0');
-            const formattedEpisode = `s${paddedSeason}e${paddedEpisode}`;
-            if (type == 'tv') {
-                searchTitle += ` ${formattedEpisode}`;
-            } else {
-                searchTitle += ` ${year}`;
-            }
-            let searchUrl = this._generateUrl(url, { s: searchTitle });
+            let searchTitle = `${title} ${year}`;
+            let searchUrl = this._generateUrl(url, { s: searchTitle.replace(/\s/g, '+') });
             const rp = this._getRequest(req, ws);
             const jar = rp.jar();
             const response = await this._createRequest(rp, searchUrl, jar, headers);
 
             let $ = cheerio.load(response);
 
-            let foundPages = $('.post-info h2 a').toArray().reduce((returnArray, element) => {
-                let foundTitle = $(element).attr('title').toLowerCase();
+            let foundPages = $('h2.entry-title a').toArray().reduce((returnArray, element) => {
+                let foundTitle = $(element).text().toLowerCase();
                 let foundPage = $(element).attr('href');
 
                 if (foundTitle.includes(searchTitle)) {
@@ -52,9 +41,9 @@ module.exports = class MyVideoLinks extends BaseProvider {
 
                 $ = cheerio.load(pageHTML);
 
-                let quality = Utils.qualityFromFile($('h4').text());
+                let quality = Utils.qualityFromFile($('h1.entry-title').text());
 
-                $('.post-content ul li a').toArray().forEach(element => {
+                $('.entry-content p a').toArray().forEach(element => {
                     let link = $(element).attr('href');
                     resolvePromises.push(this.resolveLink(link, ws, jar, headers, quality, { isDDL: false }, hasRD));
                 });

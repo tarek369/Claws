@@ -25,7 +25,7 @@ module.exports = class _300MBDownload extends BaseProvider {
 
             $('item').toArray().forEach(element => {
                 const itemTitle = $(element).find('title').text();
-                const quality = Utils.getQualityInfo(itemTitle);
+                const quality = Utils.qualityFromFile(itemTitle);
                 $(element).find('p a[target="_blank"]').toArray().forEach(linkElement => {
                     const link = $(linkElement).attr('href');
                     resolvePromises.push(this.resolveLink(link, ws, jar, headers, quality, { isDDL: false }, hasRD));

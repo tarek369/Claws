@@ -1,7 +1,8 @@
 const rp = require('request-promise');
 const cheerio = require('cheerio');
 const vm = require('vm');
-const {handleRequestError} = require('../../utils/errors');
+const { handleRequestError } = require('../../utils/errors');
+const Utils = require('../../utils/index');
 
 async function Openload(uri, jar, headers) {
     try {
@@ -22,6 +23,13 @@ async function Openload(uri, jar, headers) {
 function OpenloadHtml(providerPageHtml) {
     if (!providerPageHtml.includes("We can't find the file you are looking for")) {
         let $ = cheerio.load(providerPageHtml);
+
+        const ogURL = $('meta[name="og:url"]').attr('content');
+        const ogTitle = $('meta[name="og:title"]').attr('content');
+        let quality = Utils.qualityFromFile(ogURL);
+        if (quality == 'HQ') {
+            quality = Utils.qualityFromFile(ogTitle);
+        }
 
         let wholeFileId = '';
         const jQuery = function(selector, anotherArg) {
@@ -79,7 +87,7 @@ function OpenloadHtml(providerPageHtml) {
             throw 'Openload: URL malformed'
         }
 
-        return sourceUrl;
+        return { src: sourceUrl, res: quality };
     }
 
     throw 'Openload: File not found';

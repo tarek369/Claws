@@ -59,7 +59,7 @@ module.exports = class TwoDDL extends BaseProvider {
                     if (!isSecondarySearch || (isSecondarySearch && releaseName.includes(`.${season}${paddedEpisode}.`))) {
                         $(element).find('.anch_multilink a').toArray().forEach(linkElement => {
                             let hostLink = $(linkElement).attr('href');
-                            let quality = Utils.getQualityInfo(releaseName);
+                            let quality = Utils.qualityFromFile(releaseName);
                             resolvePromises.push(this.resolveLink(hostLink, ws, jar, headers, quality, { isDDL: false }, hasRD));
                         });
                     }

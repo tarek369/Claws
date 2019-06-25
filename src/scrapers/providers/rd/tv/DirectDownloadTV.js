@@ -31,7 +31,7 @@ module.exports = class DirectDownloadTV extends BaseProvider {
             let json = JSON.parse(response);
 
             for (let result of json.results) {
-                const quality = Utils.getQualityInfo(result.quality);
+                const quality = Utils.qualityFromString(result.quality);
                 const links = result.links;
                 for (let host in links) {
                     resolvePromises.push(this.resolveLink(links[host][0], ws, jar, headers, quality, { isDDL: false }, hasRD));

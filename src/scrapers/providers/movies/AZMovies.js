@@ -2,7 +2,6 @@ const cheerio = require('cheerio');
 const randomUseragent = require('random-useragent');
 const BaseProvider = require('../BaseProvider');
 const tough = require('tough-cookie');
-const Utils = require('../../../utils/index');
 
 module.exports = class AZMovies extends BaseProvider {
     /** @inheritdoc */
@@ -74,11 +73,9 @@ module.exports = class AZMovies extends BaseProvider {
 
             $ = cheerio.load(videoPageHtml);
 
-            let quality = Utils.getNumericQuality($('.quality').text());
-
             $('#serverul li a').toArray().forEach((element) => {
                 const providerUrl = this._absoluteUrl(movieUrl, $(element).attr('href'));
-                resolvePromises.push(this.resolveLink(providerUrl, ws, jar, headers, quality, { isDDL: false}, hasRD));
+                resolvePromises.push(this.resolveLink(providerUrl, ws, jar, headers, '', { isDDL: false}, hasRD));
             });
         }
         catch (err) {

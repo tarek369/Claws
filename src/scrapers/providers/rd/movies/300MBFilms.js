@@ -37,7 +37,7 @@ module.exports = class _300MBFilms extends BaseProvider {
             let guidLinks = [];
             $('item').toArray().forEach(element => {
                 const itemTitle = $(element).find('title').text();
-                const quality = Utils.getQualityInfo(itemTitle);
+                const quality = Utils.qualityFromFile(itemTitle);
                 const guidLink = $(element).find('guid').text();
                 
                 qualities.push(quality);

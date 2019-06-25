@@ -47,7 +47,7 @@ module.exports = class GrabTheBeast extends BaseProvider {
 
             $('video source').toArray().forEach(element => {
                 const videoLink = $(element).attr('src');
-                const quality = Utils.getQualityInfo($(element).attr('size'));
+                const quality = Utils.qualityFromString($(element).attr('size'));
                 resolvePromises.push(this.resolveLink(videoLink, ws, jar, headers, quality, { isDDL: true }, hasRD));
             });
         } catch (err) {

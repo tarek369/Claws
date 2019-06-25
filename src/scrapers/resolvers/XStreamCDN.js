@@ -1,5 +1,7 @@
 const BaseResolver = require('./_BaseResolver');
-const Utils = require('../../utils/index');
+
+const cheerio = require('cheerio');
+const vm = require('vm');
 
 const urlRegex = /(https?:\/\/(?:www.)?xstreamcdn.com)\/v\/([0-9a-zA-Z]+?)(\.html)?$/;
 
@@ -48,7 +50,7 @@ module.exports = class XStreamCDN extends BaseResolver {
                 links.push({
                     data: link.file,
                     meta: {
-                        quality: Utils.getNumericQuality(link.label), // e.g. 480p
+                        quality: link.label, // e.g. 480p
                         type: link.type, // e.g. mp4
                     }
                 })
