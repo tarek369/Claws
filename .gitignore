@@ -27,6 +27,7 @@ node_modules
 .DS_Store
 
 .idea
+.idea/*
 npm-debug.log.*
 
 .env
