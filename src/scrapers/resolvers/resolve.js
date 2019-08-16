@@ -31,6 +31,7 @@ const KwikCx = require('./KwikCx');
 const StreamMoe = require('./StreamMoe');
 const VidStreaming = require('./VidStreaming');
 const XStreamCDN = require('./XStreamCDN');
+const MyAkoam = require('./MyAkoam');
 
 const createEvent = require('../../utils/createEvent');
 const { rd } = require('../../utils/rd');
@@ -78,7 +79,7 @@ async function resolve(ws, uri, provider, jar, headers, quality = '', meta = { i
         if (hasRD) {
             supportedHost = rd.isSupportedByRD(uri);
         }
-        
+
         if (supportedHost) {
             const source = rd.getHostName(uri);
             const event = createEvent(uri, ipLocked, null, { quality, source, provider, hasRD });
@@ -325,6 +326,11 @@ async function resolve(ws, uri, provider, jar, headers, quality = '', meta = { i
             const data = await EnterVideo(uri, jar, headers);
             const event = createEvent(data, false, undefined, {quality, provider: 'EnterVideo', source});
             sse.send(event, event.event);*/
+        } else if (uri.includes('akoam.net')){
+            const data = await MyAkoam( uri, jar, headers);
+            const event = createEvent(data.resolvedLink, false, undefined, {quality: data.quality, source: 'Myakoam', provider});
+            await ws.send(event, event.event);
+
         } else if (meta.isDDL == true) {
             const data = await DDLResolver(uri, jar, headers);
             const event = createEvent(data.resolvedLink, false, undefined, {quality: data.quality, source: 'DDL', provider, isDDL: true});
