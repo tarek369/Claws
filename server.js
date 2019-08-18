@@ -52,14 +52,14 @@ app.get('/', function (req, res) {
         res.redirect("/ui");
         return;
     }
-    
+
     // -- If the debug interface is not meant to be shown: --
     // Redirect the user to the default site if ROOT_REDIRECT is not specified...
     if(!process.env.ROOT_REDIRECT || process.env.ROOT_REDIRECT === '') {
         res.redirect("https://apollotv.xyz/");
         return;
     }
-        
+
     // Otherwise, redirect them to the specified root.
     res.redirect(rootRedirect);
 });
@@ -73,7 +73,8 @@ if (process.env.SHOW_DEBUG_INTERFACE === "true") {
     });
 }
 
-app.get('/salsa20.min.js', (req, res) => res.sendFile(`${pathToApp}/public/salsa20.min.js`));
+
+//app.get('/salsa20.js', (req, res) => res.sendFile(`${pathToApp}/public/salsa20.js`));
 /** ./RENDERED ROUTES **/
 
 
@@ -124,7 +125,7 @@ wss.on('connection', async (ws, req) => {
         }
 
         resolveLinks(data, ws, req);
-        
+
     });
 });
 
