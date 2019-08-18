@@ -1,8 +1,12 @@
 # The first thing we need to do is define from what image we want to build from.
 # Here we will use the latest LTS (long term support) version 10 of node available from the Docker Hub (https://hub.docker.com/_/node/)
-FROM node:10
+FROM node:alpine
+COPY supervisord.conf /etc/supervisord.conf
 
 # Next we create a directory to hold the application code inside the image, this will be the working directory for your application
+#installing nodejs and supervisord
+RUN apk update && apk add --no-cache supervisor
+
 WORKDIR /usr/src/app
 
 # This image comes with Node.js and NPM already installed so the next thing we need to do is to install your app dependencies using the npm binary.
@@ -28,4 +32,8 @@ EXPOSE 3000
 
 # Last but not least, define the command to run your app using CMD which defines your runtime.
 # Here we will use the basic npm start which will run node server.js to start your server
-CMD [ "npm", "start" ]
+COPY supervisord.conf  /etc/supervisord.d/pm2.conf
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+
+
+#CMD [ "pm2-runtime" ,"np", "npm" ]
