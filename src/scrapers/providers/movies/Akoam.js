@@ -1,7 +1,9 @@
 const cheerio = require('cheerio');
 const BaseProvider = require('../BaseProvider');
 const randomUseragent = require('random-useragent');
-const createEvent = require('../../../utils/createEvent')
+const createEvent = require('../../../utils/createEvent');
+const rp = require('request-promise');
+
 
 module.exports = class Akoam extends BaseProvider {
     /** @inheritdoc */
@@ -18,7 +20,8 @@ module.exports = class Akoam extends BaseProvider {
         let headers = {};
 
         try {
-            const searchTitle = `${title} ${year}`;
+            //const searchTitle = `${title} ${year}`;
+            const searchTitle = encodeURI('الموسم الثالث من مسلسل الكبير أوي بطولة أحمد مكي و دنيا سمير غانم');
             let searchUrl = this._generateUrl(`${url}/search/${searchTitle.replace(/ /g, '%20')}`);
             const rp = this._getRequest(req, ws);
             const jar = rp.jar();
@@ -41,6 +44,7 @@ module.exports = class Akoam extends BaseProvider {
                         return true;
                     }
                 }
+                videoPage = encodeURI(contentPage);
             });
 
             if (!videoPage) {
@@ -57,7 +61,23 @@ module.exports = class Akoam extends BaseProvider {
             });
 
             for (const link of videoLink) {
-                resolvePromises.push(this.resolveLink(link, ws, jar, headers, '', {isDDL: true}, hasRD));
+                let urlCookie = ''
+                let kk = await  this._createRequest(rp, link, jar, headers);
+                const x = jar._jar.store.idx;
+                for (let property in x) {
+                    if (!(property == 'akoam.net' || property == 'we.akoam.net')) {
+                        urlCookie = property;
+                    }
+                }
+                let cookieObjects = jar.getCookies('http://' + urlCookie);
+                let cookieObject = cookieObjects ? cookieObjects.find(c => c.key === 'golink') : {};
+                let cookieValue = cookieObject ? cookieObject.value : false;
+                let cookie = decodeURIComponent(cookieValue);
+                let items = RegExp('route":"(.*?)"').exec(cookie);
+                let url = items[1].replace(new RegExp("\\\\/|/\\\\", "g"), "/");
+                url = decodeURIComponent(url);
+
+                resolvePromises.push(this.resolveLink(url, ws, jar, headers, '', {isDDL: true}, hasRD));
             }
         } catch (err) {
             this._onErrorOccurred(err)
